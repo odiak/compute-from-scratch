@@ -1,0 +1,1 @@
+Continue the same bare-metal stack. Read the existing image and preserve its BOOT line. Extend it to echo incoming PL011 serial bytes in the same running VM. Verify two distinct bytes after you observe BOOT. Leave the updated image saved and stop the VM when done. Use only provided tools and no external reference material.

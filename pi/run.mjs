@@ -1,27 +1,33 @@
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { createInterface } from "node:readline";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   createAgentSession, createExtensionRuntime, ModelRuntime, SessionManager, SettingsManager,
 } from "@earendil-works/pi-coding-agent";
 import { getModel } from "@earendil-works/pi-ai/compat";
 
+const stage = process.argv[2] ?? "001";
 const stages = {
-  "001": { prompt: "001-pi-prompt.txt", tools: ["run_guest"] },
-  "002": { prompt: "002-serial-input-prompt.txt", tools: ["run_guest", "run_guest_with_input"] },
+  "001": ["guest_write", "guest_read", "vm_boot", "serial_read", "vm_stop"],
+  "002": ["guest_write", "guest_read", "vm_boot", "serial_read", "serial_send", "vm_stop"],
 };
-const stage = stages[process.argv[2] ?? "001"];
-if (!stage || !Array.isArray(stage.tools)) throw new Error("Choose stage 001 or 002");
+const names = stages[stage];
+if (!Array.isArray(names)) throw new Error("Choose stage 001 or 002");
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const trials = join(root, ".local", "experiments");
 mkdirSync(trials, { recursive: true });
-const trial = mkdtempSync(join(trials, "pi-"));
+const previous = process.argv[3];
+if (stage === "002" && !previous) throw new Error("Pass the stage 001 campaign directory");
+const trial = previous ? resolve(previous) : mkdtempSync(join(trials, "pi-"));
 const work = join(trial, "work");
-mkdirSync(work);
+mkdirSync(work, { recursive: true });
 console.log(trial);
+const sessionPointer = join(trial, "session-path.txt");
+const prompt = readFileSync(join(root, "experiments", `${stage}-campaign-prompt.txt`), "utf8");
 
 const model = getModel("openai-codex", "gpt-6.1-sol");
 const authPath = join(process.env.CODEX_HOME ?? join(homedir(), ".codex"), "auth.json");
@@ -39,34 +45,59 @@ const modelRuntime = await ModelRuntime.create({
   },
 });
 
-const broker = fileURLToPath(new URL("../guest_tool.py", import.meta.url));
-function callBroker(method, params) {
-  const request = { jsonrpc: "2.0", id: 1, method, params };
-  const result = spawnSync("python3", [broker], {
-    input: JSON.stringify(request) + "\n", encoding: "utf8", timeout: 12000,
+const broker = spawn("python3", [join(root, "guest_tool.py"), work], {
+  stdio: ["pipe", "pipe", "inherit"],
+});
+const replies = createInterface({ input: broker.stdout })[Symbol.asyncIterator]();
+let pending = Promise.resolve();
+function callBroker(name, args) {
+  const call = pending.then(async () => {
+    broker.stdin.write(JSON.stringify({ name, args }) + "\n");
+    const reply = await replies.next();
+    if (reply.done) throw new Error("Guest broker exited");
+    const response = JSON.parse(reply.value);
+    if (response.error) throw new Error(response.error);
+    return response.result;
   });
-  if (result.status !== 0) throw new Error("Guest broker failed");
-  const response = JSON.parse(result.stdout);
-  if (response.error) throw new Error(response.error.message);
-  return response.result;
+  pending = call.catch(() => {});
+  return call;
 }
 
-const { tools: specs } = callBroker("tools/list");
-const tools = stage.tools.map(name => {
-  const spec = specs.find(tool => tool.name === name);
+const descriptions = {
+  guest_write: "Replace the campaign guest image with whitespace-separated raw hex.",
+  guest_read: "Read the current campaign guest image as hex.",
+  vm_boot: "Boot the saved guest image. The VM runs until you stop it.",
+  vm_stop: "Stop the running VM.",
+  serial_read: "Read new guest serial output without waiting. Read again if empty.",
+  serial_send: "Send up to 256 bytes encoded as hex to the running guest.",
+};
+const image = join(work, "guest.hex");
+const tools = names.map(name => {
+  const takesHex = name === "guest_write" || name === "serial_send";
   return {
-    name,
-    label: name,
-    description: spec.description,
-    parameters: spec.inputSchema,
+    name, label: name, description: descriptions[name],
+    parameters: {
+      type: "object",
+      properties: takesHex ? { hex: { type: "string", maxLength: 65536 } } : {},
+      required: takesHex ? ["hex"] : [],
+      additionalProperties: false,
+    },
     async execute(_id, args) {
-      const result = callBroker("tools/call", { name, arguments: args });
-      if (result.isError) throw new Error(result.content[0].text);
-      return result;
+      let output;
+      if (name === "guest_write") {
+        const hex = args.hex.replace(/\s/g, "");
+        if (!/^(?:[0-9a-fA-F]{2}){4,}$/.test(hex)) throw new Error("Invalid raw hex image");
+        writeFileSync(image, hex + "\n");
+        output = { bytes: hex.length / 2 };
+      } else if (name === "guest_read") {
+        output = { hex: readFileSync(image, "utf8").trim() };
+      } else {
+        output = await callBroker(name, args);
+      }
+      return { content: [{ type: "text", text: JSON.stringify(output) }] };
     },
   };
 });
-
 const resourceLoader = {
   getExtensions: () => ({ extensions: [], errors: [], runtime: createExtensionRuntime() }),
   getSkills: () => ({ skills: [], diagnostics: [] }),
@@ -86,7 +117,9 @@ const { session } = await createAgentSession({
   model, modelRuntime, resourceLoader,
   tools: tools.map(tool => tool.name),
   customTools: tools,
-  sessionManager: SessionManager.inMemory(work),
+  sessionManager: previous
+    ? SessionManager.open(readFileSync(sessionPointer, "utf8").trim(), trial, work)
+    : SessionManager.create(work, trial),
   settingsManager: SettingsManager.inMemory({
     compaction: { enabled: false },
     retry: { enabled: false },
@@ -94,25 +127,26 @@ const { session } = await createAgentSession({
 });
 try {
   const active = session.getActiveToolNames();
-  if (JSON.stringify(active) !== JSON.stringify(stage.tools)) {
+  if (JSON.stringify(active) !== JSON.stringify(names)) {
     throw new Error("Unexpected active tools: " + active.join(", "));
   }
-  writeFileSync(join(trial, "config.json"), JSON.stringify({
+  writeFileSync(join(trial, `${stage}-config.json`), JSON.stringify({
     provider: model.provider, model: model.id, activeTools: active,
     systemPrompt: session.systemPrompt,
   }, null, 2) + "\n");
-  const prompt = readFileSync(join(root, "experiments", stage.prompt), "utf8");
-  writeFileSync(join(trial, "prompt.txt"), prompt);
+  writeFileSync(join(trial, `${stage}-prompt.txt`), prompt);
   session.subscribe(event => {
     if (["message_end", "tool_execution_start", "tool_execution_end"].includes(event.type)) {
-      appendFileSync(join(trial, "events.jsonl"), JSON.stringify(event) + "\n");
+      appendFileSync(join(trial, `${stage}-events.jsonl`), JSON.stringify(event) + "\n");
     }
   });
   await session.prompt(prompt);
+  writeFileSync(sessionPointer, session.sessionFile + "\n");
   const last = session.messages.at(-1);
   if (last?.role !== "assistant" || ["error", "aborted"].includes(last.stopReason)) {
     throw new Error(last?.errorMessage ?? "No successful final assistant message");
   }
 } finally {
   session.dispose();
+  broker.stdin.end();
 }

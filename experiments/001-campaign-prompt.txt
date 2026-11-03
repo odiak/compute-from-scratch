@@ -1,0 +1,3 @@
+Start a bare-metal software stack from scratch. Write a raw AArch64 image that outputs BOOT followed by LF on the serial console. Save it with guest_write, boot it, and verify the output with serial_read. Fix and retry if needed. Stop the VM when done and keep the working image in the campaign. Later stages will extend that image. Use only provided tools, with no external reference materials.
+
+QEMU virt, Cortex-A53, AArch64 little endian, one core, 64 MiB RAM from 0x40000000. The raw image starts at physical 0x40200000 with no OS or initialized stack. PL011 UART MMIO base is 0x09000000. No network or display. VM execution has no time limit.

@@ -12,27 +12,16 @@ ENTRY = 0x40200000
 RAM_MIB = 64
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("image", type=Path, help="raw image encoded as hexadecimal bytes")
-    parser.add_argument("--runs", type=Path, default=Path(".local/runs"))
-    parser.add_argument("--seconds", type=int, default=2, choices=range(1, 31),
-                        metavar="1..30")
-    parser.add_argument("--serial-byte", type=int, choices=range(256), metavar="0..255")
-    args = parser.parse_args()
-    try:
-        image = bytes.fromhex(args.image.read_text())
-    except (OSError, ValueError) as error:
-        parser.error(str(error))
+def prepare_run(image, runs, arp_network=False):
     if not 4 <= len(image) <= RAM_MIB * 1024**2 - 0x200000:
-        parser.error("image must fit in guest RAM and contain at least one instruction")
+        raise ValueError("image must fit in guest RAM and contain at least one instruction")
 
     qemu = shutil.which("qemu-system-aarch64")
     if qemu is None:
-        parser.error("qemu-system-aarch64 is required")
+        raise ValueError("qemu-system-aarch64 is required")
     version = subprocess.check_output([qemu, "--version"], text=True).splitlines()[0]
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
-    run = args.runs.resolve() / run_id
+    run = runs.resolve() / run_id
     run.mkdir(parents=True)
     binary = run / "guest.bin"
     binary.write_bytes(image)
@@ -42,10 +31,38 @@ def main():
         "-monitor", "none", "-serial", "stdio", "-nic", "none", "-no-reboot",
         "-device", f"loader,file=guest.bin,addr={ENTRY:#x},force-raw=on,cpu-num=0",
     ]
+    if arp_network:
+        command.extend([
+            "-global", "virtio-mmio.force-legacy=false",
+            "-netdev", "user,id=net0,restrict=on",
+            "-device", "virtio-net-device,netdev=net0,mac=52:54:00:12:34:56",
+            "-object", "filter-dump,id=trace,netdev=net0,file=network.pcap",
+        ])
     record = {
         "id": run_id, "qemu": version, "command": command,
-        "image_sha256": hashlib.sha256(image).hexdigest(), "seconds": args.seconds,
+        "image_sha256": hashlib.sha256(image).hexdigest(),
     }
+    return run, command, record
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("image", type=Path, help="raw image encoded as hexadecimal bytes")
+    parser.add_argument("--runs", type=Path, default=Path(".local/runs"))
+    parser.add_argument("--seconds", type=int, default=2, choices=range(1, 31),
+                        metavar="1..30")
+    parser.add_argument("--serial-byte", type=int, choices=range(256), metavar="0..255")
+    parser.add_argument("--arp-network", action="store_true")
+    args = parser.parse_args()
+    try:
+        image = bytes.fromhex(args.image.read_text())
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    try:
+        run, command, record = prepare_run(image, args.runs, args.arp_network)
+    except ValueError as error:
+        parser.error(str(error))
+    record["seconds"] = args.seconds
     serial_input = {}
     if args.serial_byte is None:
         serial_input["stdin"] = subprocess.DEVNULL
