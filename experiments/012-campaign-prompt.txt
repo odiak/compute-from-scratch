@@ -1,0 +1,8 @@
+Extend your general guest-side "as NAME" assembler while preserving its existing syntax, disk, loader and shell. Add the AArch64 forms needed to implement a real compiler as an assembled guest program:
+
+- mov xd, N (0..65535), add/sub xd, xn, N (0..4095); allow sp for the base/destination of add/sub immediate.
+- ldr/str wd or xd, [xn, N], and ldrb/strb wd, [xn, N]; allow sp as the base; N is an unsigned byte offset, correctly scaled/aligned for the access. Accept [xn] as zero offset.
+- adr xd, LABEL (forward/backward); blr xn; mul wd, wn, wm; and/orr wd, wn, wm; lsl wd, wn, N (0..31).
+- .word N (unsigned decimal 32-bit value) emits four little-endian data bytes and participates in label offsets.
+
+Use the existing semicolon separator and register conventions. Keep output transactional on any error. Test a source that loads a forward-labeled data word, stores to the application stack, reads it with ldrb, and returns a runtime result. Verify that a previous assembler example still works. Save the image and concise notes and stop the VM. No external references or tools.

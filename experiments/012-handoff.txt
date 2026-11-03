@@ -1,0 +1,42 @@
+Stage-012 FINAL: saved7544-byte(0x1d78) raw little-endian AArch64 image, entry0x40200000,QEMUvirtCortex-A53,endexclusive0x40201d78. VM STOPPED. Campaigntools/artifactsonly,noexternalreferences/assembler/binaries. vm_boot_disk persistentdisk;vm_boot_http ARP+HTTP(noDisk);vm_boot neither. serial_send_text acceptsLF-separatedcommands<=4096bytes.
+
+Allpriorcommands/BOOT/HTTP/disk/loader preserved. Help remains help echo load run save append cat ls asm loadfile as LF. as NAME syntax extended,stilltransactional: assembled LFsuccess;assembly error LFanybadinput/unresolved/duplicate/limit,previouscode/flagunchanged;not found LFmissing;no disk LFabsent. Old asm NAME implicitw0syntax still8instructions/8labels. Generalas caps512four-bytewords(instructions+data)/2048bytes,128labels,512fixups,source<=4096bytes. Semicolonstatements,standaloneNAME:,optionalASCIIspaces,mandatorycommasbetweenoperands;lowercasemnemonics/registers;labels1..12alnum/underscorecase-sensitive;noemptyinteriorstatement;optionaltrailingsemicolon.
+
+NEWFORMS:
+mov xd,N (0..65535),now64bitMOVZ;existingwimmediateandmatchingw/xregistermovesretained.
+add/sub xd,xn,N(0..4095),spallowedasdest/baseonlytheseXimmediateforms. ExistingWimmediate/registerarithandCMPretained;noXregisterarith.
+ldr/str wd/xd,[xn,N];ldrb/strb wd,[xn,N]. spallowedbase. [xn] means0;spacesinsidebracketsallowed. NunsignedBYTEoffset,notencodedindex:Wsize4 aligned4 max16380;Xsize8 aligned8 max32760;byteunaligned max4095. Rejectbadwidth/base/alignment/range beforecommit. Datareg0..30,basex0..30orSP.
+adr xd,LABEL (forward/backward),blr xn;mul/and/orr wd,wn,wm;lsl wd,wn,N(0..31).
+.word N unsigneddecimal0..4294967295 emits4little-endianbytes,countinglikeinstructionforlabels/limits. Arithmeticimmediatesremainboundeddecimal,no#/sign/hex. Decimalparsernow64bitaccumulatorwithperdigitbound,so.wordoverflowcannotwrap. Allregisters0..30;SPonlyinnewaddress/Ximmediatecontexts. ret barex30,B/BL/B.eq/ne/lt/ge unchanged.
+Labelsall4bytealigned,ADRPCrelativebyteoffset=4*(targetIndex-currentIndex). Noauto8bytealignment:programmermustpad.wordforXloadsfromliteraldata ifneeded. MMUoffunalignedwordaccessescanfault. Noexecutionisolation/faultrecovery/automaticRET;branchingintodataistrustedprogram'sproblem.
+
+NEWCODEMAP(offsetsfrom0x40200000):
++1a08 predecoderhook:recognizes5char.wordbeforeold4char-mnemonicpacker;validates.word-space,parsesu32with1964,finishcheck,emit1080. Otherwise restoresx13=x9andresumes15d4.
++1a7c extendedmnemoniclookupafterold16a8fallback. DispatchLDR1b20/STR1b2c/LDRB1b38/STRB1b44,ADR1bf0,BLR1c10,MUL1c30,AND1c3c,ORR1c44,LSL1c80.
++1b50 memoryparser:dataREG->w16,setsW/X/bytebaseandscalew18(2/3/0),comma,[,RSPbase->w17,optionalcomma/unsignedoffset,alignmentcheck,scale>>w18,imm12<<10,],tail17b8toORrn/rd/finish/emit. Usesstandardunsigned-offsetencodingsb940/b900/f940/f900/3940/3900xxxx. Zerooffsetskipsnumberparse.
++1bf0 ADR requiresXdest,base10000000|rd,tail1820oldlabeloperand/fixuprecord. +1c10 BLR Xreg emitsd63f0000|(rn<<5),finish/emit.
++1c50 commonthreeWregsMUL/AND/ORR:base1b007c00/0a000000/2a000000,rm<<16,rn<<5,rd. +1c80 LSL emitsUBFMbase53000000,immr=(-N)&31,imms=31-N,rn/rd;zero/31tested.
++1cd0 MOVimmediateSFhelper:base52800000|(width<<31),resume16e4. +1cdc fixupselector:TBZopcodebit26 ->old185c(ADRimmhi19<<5),otherwiseoldB.condbit30selector orB/BLmask26. SinceADRpcdeltaalwaysmultiple4,immlo=0;originalopcode/rdretained. Existingcommonfixupsearch1094..10ecunchanged.
++1ce8 newADD/SUBparserusesRSPforfirsttworegs,matchingwidths,w16dest/w17base,w18width. Wforms->old1780(register/immediate),XformssetSF,parseonlyimm4095,tail17b8.
++1d2c RSPleaf:skipspaces;spreturnsreg31,width1;otherwiseTAILold18e8REG. Nohelperpushesstack;allerrorsdirect1154withoutSPleaks.
+Staticpatchesvsstage011:15d0B1a08;16a8B1a7c;16d0NOP(removeximmreject);16e0B1cd0;1730B1ce8;184cB1cdc. Numeric1964loopat19a4/19a8/19ac/19b0nowADDx/LSLx/ADDx/CMPxinsteadW. Twoalignmentzerosafteroldend1a06;appendedcode1a08..1d74. Existing179cLSL#10correct53165421retained.
+
+REUSABLEPIPELINE:
+OldscannerE20 trimssemicolonstatements;EF0cap,15bcdecoderchoiceoldasm/as;newas17xx/1axxemitwordw11via1080. Labels128x16sourceptr64,len32,PCindex32;fixups512x16sourceptr64,len32,reserved,kindinferredfromstagedopcode. ADRnewbit26ruleonlyforregisteredfixups,not.worddata. Commit1870:w13=count<<2,BL1400,printassembled1148;error1154nevercommit.
+GETFILE12d8/absolute0x402012d8:x11validdirectoryslot->x5contiguousfiledataRAM,w4u16len,clobbersx1/x2/x5/w4.
+COMMIT1400/absolute0x40201400 leaf:w13validated4..2048bytesmultiple4,stagingx19+1000->executable;DCCVAUevery64bytes,DSB SY,ICIALLU,DSB SY,ISB,flag1,RET. Clobbersw1/w4/x5/x6/flags,noprint. Futuredatacompilerbackendcanreuse. Branch/ADRrelocationsalreadywordindexed;additionalrelocationsneednewkinds.
+Parser187cskipspaces(x13cursor,x14end->w3byteor0),18a4finish,18c8comma,18e8REG(w1index,w2width),1964NUM(w6max->w1value),1160identifier(x13/w14ptr/len->w1valid0/bad1),11bccompare. Inputerrorsbranch1154,notnormalreturnerror. CallerwithnestedBLmustsaveownLR.
+
+MEMORY/ABI:
+Executablex19=0x40140000..407ff,staging0x40141000..417ff,loadedflag32at0x40142000. Mode45000(+0asm0/as1,+4instrcap,+8labelcap). Labels0x40146000..467ff,fixups0x40147000..48fff,cleared46000..48fffeachassembly. TheseNEVERoverlapcode/data/staging. Tablespointtosourcecacheonlyduringassembly.
+RunBLRx19at844,entryx0=putc0x402008a8,SP0x40110000aligned16,4KiBbelow. AppsbalancesSP/preservex19..29,RETwithw0exit,nonleafsaveLR. putcASCIIw0clobbersx1/x2,leavesw0/preservescallees. KernelrestoreUARTx0/linebufferx8,exit+8lowercasehexLF/prompt. Oldload4..32rawbytes,loadfile4..2048rawbytes,transactional.
+Shellline0x40105000..507f128bytes,LF/noinputecho;overflowdrainsLFtheninvalid program. Prompt5c4,input5d8,print6a8(x5ptr/w4len/x0UART,clobbersx5/w4/w1/w2/flags/LR).
+Disk8files4096printableASCIIbytesmax,names1..12alnumcase-sensitive. Directory8x128bytesLBA0..1:byte0namelen0unused,u16len+2,name+4..15,markerbyte80=A5;oldinlinelegacydataismigratedboot1450,thenstale. Filei diskbyte0x1000+i*4096,RAM0x40121400+i*4096. Whole0x9000prefixread/writteneachsave/append,oversizechecksbeforemutation. Driverx22=0x40120000,desc+0,avail+100,used+200,request+300,status+310,cache+400..93ff,x23MMIOor0,w24idx. Init940ID2VERSION_1queue0num4;A50w1=0read/1writeLBA0returnstatus. Nojournal/FLUSH/crashatomicity/corruptionvalidation/timeout/65535wraphandling. All8slotsfull,updateexistingnames.
+
+VERIFICATION allsuccessfultestsusedUNCHANGEDFINAL7544byteimage:
+Diskrun20261103T231958.273914Z:oldasprog8(130instructions/32labels/fixups)->exit96. REQUIREDprogMath: adr x1,data;ldr w2,[x1];sub sp,sp,16;str w2,[sp,4];ldrb w0,[sp,5];add sp,sp,16;ret;data:;.word 305419896 ->assembled/runexit00000056(little-endianbyte0x56). Savedsourcepermanently.
+BLR/stackLRsaveprogramprintsZthenexit7;Ximmediate+STRX/LDRXoffset8returns12345. MUL/AND/ORR/LSLpipeline(7*3&7|3)<<3returns56. STRBviaXbase,SPbyteoffsetreadreturnsab. BackwardADRto.word4294967295loadsffffffff. .word4294967296,badLDRWoffset2,LDRBxd rejectedandrunstillffffffff. LSL31->80000000,LSL0->7b. LargestscaledX/W/byteoffsets32760/16380/4095assembledinskippedcode,run99;32768/LSL32errorspreserve99. OldasmprogFwd->10,oldasprog8->96.
+Freshdiskrun20261103T232159.938218Z:noprogramatboot,asprogMath->56;asprogBad->Zexit7;asprog8->96;loadfileemptyold2048byteprogram->42. Provespersistentnewsourceandcompatibility.
+HTTPboot20261103T232220.728449Z:BOOT/MAC02:3b:a6:dc:1a:1a/Hello, world! 556145a7b802/prompt;as->nodisk,helpunchanged,inline load/run42,echook. STOPPED.
+DiskFULL:alpha updated!,beta second text,Abc123xyz789 oldASCIItest,empty4096hexNOP/return42,progFwd oldsmallasm,prog8 oldlarge130instr,progMath requiredforwarddata/stacktest,progBad BLRdemo:mov x9,x0;sub sp,sp,16;str x30,[sp];mov w0,90;blr x9;mov w0,7;ldr x30,[sp];add sp,sp,16;ret.
+ImageSAVED,VMSTOPPED.NetworkHTTPunchangedprivateFINframing/ACKs,existinglimitedsecurity/reliability.

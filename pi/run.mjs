@@ -23,6 +23,7 @@ const stages = {
   "009": { tools: [...common, "serial_send", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
   "010": { tools: [...common, "serial_send", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
   "011": { tools: [...common, "serial_send", "serial_send_text", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
+  "012": { tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -80,7 +81,8 @@ function callBroker(name, args) {
 
 const descriptions = {
   guest_write: "Replace the campaign guest image with whitespace-separated raw hex.",
-  guest_read: "Read the current campaign guest image as hex.",
+  guest_read: "Read the current campaign guest image as hex, optionally selecting a byte range.",
+  guest_patch: "Overwrite a byte range of your saved image or append at its end. Offsets are in bytes.",
   vm_boot: "Boot the saved guest image. The VM runs until you stop it.",
   vm_boot_network: "Boot the saved guest with a private Ethernet link to the ARP peer.",
   vm_boot_tcp: "Boot the saved guest with the private ARP and TCP challenge peer.",
@@ -98,6 +100,14 @@ const image = join(work, "guest.hex");
 const tools = names.map(name => {
   const properties = {
     guest_write: { hex: { type: "string", maxLength: 65536 } },
+    guest_read: {
+      offset: { type: "integer", minimum: 0 },
+      length: { type: "integer", minimum: 1 },
+    },
+    guest_patch: {
+      offset: { type: "integer", minimum: 0 },
+      hex: { type: "string", maxLength: 65536 },
+    },
     serial_send: { hex: { type: "string", maxLength: 512 } },
     serial_send_text: { text: { type: "string", maxLength: 4096 } },
     notes_write: { text: { type: "string", maxLength: 8192 } },
@@ -108,7 +118,7 @@ const tools = names.map(name => {
     parameters: {
       type: "object",
       properties,
-      required: name === "serial_read" ? [] : Object.keys(properties),
+      required: ["serial_read", "guest_read"].includes(name) ? [] : Object.keys(properties),
       additionalProperties: false,
     },
     async execute(_id, args) {
@@ -119,7 +129,21 @@ const tools = names.map(name => {
         writeFileSync(image, hex + "\n");
         output = { bytes: hex.length / 2 };
       } else if (name === "guest_read") {
-        output = { hex: readFileSync(image, "utf8").trim() };
+        const hex = readFileSync(image, "utf8").trim();
+        const offset = args.offset ?? 0;
+        const length = args.length ?? hex.length / 2;
+        output = { hex: hex.slice(offset * 2, (offset + length) * 2) };
+      } else if (name === "guest_patch") {
+        const current = readFileSync(image, "utf8").trim();
+        const replacement = args.hex.replace(/\s/g, "");
+        const start = args.offset * 2;
+        if (start > current.length || !/^(?:[0-9a-fA-F]{2})+$/.test(replacement)
+            || start + replacement.length > 65536) {
+          throw new Error("Invalid guest image patch");
+        }
+        const hex = current.slice(0, start) + replacement + current.slice(start + replacement.length);
+        writeFileSync(image, hex + "\n");
+        output = { bytes: hex.length / 2 };
       } else if (name === "serial_send_text") {
         const bytes = Buffer.from(args.text, "utf8");
         if (!bytes.length || bytes.length > 4096) throw new Error("Send 1 to 4096 UTF-8 bytes");
