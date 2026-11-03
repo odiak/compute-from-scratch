@@ -19,6 +19,7 @@ const stages = {
   "005": { tools: [...common, "serial_send", "vm_boot_http"], requiresCampaign: true },
   "006": { tools: [...common, "serial_send", "vm_boot_http"], requiresCampaign: true },
   "007": { tools: [...common, "serial_send", "vm_boot_http"], requiresCampaign: true },
+  "008": { tools: [...common, "serial_send", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -81,6 +82,7 @@ const descriptions = {
   vm_boot_network: "Boot the saved guest with a private Ethernet link to the ARP peer.",
   vm_boot_tcp: "Boot the saved guest with the private ARP and TCP challenge peer.",
   vm_boot_http: "Boot with the private ARP peer and host HTTP origin.",
+  vm_boot_disk: "Boot the saved image with the campaign’s persistent virtual disk.",
   vm_stop: "Stop the running VM.",
   serial_read: "Read new guest serial output. Optionally wait up to wait_ms (0 to 5000) for data.",
   notes_write: "Replace your campaign handoff notes with up to 8192 characters.",

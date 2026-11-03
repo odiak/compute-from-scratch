@@ -21,11 +21,21 @@ class Guest:
         self.run = None
         self.offset = 0
 
-    def boot(self, network=False, tcp=False, http=False):
+    def boot(self, network=False, tcp=False, http=False, disk=False):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
         self.run, command, record = prepare_run(image, self.workspace / "runs")
+        if disk:
+            path = self.workspace / "disk.img"
+            if not path.exists():
+                with path.open("xb") as stream:
+                    stream.truncate(1024 * 1024)
+            command.extend([
+                "-drive", "if=none,id=storage,file=../../disk.img,format=raw,cache=writethrough",
+                "-device", "virtio-blk-device,drive=storage",
+            ])
+            record["disk"] = str(path)
         link = ArpLink() if network else None
         if link:
             fd = link.guest.fileno()
@@ -42,6 +52,8 @@ class Guest:
             elif tcp:
                 link.tcp = TcpPeer(link.mac)
                 record["tcp_challenge"] = link.tcp.challenge.decode("ascii")
+        if disk and not network:
+            command.extend(["-global", "virtio-mmio.force-legacy=false"])
         try:
             (self.run / "run.json").write_text(json.dumps(record, indent=2) + "\n")
             with (self.run / "serial.log").open("wb") as serial, (self.run / "qemu.log").open("wb") as log:
@@ -114,6 +126,7 @@ def main():
         "vm_boot_network": lambda _: guest.boot(network=True),
         "vm_boot_tcp": lambda _: guest.boot(network=True, tcp=True),
         "vm_boot_http": lambda _: guest.boot(network=True, http=True),
+        "vm_boot_disk": lambda _: guest.boot(disk=True),
         "vm_stop": lambda _: guest.stop(),
         "serial_read": lambda args: guest.serial_read(args.get("wait_ms", 0)),
         "serial_send": lambda args: guest.serial_send(args["hex"]),
