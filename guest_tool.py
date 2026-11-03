@@ -21,11 +21,13 @@ class Guest:
         self.run = None
         self.offset = 0
 
-    def boot(self, network=False, tcp=False, http=False, disk=False):
+    def boot(self, network=False, tcp=False, http=False, disk=False, observer_socket=None):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
         self.run, command, record = prepare_run(image, self.workspace / "runs")
+        if observer_socket is not None:
+            command.extend(["-qmp", f"unix:{observer_socket},server=on,wait=off"])
         if disk:
             path = self.workspace / "disk.img"
             if not path.exists():
