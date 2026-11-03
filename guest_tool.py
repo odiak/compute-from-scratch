@@ -1,4 +1,4 @@
-"""Stdio MCP server exposing a single bounded guest execution tool."""
+"""Stdio MCP server exposing bounded guest execution tools."""
 import json
 import subprocess
 import sys
@@ -18,19 +18,34 @@ TOOL = {
     },
 }
 
+INPUT_TOOL = {
+    "name": "run_guest_with_input",
+    "description": "Boot a fresh guest, supply one serial input byte, and read its output.",
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "hex": TOOL["inputSchema"]["properties"]["hex"],
+            "byte": {"type": "integer", "minimum": 0, "maximum": 255},
+        },
+        "required": ["hex", "byte"],
+        "additionalProperties": False,
+    },
+}
+TOOLS = [TOOL, INPUT_TOOL]
 
-def run_guest(hex_text):
+
+def run_guest(hex_text, serial_byte=None):
     if not isinstance(hex_text, str) or len(hex_text) > 65536:
         raise ValueError("hex must be a string of at most 65536 characters")
     image = bytes.fromhex(hex_text)
     with tempfile.TemporaryDirectory() as directory:
         source = Path(directory) / "guest.hex"
         source.write_text(image.hex())
-        result = subprocess.run(
-            [sys.executable, str(ROOT / "runner.py"), str(source),
-             "--runs", str(RUNS), "--seconds", "1"],
-            capture_output=True, text=True, timeout=10,
-        )
+        command = [sys.executable, str(ROOT / "runner.py"), str(source),
+                   "--runs", str(RUNS), "--seconds", "1"]
+        if serial_byte is not None:
+            command.extend(["--serial-byte", str(serial_byte)])
+        result = subprocess.run(command, capture_output=True, text=True, timeout=10)
     if not result.stdout.strip():
         raise ValueError(result.stderr.strip())
     run = Path(result.stdout.strip())
@@ -50,10 +65,20 @@ def handle(request):
     if method == "ping":
         return {}
     if method == "tools/list":
-        return {"tools": [TOOL]}
-    if method == "tools/call" and request["params"]["name"] == TOOL["name"]:
+        return {"tools": TOOLS}
+    if method == "tools/call":
+        name = request["params"]["name"]
+        args = request["params"]["arguments"]
         try:
-            output = run_guest(request["params"]["arguments"]["hex"])
+            if name == TOOL["name"]:
+                output = run_guest(args["hex"])
+            elif name == INPUT_TOOL["name"]:
+                byte = args["byte"]
+                if type(byte) is not int or not 0 <= byte <= 255:
+                    raise ValueError("byte must be an integer in 0..255")
+                output = run_guest(args["hex"], byte)
+            else:
+                raise KeyError(name)
             return {"content": [{"type": "text", "text": output}]}
         except (ValueError, subprocess.TimeoutExpired) as error:
             return {"isError": True, "content": [{"type": "text", "text": str(error)}]}

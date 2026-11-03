@@ -8,6 +8,13 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { getModel } from "@earendil-works/pi-ai/compat";
 
+const stages = {
+  "001": { prompt: "001-pi-prompt.txt", tools: ["run_guest"] },
+  "002": { prompt: "002-serial-input-prompt.txt", tools: ["run_guest", "run_guest_with_input"] },
+};
+const stage = stages[process.argv[2] ?? "001"];
+if (!stage || !Array.isArray(stage.tools)) throw new Error("Choose stage 001 or 002");
+
 const root = fileURLToPath(new URL("../", import.meta.url));
 const trials = join(root, ".local", "experiments");
 mkdirSync(trials, { recursive: true });
@@ -44,21 +51,22 @@ function callBroker(method, params) {
   return response.result;
 }
 
-const { tools: [spec] } = callBroker("tools/list");
-const runGuest = {
-  name: spec.name,
-  label: "Run guest",
-  description: spec.description,
-  parameters: spec.inputSchema,
-  async execute(_id, args) {
-    const result = callBroker("tools/call", { name: spec.name, arguments: args });
-    if (result.isError) throw new Error(result.content[0].text);
-    return result;
-  },
-};
+const { tools: specs } = callBroker("tools/list");
+const tools = stage.tools.map(name => {
+  const spec = specs.find(tool => tool.name === name);
+  return {
+    name,
+    label: name,
+    description: spec.description,
+    parameters: spec.inputSchema,
+    async execute(_id, args) {
+      const result = callBroker("tools/call", { name, arguments: args });
+      if (result.isError) throw new Error(result.content[0].text);
+      return result;
+    },
+  };
+});
 
-// Each stage selects its own explicit tools. New stages do not inherit built-ins.
-const tools = [runGuest];
 const resourceLoader = {
   getExtensions: () => ({ extensions: [], errors: [], runtime: createExtensionRuntime() }),
   getSkills: () => ({ skills: [], diagnostics: [] }),
@@ -86,14 +94,14 @@ const { session } = await createAgentSession({
 });
 try {
   const active = session.getActiveToolNames();
-  if (JSON.stringify(active) !== JSON.stringify([spec.name])) {
+  if (JSON.stringify(active) !== JSON.stringify(stage.tools)) {
     throw new Error("Unexpected active tools: " + active.join(", "));
   }
   writeFileSync(join(trial, "config.json"), JSON.stringify({
     provider: model.provider, model: model.id, activeTools: active,
     systemPrompt: session.systemPrompt,
   }, null, 2) + "\n");
-  const prompt = readFileSync(new URL("../experiments/001-pi-prompt.txt", import.meta.url), "utf8");
+  const prompt = readFileSync(join(root, "experiments", stage.prompt), "utf8");
   writeFileSync(join(trial, "prompt.txt"), prompt);
   session.subscribe(event => {
     if (["message_end", "tool_execution_start", "tool_execution_end"].includes(event.type)) {

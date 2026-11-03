@@ -18,6 +18,7 @@ def main():
     parser.add_argument("--runs", type=Path, default=Path(".local/runs"))
     parser.add_argument("--seconds", type=int, default=2, choices=range(1, 31),
                         metavar="1..30")
+    parser.add_argument("--serial-byte", type=int, choices=range(256), metavar="0..255")
     args = parser.parse_args()
     try:
         image = bytes.fromhex(args.image.read_text())
@@ -45,10 +46,16 @@ def main():
         "id": run_id, "qemu": version, "command": command,
         "image_sha256": hashlib.sha256(image).hexdigest(), "seconds": args.seconds,
     }
+    serial_input = {}
+    if args.serial_byte is None:
+        serial_input["stdin"] = subprocess.DEVNULL
+    else:
+        serial_input["input"] = bytes([args.serial_byte])
+        record["serial_byte"] = args.serial_byte
     try:
         with (run / "serial.log").open("wb") as serial, (run / "qemu.log").open("wb") as log:
-            result = subprocess.run(command, cwd=run, stdin=subprocess.DEVNULL,
-                                    stdout=serial, stderr=log, timeout=args.seconds)
+            result = subprocess.run(command, cwd=run, stdout=serial, stderr=log,
+                                    timeout=args.seconds, **serial_input)
         record.update(status="exited", returncode=result.returncode)
     except subprocess.TimeoutExpired:
         record["status"] = "timeout"
