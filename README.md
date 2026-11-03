@@ -49,3 +49,12 @@ python3 verify_arp.py "$campaign/work/guest.hex"
 003では専用のEthernetリンクを追加する。ホスト側の応答役は起動ごとに異なるMACでARPに応答する。リンクはQEMUと応答役をソケットで直結し、外部への転送経路を持たない。観測側は同一イメージを2回起動し、両方のPCAPにARP要求・応答があり、応答元MACがシリアル出力と一致することを確認する。起動メッセージとシリアルエコーも検証する。
 
 観測側の参照ゲストは `python3 verify_arp.py fixtures/arp-reference.hex --reference` で確認できる。参照バイナリを再生成する場合は `python3 fixtures/build-arp-reference.py > fixtures/arp-reference.hex` を実行する。
+
+## TCPの観測
+
+```sh
+node pi/run.mjs 004 "$campaign"
+python3 verify_tcp.py "$campaign/work/runs/$run_id"
+```
+
+004の専用応答役は、ポート2323で `ping\n` を受け、起動ごとに異なる応答を返す。観測側はTCPのチェックサム、ハンドシェイク、要求、応答のACK、シリアル表示を照合する。

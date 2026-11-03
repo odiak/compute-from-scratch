@@ -14,6 +14,7 @@ class ArpLink:
     def __init__(self):
         self.mac = b"\x02" + secrets.token_bytes(5)
         self.host, self.guest = socket.socketpair()
+        self.tcp = None
         self.thread = Thread(target=self.serve, daemon=True)
 
     def serve(self):
@@ -21,12 +22,16 @@ class ArpLink:
             try:
                 while header := stream.read(4):
                     frame = stream.read(int.from_bytes(header, "big"))
+                    reply = None
                     if (len(frame) >= 42 and frame[12:22] == b"\x08\x06" + ARP_REQUEST
                             and frame[28:32] == GUEST_IP and frame[38:42] == PEER_IP):
                         sender = frame[22:28]
                         reply = (sender + self.mac + b"\x08\x06" + ARP_REPLY
                                  + self.mac + PEER_IP + sender + GUEST_IP)
                         reply = reply.ljust(60, b"\0")
+                    elif self.tcp:
+                        reply = self.tcp.receive(frame)
+                    if reply:
                         self.host.sendall(len(reply).to_bytes(4, "big") + reply)
             except (BrokenPipeError, ConnectionResetError):
                 pass

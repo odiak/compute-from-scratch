@@ -8,6 +8,7 @@ from time import monotonic, sleep
 
 from arp_link import ArpLink
 from runner import prepare_run
+from tcp_peer import TcpPeer
 
 
 class Guest:
@@ -18,7 +19,7 @@ class Guest:
         self.run = None
         self.offset = 0
 
-    def boot(self, network=False):
+    def boot(self, network=False, tcp=False):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
@@ -33,6 +34,9 @@ class Guest:
                 "-object", "filter-dump,id=trace,netdev=net0,file=network.pcap",
             ])
             record["peer_mac"] = link.mac.hex(":")
+            if tcp:
+                link.tcp = TcpPeer(link.mac)
+                record["tcp_challenge"] = link.tcp.challenge.decode("ascii")
         try:
             (self.run / "run.json").write_text(json.dumps(record, indent=2) + "\n")
             with (self.run / "serial.log").open("wb") as serial, (self.run / "qemu.log").open("wb") as log:
@@ -97,6 +101,7 @@ def main():
     operations = {
         "vm_boot": lambda _: guest.boot(),
         "vm_boot_network": lambda _: guest.boot(network=True),
+        "vm_boot_tcp": lambda _: guest.boot(network=True, tcp=True),
         "vm_stop": lambda _: guest.stop(),
         "serial_read": lambda args: guest.serial_read(args.get("wait_ms", 0)),
         "serial_send": lambda args: guest.serial_send(args["hex"]),
