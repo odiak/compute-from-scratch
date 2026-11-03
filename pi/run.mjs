@@ -22,6 +22,7 @@ const stages = {
   "008": { tools: [...common, "serial_send", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
   "009": { tools: [...common, "serial_send", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
   "010": { tools: [...common, "serial_send", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
+  "011": { tools: [...common, "serial_send", "serial_send_text", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -89,6 +90,7 @@ const descriptions = {
   serial_read: "Read new guest serial output. Optionally wait up to wait_ms (0 to 5000) for data.",
   notes_write: "Replace your campaign handoff notes with up to 8192 characters.",
   notes_read: "Read your campaign handoff notes.",
+  serial_send_text: "Send up to 4096 UTF-8 bytes as literal serial input. Include LF to submit each shell line.",
   serial_send: "Send up to 256 bytes encoded as hex to the running guest.",
 };
 const notes = join(work, "notes.txt");
@@ -97,6 +99,7 @@ const tools = names.map(name => {
   const properties = {
     guest_write: { hex: { type: "string", maxLength: 65536 } },
     serial_send: { hex: { type: "string", maxLength: 512 } },
+    serial_send_text: { text: { type: "string", maxLength: 4096 } },
     notes_write: { text: { type: "string", maxLength: 8192 } },
     serial_read: { wait_ms: { type: "integer", minimum: 0, maximum: 5000 } },
   }[name] ?? {};
@@ -117,6 +120,17 @@ const tools = names.map(name => {
         output = { bytes: hex.length / 2 };
       } else if (name === "guest_read") {
         output = { hex: readFileSync(image, "utf8").trim() };
+      } else if (name === "serial_send_text") {
+        const bytes = Buffer.from(args.text, "utf8");
+        if (!bytes.length || bytes.length > 4096) throw new Error("Send 1 to 4096 UTF-8 bytes");
+        let sent = 0;
+        while (sent < bytes.length) {
+          const chunk = bytes.subarray(sent, sent + 256);
+          const result = await callBroker("serial_send", { hex: chunk.toString("hex") });
+          sent += result.sent;
+          if (result.sent !== chunk.length) break;
+        }
+        output = { sent };
       } else if (name === "notes_write") {
         writeFileSync(notes, args.text);
         output = { saved: true };
