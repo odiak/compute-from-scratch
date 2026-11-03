@@ -1,0 +1,37 @@
+Stage-013 FINAL: saved8281-byte(0x2059) raw little-endian AArch64 image, entry0x40200000, QEMUvirtCortex-A53,endexclusive0x40202059. VM STOPPED. Campaign tools/artifacts only. guest_read supports ranges;guest_patch overwrites/appends. vm_boot_disk persistentdisk;vm_boot_http privateARP/HTTP(noDisk);vm_boot neither. serial_send_text accepts LF-separated commands<=4096bytes.
+
+PUBLIC ABI / NEXT COMPILER STAGE:
+run [N]: decimaluint32 N=0..4294967295,plainrun=0;argumentleading/trailingspacesallowed,no signs/hex. Badinput -> invalid argument LF withoutcall. Applicationentry0x40140000, x0=consoleputc0x402008a8, w1=N(zeroextended). SP0x40110000aligned16,4KiBdescendingstackbelow. ReturnRET,w0exit;prints exit space+exact8lowercasehexLF/prompt. Preservex19..29 andSP;nonleafsaveLR. Putc ASCIIw0 clobbersx1/x2,leavesw0/preservescallees,so saveargument/sourcepointerbeforeconsolecalls. Otherentryregsunspecified.
+install: copiescurrentlyloadedcode+data,EXACTtrackedsize,to compilerentry0x40150000;cachemaintenance,publishsize,prints installed LF. Noapp ->no program LF. Currentappunchanged. load/loadfile/asm/as/buildsuccessestracksize;errorspreserveit. Compiler must be position-independent(ADR/relativebranches);copydoesnotrelocateabsoluteinternalpointers.
+build NAME: filesystemlookup,theninstalledcompilercall:
+ x0=consoleputc0x402008a8;
+ x1=EXACTsourcebytepointer(nonNULterminated,readonlycontract),w2=sourcebytecount0..4096;
+ x3=temporaryoutput0x40141000,w4=capacity2048bytes;
+ alignedSP/same4KiBstack,normalx19..29/SPcallee-save,RET withw0generatedBYTElength,0=rejection.
+KernelrestoresUARTx0/linebufferx8. Returns4..2048multiple4 ->transactionalCOMMIT/tracksize/ built LF. Anyotherreturn ->build error LF,PREVIOUSAPP/code/flag/sizeUNCHANGED. Partialstagingwritesokay. Compilerremainsinstalledacrossbuilds/appassemblies/loads. Itsstaticdatapersistsbetweenbuilds;resetownper-buildstate. Errorpriority:nodisk->no disk LF;missingfile->not found LF;thenabsentcompiler->no compiler LF. InstalledslotisRAM-only,bootcleared;sourcefilepersists.
+Nextstage needs NOkernelchanges: writecompilerassemblyfile,as NAME;install;build SOURCE;run N. Do not run compilerwithnormalrun ABIunlessitexplicitlyhandlesnumericargumentinsteadsourcepointer. Trustedcode:noisolation/boundswriteenforcement/faultrecovery/timeouts;kernelvalidatesonlyreportedlength.
+
+MEMORY:
+Appx19=0x40140000..407ff,staging0x40141000..417ff. Loadedflagu32at0x40142000,NEWloadedsizeu32at0x40142004,bootzero. Compiler0x40150000..507ff,NEWinstalledsizeu32at0x40150800(0=none),bootzero. Separatefromapp/staging/workspace. Mode0x40145000,labels0x40146000..467ff,fixups0x40147000..48fff. Compilerpreservingcalleesprotectsx19appbase,x22diskbase,x23device,w24queueidx.
+
+NEW CODE (offsetsfrom0x40200000):
+1d78 install/run-space/build-spaceintercept;fallback14fc. Build flagw17=4/readw18=0/start6 ->B20lookup. Plainrun838->1e10(w1=0),parsedrun1e20uint32parser,1e90 commonrun(setconsole,BLRx19,tail848exit).
+1ea8 bootclearsappflag/size/compilerflag,returns704. 1ebc rawloadstoresflag+w13size->820;1ec8 sharedCOMMITstoresflag+w13size->144cRET. COMMIT1400thus tracksloadfile/asm/as/build,raw81cseparately.
+1ee0 installcopiesappsize,cleansDcacheevery64bytes,DSB SY/IC IALLU/DSB SY/ISB,publishesinstalledsize.
+1f44 router flag4->1f54build;othersoriginal1538route. Build checkscompiler,GETFILE12d8,setargs,BLRx20(slot),w13=returnlen,restorevolatileOSstate,validatebounds/alignment,BL1400,printbuilt. 1fb8nocompiler/1fc4builderror/1fd0invalidargument. Help68bytes2015,end2059.
+Patchesvsstage012:122cB1d78;838B1e10;700B1ea8;81cB1ebc;1448B1ec8;1534B1f44;730ADR2015/734len68. DraftLDRHprefixoffset4encodedas8;corrected1d98/1dec to79400901 beforeALLsuccessfultests. Final8281byteimageunchangedafterfix.
+
+PERSISTENT COMPILER STUB progBad (assembled in guest with as):
+cmp w2,1;b.ne reject;cmp w4,8;b.lt reject;ldrb w5,[x1];sub w5,w5,48;cmp w5,0;b.lt reject;cmp w5,10;b.ge reject;adr x6,words;ldr w7,[x6];lsl w5,w5,10;orr w7,w7,w5;str w7,[x3];ldr w7,[x6,4];str w7,[x3,4];mov w0,8;ret;reject:;mov w0,0;ret;words:;.word 285212704;.word 3596551104
+23words/92bytes,acceptsoneASCIIdigit,emits ADDw0,w1,#digit(base11000020)+RET(d65f03c0),returns8. alpha currentlysinglebyte9;generatedrunN=(N+9)mod2^32. Reproduceafterfreshboot:as progBad;install;build alpha;run 3;run 20 ->12,29. No hostassembler used.
+
+FINAL TESTS:
+Disk20261103T233014.482642Z:installwithoutapp=noprogram,buildalpha=nocompiler,buildmissing=notfound. Savedstub/as/install;alpha7/build->built,SAMEgeneratedimage run3=10,run20=27,plainrun7. buildbeta(reject0)->builderror/run3still10. alpha9/rebuild->run3=12,run20=29. asprog8/run96thenbuild/run12provedcompilerseparate. loadfileempty(full2048byteswithreturn42attail)/install/build->builderror(return42),run42;provesloadfilefullsizecopy. OldasmprogFwd/install/build->error(return10)/run10. Rawreturn3/install,rawreturnargloaded,build->error/run11=11;return2052alsoerror/preservesapp. Rawconsoleprogramrun123->Zexit0000abcd;buildstillworks. uint32maxpassed;overflow,-1,junkrejected.
+Freshdisk20261103T233323.745783Z:installnoprogram/buildnocompiler(bootreset);asprogBad/install/buildalpha,SAMEcompiledimage run3=12/run20=29;buildbetarejected/run3still12. STOPPED.
+HTTP20261103T233347.284509Z:BOOT/MAC02:3e:b7:b0:1a:27/Hello, world! 456694ed412b/prompt;buildnodisk/installnoprogram;rawreturnarg run123=7b/plainrun0;installworkswithoutdisk/buildnodisk;helpupdated,echook. STOPPED.
+
+PRESERVED ASSEMBLER/OS:
+Help:help echo load run save append cat ls asm loadfile as install build LF. Inline load4..32rawbytes;loadfile4..2048rawbytes,contiguoushex/multiple4,transactional. as512four-bytewords(instructions/data),128labels,512fixups,source4096. Semicolons,standaloneNAME:,optionalspaces,commas,lowercaseforms. Labels1..12alnum/underscorecase-sensitive,4bytealigned;padXliteraldatafor8bytealignment. w/x0..30;movw/ximm16/matchingregmoves;add/subWimm12/reg,Ximm12(SPallowed);cmpWimm/reg;B/BL/B.eq/ne/lt/ge;ret;ldr/strW/X[XB/SP,byteoffset],ldrb/strbW;adrXlabel;blrX;mul/and/orrW3regs;lslW0..31;.worduint32. Wmemaligned4,max16380;Xaligned8,max32760;byte4095;[base]=0. Oldasmimplicitw0,max8words/labels. Errorsassembly error/preservepreviousapp.
+GETFILE12d8:x11directoryrecord->x5dataRAM/w4u16len(clobbersx1/x2/x5/w4). COMMIT1400:w13validatedbytecount,staging->code,cachemaintenance/flag/size,RET(clobbersw1/w4/x5/x6/flags),no print. Console8a8;print6a8x5ptr/w4len/x0UART(clobbersx5/w4/w1/w2/flags/LR). Shellline0x40105000..507f128bytes,LF/noecho,overflowdrainsLFtheninvalid program.
+Disk8files4096printableASCIIeach,names1..12alnum,no delete,allslotsfull. Savecreates/replaces,appendexactchunkexistingfile,savedLF;cattextLF/lsnamesLF. Directory8x128LBA0..1:byte0namelen0unused,u16len+2,name+4..15,marker80=A5,legacyinlinebootmigrated1450thenstale. Filei diskbyte0x1000+i*4096,RAM0x40121400+i*4096;whole0x9000prefixread/writteneachsave/append. Driverx22=0x40120000(desc0/avail100/used200/request300/status310/cache400..93ff),ID2init940,IOA50w1read0/write1LBA0returnsstatus. Nojournal/FLUSH/crashatomicity/corruptionvalidation/timeout/65535wrap. Oversizecheckedbeforemutation.
+DiskFULL:alpha9,beta second text,Abc123xyz789oldASCIItest,empty4096hexNOP/return42,progFwdoldasm,prog8large130instr/32fixupsreturn96,progMathADRdata/stackbyteexit56,progBadcompilerstubabove. ImageSAVED,VMSTOPPED. BOOT/ARP/HTTPprivateFINframing/ACKs unchanged,existingsecurity/reliabilitylimitations.
