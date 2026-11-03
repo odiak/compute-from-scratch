@@ -58,3 +58,12 @@ python3 verify_tcp.py "$campaign/work/runs/$run_id"
 ```
 
 004の専用応答役は、ポート2323で `ping\n` を受け、起動ごとに異なる応答を返す。観測側はTCPのチェックサム、ハンドシェイク、要求、応答のACK、シリアル表示を照合する。
+
+## HTTPの観測
+
+```sh
+node pi/run.mjs 005 "$campaign"
+python3 verify_http.py "$campaign/work/runs/$run_id"
+```
+
+005ではゲストの `GET /hello HTTP/1.0` を固定のローカルHTTPオリジンへ渡す。観測側はPCAP、ホストのアクセスログ、シリアル出力を照合する。オリジンは起動ごとに異なる識別子を本文に含める。

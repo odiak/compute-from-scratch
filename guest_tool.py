@@ -7,6 +7,7 @@ from pathlib import Path
 from time import monotonic, sleep
 
 from arp_link import ArpLink
+from hello_server import HelloServer
 from runner import prepare_run
 from tcp_peer import TcpPeer
 
@@ -16,10 +17,11 @@ class Guest:
         self.workspace = workspace
         self.process = None
         self.link = None
+        self.http = None
         self.run = None
         self.offset = 0
 
-    def boot(self, network=False, tcp=False):
+    def boot(self, network=False, tcp=False, http=False):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
@@ -34,7 +36,10 @@ class Guest:
                 "-object", "filter-dump,id=trace,netdev=net0,file=network.pcap",
             ])
             record["peer_mac"] = link.mac.hex(":")
-            if tcp:
+            if http:
+                self.http = HelloServer(self.run)
+                link.tcp = TcpPeer(link.mac, http=self.http)
+            elif tcp:
                 link.tcp = TcpPeer(link.mac)
                 record["tcp_challenge"] = link.tcp.challenge.decode("ascii")
         try:
@@ -46,6 +51,9 @@ class Guest:
         except OSError:
             if link:
                 link.close()
+            if self.http:
+                self.http.close()
+                self.http = None
             raise
         if link:
             link.guest.close()
@@ -63,6 +71,9 @@ class Guest:
         if self.link:
             self.link.close()
             self.link = None
+        if self.http:
+            self.http.close()
+            self.http = None
         return {}
 
     def serial_read(self, wait_ms):
@@ -102,6 +113,7 @@ def main():
         "vm_boot": lambda _: guest.boot(),
         "vm_boot_network": lambda _: guest.boot(network=True),
         "vm_boot_tcp": lambda _: guest.boot(network=True, tcp=True),
+        "vm_boot_http": lambda _: guest.boot(network=True, http=True),
         "vm_stop": lambda _: guest.stop(),
         "serial_read": lambda args: guest.serial_read(args.get("wait_ms", 0)),
         "serial_send": lambda args: guest.serial_send(args["hex"]),

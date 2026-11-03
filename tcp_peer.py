@@ -5,6 +5,7 @@ import struct
 from arp_link import GUEST_IP, PEER_IP
 
 PORT = 2323
+HTTP_PORT = 8080
 MASK = 0xffffffff
 
 
@@ -22,8 +23,10 @@ def pseudo(src, dst, length):
 
 
 class TcpPeer:
-    def __init__(self, mac):
+    def __init__(self, mac, http=None):
         self.mac = mac
+        self.http = http
+        self.service_port = HTTP_PORT if http else PORT
         self.isn = secrets.randbits(32)
         self.challenge = b"ECHO ping " + secrets.token_hex(6).encode() + b"\n"
         self.port = None
@@ -31,7 +34,7 @@ class TcpPeer:
         self.responded = False
 
     def packet(self, mac, seq, ack, flags, data=b""):
-        tcp = struct.pack("!HHIIBBHHH", PORT, self.port, seq, ack, 0x50, flags, 4096, 0, 0) + data
+        tcp = struct.pack("!HHIIBBHHH", self.service_port, self.port, seq, ack, 0x50, flags, 4096, 0, 0) + data
         crc = checksum(pseudo(PEER_IP, GUEST_IP, len(tcp)) + tcp)
         tcp = tcp[:16] + struct.pack("!H", crc) + tcp[18:]
         ip = struct.pack("!BBHHHBBH4s4s", 0x45, 0, 20 + len(tcp), 0, 0, 64, 6, 0,
@@ -53,7 +56,7 @@ class TcpPeer:
             return None
         src, dst, seq, ack, offset, flags = struct.unpack_from("!HHIIBB", tcp)
         header = (offset >> 4) * 4
-        if dst != PORT or not 20 <= header <= len(tcp):
+        if dst != self.service_port or not 20 <= header <= len(tcp):
             return None
         if flags == 2 and self.port is None:
             self.port = src
@@ -63,8 +66,18 @@ class TcpPeer:
         server_next = (self.isn + 1) & MASK
         if src != self.port or not flags & 0x10 or ack != server_next:
             return None
-        if not self.responded and seq == self.guest_next and tcp[header:] == b"ping\n":
-            self.guest_next = (seq + 5) & MASK
-            self.responded = True
-            return self.packet(frame[6:12], server_next, self.guest_next, 0x18, self.challenge)
-        return None
+        if self.responded or seq != self.guest_next:
+            return None
+        data = tcp[header:]
+        if self.http:
+            if not (data.startswith(b"GET /hello HTTP/1.0\r\n")
+                    and data.endswith(b"\r\n\r\n") and len(data) <= 1024):
+                return None
+            payload, response_flags = self.http.request(data), 0x19
+        else:
+            if data != b"ping\n":
+                return None
+            payload, response_flags = self.challenge, 0x18
+        self.guest_next = (seq + len(data)) & MASK
+        self.responded = True
+        return self.packet(frame[6:12], server_next, self.guest_next, response_flags, payload)
