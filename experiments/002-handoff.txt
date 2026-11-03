@@ -1,0 +1,13 @@
+Stage-2 saved image: 72 raw bytes, AArch64 little endian, entry 0x40200000 (QEMU virt Cortex-A53). RAM 0x40000000..0x43ffffff. No OS, stack, or initialized SP. PL011 UART base x0=0x09000000; DR +0, FR +0x18.
+Original first 44 bytes retained exactly: movz x0,#0x0900,lsl #16 followed by immediate w1 loads and str w1,[x0] producing BOOT\n. Banner uses direct writes (no FIFO polling), unchanged from stage 1.
+Replaced old WFE spin at +0x2c with polling echo:
++0x2c: ldr w1,[x0,#0x18] (b9401801)
++0x30: tbnz w1,#4,0x4020002c (3727ffe1), wait while RXFE
++0x34: ldr w1,[x0] (b9400001), read incoming byte
++0x38: ldr w2,[x0,#0x18] (b9401802)
++0x3c: tbnz w2,#5,0x40200038 (372fffe2), wait while TXFF
++0x40: str w1,[x0] (b9000001), echo DR low byte
++0x44: b 0x4020002c (17fffffa)
+Image end exclusive 0x40200048. Registers x0,w1,w2 used; echo is polling, not interrupts.
+Saved hex: 0020a1d2 41088052 010000b9 e1098052 010000b9 e1098052 010000b9 810a8052 010000b9 41018052 010000b9 011840b9 e1ff2737 010040b9 021840b9 e2ff2f37 010000b9 faffff17
+Verification in one continuously running VM, run_id 20261103T212931.052937Z: first serial_read returned 424f4f540a (BOOT LF). Then sent 41 and read 41 (A). Then sent 7a and read 7a (z), without reboot. vm_stop completed after both checks. Updated image remains saved; VM stopped.
