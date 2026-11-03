@@ -1,0 +1,5 @@
+Extend your saved stage-005 AArch64 machine-code image into a small serial shell. Read the current image and handoff notes. Preserve BOOT and the existing HTTP fetch on a network boot. After boot (and after the fetch when a NIC is present), show the prompt "shell> " and repeatedly accept lines terminated by LF. Implement these commands:
+- help: output "help echo\n"
+- echo followed by a space and arbitrary text: output the text followed by LF
+- any unrecognized command: output "unknown command\n"
+After each command show the prompt again. Raw input echo is optional. Bound your line buffer and recover to the next prompt after an overlong line. Test multiple commands in one live VM and test the HTTP-boot path. Keep the updated image, leave handoff notes about entry points and line buffer layout, and stop the VM. Use only your campaign artifacts and provided tools; no external references.

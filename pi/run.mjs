@@ -17,6 +17,7 @@ const stages = {
   "003": { tools: [...common, "serial_send", "vm_boot_network"], requiresCampaign: true },
   "004": { tools: [...common, "serial_send", "vm_boot_tcp"], requiresCampaign: true },
   "005": { tools: [...common, "serial_send", "vm_boot_http"], requiresCampaign: true },
+  "006": { tools: [...common, "serial_send", "vm_boot_http"], requiresCampaign: true },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
