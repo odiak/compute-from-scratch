@@ -28,8 +28,6 @@ Piの圧縮開始・終了は、理由と結果を含むSDKイベントとして
 
 会話を切り替えるときは `node pi/run.mjs 002 "$campaign" --fresh` で新規セッションを作り、保存済みのイメージとメモを引き継ぐ。シリアル読み取りには最大5秒の待ち時間を指定でき、VM自体は動き続ける。
 
-次のネットワーク段階では、観測側のARP応答役と参照ゲストを先に検証する。起動ごとに異なるMACを返し、PCAPとゲストの出力を照合する。
-
 ## 観測側の起動テスト
 
 Python 3と `qemu-system-aarch64` が必要。macOSでは `brew install qemu` で入手できる。
@@ -40,3 +38,14 @@ cat "$run/serial.log"
 ```
 
 `O` と改行が出れば成功。サンプルは出力後にループするので、既定の2秒でランナーがQEMUを停止する。各実行のバイナリ、シリアル、QEMUの標準エラー、実行条件は `.local/runs/` に保存する。
+
+## ARPの観測
+
+```sh
+node pi/run.mjs 003 "$campaign"
+python3 verify_arp.py "$campaign/work/guest.hex"
+```
+
+003では専用のEthernetリンクを追加する。ホスト側の応答役は起動ごとに異なるMACでARPに応答する。リンクはQEMUと応答役をソケットで直結し、外部への転送経路を持たない。観測側は同一イメージを2回起動し、両方のPCAPにARP要求・応答があり、応答元MACがシリアル出力と一致することを確認する。起動メッセージとシリアルエコーも検証する。
+
+観測側の参照ゲストは `python3 verify_arp.py fixtures/arp-reference.hex --reference` で確認できる。参照バイナリを再生成する場合は `python3 fixtures/build-arp-reference.py > fixtures/arp-reference.hex` を実行する。

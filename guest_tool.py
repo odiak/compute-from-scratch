@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from time import monotonic, sleep
 
+from arp_link import ArpLink
 from runner import prepare_run
 
 
@@ -13,18 +14,39 @@ class Guest:
     def __init__(self, workspace):
         self.workspace = workspace
         self.process = None
+        self.link = None
         self.run = None
         self.offset = 0
 
-    def boot(self):
+    def boot(self, network=False):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
         self.run, command, record = prepare_run(image, self.workspace / "runs")
-        (self.run / "run.json").write_text(json.dumps(record, indent=2) + "\n")
-        with (self.run / "serial.log").open("wb") as serial, (self.run / "qemu.log").open("wb") as log:
-            self.process = subprocess.Popen(command, cwd=self.run, stdin=subprocess.PIPE,
-                                            stdout=serial, stderr=log)
+        link = ArpLink() if network else None
+        if link:
+            fd = link.guest.fileno()
+            command.extend([
+                "-global", "virtio-mmio.force-legacy=false",
+                "-netdev", f"socket,id=net0,fd={fd}",
+                "-device", "virtio-net-device,netdev=net0,mac=52:54:00:12:34:56",
+                "-object", "filter-dump,id=trace,netdev=net0,file=network.pcap",
+            ])
+            record["peer_mac"] = link.mac.hex(":")
+        try:
+            (self.run / "run.json").write_text(json.dumps(record, indent=2) + "\n")
+            with (self.run / "serial.log").open("wb") as serial, (self.run / "qemu.log").open("wb") as log:
+                self.process = subprocess.Popen(command, cwd=self.run, stdin=subprocess.PIPE,
+                                                stdout=serial, stderr=log,
+                                                pass_fds=(fd,) if link else ())
+        except OSError:
+            if link:
+                link.close()
+            raise
+        if link:
+            link.guest.close()
+            link.thread.start()
+        self.link = link
         self.offset = 0
         return {"run_id": self.run.name}
 
@@ -34,6 +56,9 @@ class Guest:
             self.process.wait()
             self.process.stdin.close()
             self.process = None
+        if self.link:
+            self.link.close()
+            self.link = None
         return {}
 
     def serial_read(self, wait_ms):
@@ -71,6 +96,7 @@ def main():
     guest = Guest(Path(sys.argv[1]).resolve())
     operations = {
         "vm_boot": lambda _: guest.boot(),
+        "vm_boot_network": lambda _: guest.boot(network=True),
         "vm_stop": lambda _: guest.stop(),
         "serial_read": lambda args: guest.serial_read(args.get("wait_ms", 0)),
         "serial_send": lambda args: guest.serial_send(args["hex"]),
