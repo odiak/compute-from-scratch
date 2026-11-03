@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from time import monotonic, sleep
 
 from runner import prepare_run
 
@@ -15,11 +16,11 @@ class Guest:
         self.run = None
         self.offset = 0
 
-    def boot(self, network):
+    def boot(self):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
-        self.run, command, record = prepare_run(image, self.workspace / "runs", network)
+        self.run, command, record = prepare_run(image, self.workspace / "runs")
         (self.run / "run.json").write_text(json.dumps(record, indent=2) + "\n")
         with (self.run / "serial.log").open("wb") as serial, (self.run / "qemu.log").open("wb") as log:
             self.process = subprocess.Popen(command, cwd=self.run, stdin=subprocess.PIPE,
@@ -35,12 +36,21 @@ class Guest:
             self.process = None
         return {}
 
-    def serial_read(self):
+    def serial_read(self, wait_ms):
         if self.run is None:
             raise ValueError("Boot a VM first")
+        if type(wait_ms) is not int or not 0 <= wait_ms <= 5000:
+            raise ValueError("wait_ms must be an integer in 0..5000")
+        deadline = monotonic() + wait_ms / 1000
         with (self.run / "serial.log").open("rb") as stream:
             stream.seek(self.offset)
             data = stream.read(4096)
+            while not data and self.process is not None and self.process.poll() is None:
+                remaining = deadline - monotonic()
+                if remaining <= 0:
+                    break
+                sleep(min(remaining, 0.02))
+                data = stream.read(4096)
             self.offset = stream.tell()
         return {"hex": data.hex(), "text": data.decode(errors="replace")}
 
@@ -60,10 +70,9 @@ class Guest:
 def main():
     guest = Guest(Path(sys.argv[1]).resolve())
     operations = {
-        "vm_boot": lambda _: guest.boot(False),
-        "vm_boot_network": lambda _: guest.boot(True),
+        "vm_boot": lambda _: guest.boot(),
         "vm_stop": lambda _: guest.stop(),
-        "serial_read": lambda _: guest.serial_read(),
+        "serial_read": lambda args: guest.serial_read(args.get("wait_ms", 0)),
         "serial_send": lambda args: guest.serial_send(args["hex"]),
     }
     try:

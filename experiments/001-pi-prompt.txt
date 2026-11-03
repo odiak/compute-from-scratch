@@ -1,3 +1,0 @@
-Build a raw machine-code image from scratch for this bare-metal guest. Use run_guest to test it, observe the serial output, and fix any problems. Your goal is to output exactly PI BOOT followed by LF. Before your final test, run a small serial probe of your own design. Do not use external references, source files, or existing binaries.
-
-Machine: QEMU virt, Cortex-A53, AArch64 little endian, one core, 64 MiB RAM from physical 0x40000000. The runner copies your raw hex bytes to physical 0x40200000 and begins executing there. No OS or initialized stack. PL011 UART MMIO base is 0x09000000. No network or display. Each tool call boots a fresh guest.

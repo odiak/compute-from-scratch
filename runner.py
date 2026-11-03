@@ -12,7 +12,7 @@ ENTRY = 0x40200000
 RAM_MIB = 64
 
 
-def prepare_run(image, runs, arp_network=False):
+def prepare_run(image, runs):
     if not 4 <= len(image) <= RAM_MIB * 1024**2 - 0x200000:
         raise ValueError("image must fit in guest RAM and contain at least one instruction")
 
@@ -31,13 +31,6 @@ def prepare_run(image, runs, arp_network=False):
         "-monitor", "none", "-serial", "stdio", "-nic", "none", "-no-reboot",
         "-device", f"loader,file=guest.bin,addr={ENTRY:#x},force-raw=on,cpu-num=0",
     ]
-    if arp_network:
-        command.extend([
-            "-global", "virtio-mmio.force-legacy=false",
-            "-netdev", "user,id=net0,restrict=on",
-            "-device", "virtio-net-device,netdev=net0,mac=52:54:00:12:34:56",
-            "-object", "filter-dump,id=trace,netdev=net0,file=network.pcap",
-        ])
     record = {
         "id": run_id, "qemu": version, "command": command,
         "image_sha256": hashlib.sha256(image).hexdigest(),
@@ -52,14 +45,13 @@ def main():
     parser.add_argument("--seconds", type=int, default=2, choices=range(1, 31),
                         metavar="1..30")
     parser.add_argument("--serial-byte", type=int, choices=range(256), metavar="0..255")
-    parser.add_argument("--arp-network", action="store_true")
     args = parser.parse_args()
     try:
         image = bytes.fromhex(args.image.read_text())
     except (OSError, ValueError) as error:
         parser.error(str(error))
     try:
-        run, command, record = prepare_run(image, args.runs, args.arp_network)
+        run, command, record = prepare_run(image, args.runs)
     except ValueError as error:
         parser.error(str(error))
     record["seconds"] = args.seconds

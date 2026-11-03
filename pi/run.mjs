@@ -9,25 +9,31 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { getModel } from "@earendil-works/pi-ai/compat";
 
-const stage = process.argv[2] ?? "001";
+const [stage = "001", previous, mode, feedback] = process.argv.slice(2);
+const common = ["guest_write", "guest_read", "notes_write", "notes_read", "vm_boot", "serial_read", "vm_stop"];
 const stages = {
-  "001": ["guest_write", "guest_read", "vm_boot", "serial_read", "vm_stop"],
-  "002": ["guest_write", "guest_read", "vm_boot", "serial_read", "serial_send", "vm_stop"],
+  "001": { tools: common },
+  "002": { tools: [...common, "serial_send"], requiresCampaign: true },
 };
-const names = stages[stage];
-if (!Array.isArray(names)) throw new Error("Choose stage 001 or 002");
+const definition = stages[stage];
+if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
+const names = definition.tools;
+if ((definition.requiresCampaign || mode) && !previous) throw new Error("Pass a campaign directory");
+if (mode && mode !== "--fresh" && (mode !== "--continue" || !feedback)) {
+  throw new Error("Use --fresh or --continue OBSERVATION");
+}
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const trials = join(root, ".local", "experiments");
 mkdirSync(trials, { recursive: true });
-const previous = process.argv[3];
-if (stage === "002" && !previous) throw new Error("Pass the stage 001 campaign directory");
 const trial = previous ? resolve(previous) : mkdtempSync(join(trials, "pi-"));
 const work = join(trial, "work");
 mkdirSync(work, { recursive: true });
 console.log(trial);
 const sessionPointer = join(trial, "session-path.txt");
-const prompt = readFileSync(join(root, "experiments", `${stage}-campaign-prompt.txt`), "utf8");
+const prompt = mode === "--continue"
+  ? `The stage is still incomplete. Continue working. Observer report: ${feedback}`
+  : readFileSync(join(root, "experiments", `${stage}-campaign-prompt.txt`), "utf8");
 
 const model = getModel("openai-codex", "gpt-6.1-sol");
 const authPath = join(process.env.CODEX_HOME ?? join(homedir(), ".codex"), "auth.json");
@@ -68,18 +74,26 @@ const descriptions = {
   guest_read: "Read the current campaign guest image as hex.",
   vm_boot: "Boot the saved guest image. The VM runs until you stop it.",
   vm_stop: "Stop the running VM.",
-  serial_read: "Read new guest serial output without waiting. Read again if empty.",
+  serial_read: "Read new guest serial output. Optionally wait up to wait_ms (0 to 5000) for data.",
+  notes_write: "Replace your campaign handoff notes with up to 8192 characters.",
+  notes_read: "Read your campaign handoff notes.",
   serial_send: "Send up to 256 bytes encoded as hex to the running guest.",
 };
+const notes = join(work, "notes.txt");
 const image = join(work, "guest.hex");
 const tools = names.map(name => {
-  const takesHex = name === "guest_write" || name === "serial_send";
+  const properties = {
+    guest_write: { hex: { type: "string", maxLength: 65536 } },
+    serial_send: { hex: { type: "string", maxLength: 512 } },
+    notes_write: { text: { type: "string", maxLength: 8192 } },
+    serial_read: { wait_ms: { type: "integer", minimum: 0, maximum: 5000 } },
+  }[name] ?? {};
   return {
     name, label: name, description: descriptions[name],
     parameters: {
       type: "object",
-      properties: takesHex ? { hex: { type: "string", maxLength: 65536 } } : {},
-      required: takesHex ? ["hex"] : [],
+      properties,
+      required: name === "serial_read" ? [] : Object.keys(properties),
       additionalProperties: false,
     },
     async execute(_id, args) {
@@ -91,6 +105,11 @@ const tools = names.map(name => {
         output = { bytes: hex.length / 2 };
       } else if (name === "guest_read") {
         output = { hex: readFileSync(image, "utf8").trim() };
+      } else if (name === "notes_write") {
+        writeFileSync(notes, args.text);
+        output = { saved: true };
+      } else if (name === "notes_read") {
+        output = { text: readFileSync(notes, "utf8") };
       } else {
         output = await callBroker(name, args);
       }
@@ -117,15 +136,16 @@ const { session } = await createAgentSession({
   model, modelRuntime, resourceLoader,
   tools: tools.map(tool => tool.name),
   customTools: tools,
-  sessionManager: previous
+  sessionManager: previous && mode !== "--fresh"
     ? SessionManager.open(readFileSync(sessionPointer, "utf8").trim(), trial, work)
     : SessionManager.create(work, trial),
   settingsManager: SettingsManager.inMemory({
-    compaction: { enabled: false },
+    compaction: { enabled: true },
     retry: { enabled: false },
   }),
 });
 try {
+  writeFileSync(sessionPointer, session.sessionFile + "\n");
   const active = session.getActiveToolNames();
   if (JSON.stringify(active) !== JSON.stringify(names)) {
     throw new Error("Unexpected active tools: " + active.join(", "));
@@ -134,14 +154,13 @@ try {
     provider: model.provider, model: model.id, activeTools: active,
     systemPrompt: session.systemPrompt,
   }, null, 2) + "\n");
-  writeFileSync(join(trial, `${stage}-prompt.txt`), prompt);
+  appendFileSync(join(trial, `${stage}-prompts.jsonl`), JSON.stringify({ mode, prompt }) + "\n");
   session.subscribe(event => {
     if (["message_end", "tool_execution_start", "tool_execution_end"].includes(event.type)) {
       appendFileSync(join(trial, `${stage}-events.jsonl`), JSON.stringify(event) + "\n");
     }
   });
   await session.prompt(prompt);
-  writeFileSync(sessionPointer, session.sessionFile + "\n");
   const last = session.messages.at(-1);
   if (last?.role !== "assistant" || ["error", "aborted"].includes(last.stopReason)) {
     throw new Error(last?.errorMessage ?? "No successful final assistant message");

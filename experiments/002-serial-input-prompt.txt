@@ -1,3 +1,0 @@
-Build a bare-metal machine-code image from scratch. On boot it must output a single question mark, wait for a byte from the PL011 UART, then output that byte and a line feed. Test the same image with at least two distinct input bytes. Use the tool outputs to diagnose and revise if needed. Use only the provided tools and no reference materials.
-
-Machine: QEMU virt, Cortex-A53, AArch64 little endian, one core, 64 MiB RAM from physical 0x40000000. Raw hex bytes are loaded and executed at physical 0x40200000. No OS or initialized stack. PL011 UART MMIO base is 0x09000000. No network or display. Each call boots a fresh guest for one second. The serial input tool provides one byte from the host.

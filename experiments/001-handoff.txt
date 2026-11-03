@@ -1,0 +1,12 @@
+Working stage-1 image preserved in campaign: 52 raw bytes, AArch64 little endian, entry 0x40200000 (QEMU virt Cortex-A53). No stack or OS required. RAM 0x40000000..0x43ffffff; UART PL011 MMIO base 0x09000000, data register offset 0.
+Code layout (offsets from entry):
++0x00: movz x0,#0x0900,lsl #16 (x0=0x09000000)
++0x04: movz w1,#0x42 ('B'); +0x08: str w1,[x0]
++0x0c: movz w1,#0x4f ('O'); +0x10: str w1,[x0]
++0x14: movz w1,#0x4f ('O'); +0x18: str w1,[x0]
++0x1c: movz w1,#0x54 ('T'); +0x20: str w1,[x0]
++0x24: movz w1,#0x0a (LF); +0x28: str w1,[x0]
++0x2c (0x4020002c): wfe
++0x30: b 0x4020002c
+Image end exclusive 0x40200034. No data section, no initialized SP; only x0/x1 used. This short banner writes UART directly, without UART initialization or FIFO polling; for longer output add polling of PL011 UARTFR at +0x18, TXFF bit 5, before writes.
+Verification: guest_write saved 52 bytes; vm_boot run_id 20261103T212840.087199Z; serial_read(wait_ms=1000) returned hex 424f4f540a, text BOOT\n, exactly the requested banner and LF. vm_stop then completed. Working image unchanged and VM stopped.
