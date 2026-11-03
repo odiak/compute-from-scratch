@@ -25,6 +25,10 @@ const stages = {
   "011": { tools: [...common, "serial_send", "serial_send_text", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
   "012": { tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
   "013": { tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http", "vm_boot_disk"], requiresCampaign: true },
+  "014": {
+    tools: ["notes_write", "notes_read", "vm_boot_disk", "serial_read", "serial_send", "serial_send_text", "vm_stop"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
