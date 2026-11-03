@@ -9,7 +9,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { getModel } from "@earendil-works/pi-ai/compat";
 
-const [stage = "001", previous, mode, feedback] = process.argv.slice(2);
+const [stage = "001", previous, mode, unmetCondition, observation] = process.argv.slice(2);
 const common = ["guest_write", "guest_read", "notes_write", "notes_read", "vm_boot", "serial_read", "vm_stop"];
 const stages = {
   "001": { tools: common },
@@ -19,8 +19,8 @@ const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
 const names = definition.tools;
 if ((definition.requiresCampaign || mode) && !previous) throw new Error("Pass a campaign directory");
-if (mode && mode !== "--fresh" && (mode !== "--continue" || !feedback)) {
-  throw new Error("Use --fresh or --continue OBSERVATION");
+if (mode && mode !== "--fresh" && (mode !== "--continue" || !unmetCondition?.trim() || !observation?.trim())) {
+  throw new Error("Use --fresh or --continue UNMET_CONDITION OBSERVATION");
 }
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -32,7 +32,7 @@ mkdirSync(work, { recursive: true });
 console.log(trial);
 const sessionPointer = join(trial, "session-path.txt");
 const prompt = mode === "--continue"
-  ? `The stage is still incomplete. Continue working. Observer report: ${feedback}`
+  ? `The stage is still incomplete. Continue working. Unmet acceptance condition: ${unmetCondition}\nObserved result: ${observation}`
   : readFileSync(join(root, "experiments", `${stage}-campaign-prompt.txt`), "utf8");
 
 const model = getModel("openai-codex", "gpt-6.1-sol");
@@ -154,10 +154,12 @@ try {
     provider: model.provider, model: model.id, activeTools: active,
     systemPrompt: session.systemPrompt,
   }, null, 2) + "\n");
-  appendFileSync(join(trial, `${stage}-prompts.jsonl`), JSON.stringify({ mode, prompt }) + "\n");
+  appendFileSync(join(trial, `${stage}-prompts.jsonl`), JSON.stringify({
+    timestamp: new Date().toISOString(), mode, unmetCondition, observation, prompt,
+  }) + "\n");
   session.subscribe(event => {
-    if (["message_end", "tool_execution_start", "tool_execution_end"].includes(event.type)) {
-      appendFileSync(join(trial, `${stage}-events.jsonl`), JSON.stringify(event) + "\n");
+    if (["message_end", "tool_execution_start", "tool_execution_end", "compaction_start", "compaction_end"].includes(event.type)) {
+      appendFileSync(join(trial, `${stage}-events.jsonl`), JSON.stringify({ ...event, timestamp: new Date().toISOString() }) + "\n");
     }
   });
   await session.prompt(prompt);
