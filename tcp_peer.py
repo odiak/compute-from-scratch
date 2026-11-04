@@ -1,4 +1,5 @@
-"""Single-connection TCP challenge service for the private experiment link."""
+"""TCP challenge service for the private experiment link."""
+import re
 import secrets
 import struct
 
@@ -58,6 +59,10 @@ class TcpPeer:
         header = (offset >> 4) * 4
         if dst != self.service_port or not 20 <= header <= len(tcp):
             return None
+        if flags == 2 and self.responded and self.http and self.http.paths:
+            self.port = None
+            self.responded = False
+            self.isn = secrets.randbits(32)
         if flags == 2 and self.port is None:
             self.port = src
             self.guest_next = (seq + 1) & MASK
@@ -71,7 +76,9 @@ class TcpPeer:
         data = tcp[header:]
         if self.http:
             request_line = f"GET {self.http.path} HTTP/1.0\r\n".encode()
-            if not (data.startswith(request_line)
+            valid_line = (re.match(rb"GET /[a-z0-9.\-]{0,23} HTTP/1\.0\r\n", data) is not None
+                          if self.http.paths else data.startswith(request_line))
+            if not (valid_line
                     and data.endswith(b"\r\n\r\n") and len(data) <= 1024):
                 return None
             payload, response_flags = self.http.request(data), 0x19

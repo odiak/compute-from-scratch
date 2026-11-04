@@ -1,6 +1,7 @@
 """The host-only HTTP origin used by the experiment."""
 
 import json
+import re
 import secrets
 import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -14,12 +15,22 @@ PAGES = [
     ("RED FLOWER", "SMALL SCREEN"),
 ]
 
+
+def html_page(heading, paragraph):
+    return f"<html><body><h1>{heading}</h1><p>{paragraph}</p></body></html>".encode()
+
+
 class HelloHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path != self.server.path:
+        pages = self.server.pages
+        if pages and re.fullmatch(r"/[a-z0-9.\-]{0,23}", self.path):
+            index = self.server.routes.setdefault(self.path, len(self.server.routes))
+            body = pages[index % len(pages)]
+        elif self.path == self.server.path:
+            body = self.server.body
+        else:
             self.send_error(404)
             return
-        body = self.server.body
         self.send_response(200)
         self.send_header("Content-Type", self.server.content_type)
         self.send_header("Content-Length", str(len(body)))
@@ -33,14 +44,18 @@ class HelloHandler(BaseHTTPRequestHandler):
 
 
 class HelloServer:
-    def __init__(self, run, browser=False):
+    def __init__(self, run, browser=False, paths=False):
         self.server = HTTPServer(("127.0.0.1", 0), HelloHandler)
         self.path = "/index.html" if browser else "/hello"
+        self.paths = paths
         self.server.path = self.path
+        self.server.routes = {}
+        pages = secrets.SystemRandom().sample(PAGES, len(PAGES)) if paths else []
+        self.server.pages = [html_page(*page) for page in pages]
         if browser:
             heading, paragraph = secrets.choice(PAGES)
             self.server.content_type = "text/html"
-            self.server.body = f"<html><body><h1>{heading}</h1><p>{paragraph}</p></body></html>".encode()
+            self.server.body = html_page(heading, paragraph)
         else:
             self.server.content_type = "text/plain"
             self.server.body = b"Hello, world! " + secrets.token_hex(6).encode() + b"\n"

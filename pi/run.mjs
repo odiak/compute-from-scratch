@@ -83,6 +83,12 @@ const stages = {
       "vm_boot_disk", "vm_boot_gui", "vm_boot_browser", "screen_capture", "key_send"],
     requiresCampaign: true,
   },
+  "027": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http",
+      "vm_boot_disk", "vm_boot_gui", "vm_boot_browser", "vm_boot_browser_paths",
+      "screen_capture", "key_send", "key_type"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -149,6 +155,8 @@ const descriptions = {
   vm_boot_disk: "Boot the saved image with the campaign’s persistent virtual disk.",
   vm_boot_gui: "Boot the saved image with a persistent disk, framebuffer, and guest keyboard.",
   vm_boot_browser: "Boot with a display, keyboard, disk, and private HTML origin.",
+  vm_boot_browser_paths: "Boot with a display, disk, keyboard, and private origin for multiple paths.",
+  key_type: "Press and release physical guest keys for lowercase letters, digits, slash, dot, and hyphen.",
   screen_capture: "Capture the current guest framebuffer.",
   key_send: "Press and release an arrow key, Enter (ret), or Escape (esc) in the guest.",
   vm_stop: "Stop the running VM.",
@@ -173,6 +181,7 @@ const tools = names.map(name => {
     },
     serial_send: { hex: { type: "string", maxLength: 512 } },
     serial_send_text: { text: { type: "string", maxLength: 4096 } },
+    key_type: { path: { type: "string", maxLength: 24 } },
     key_send: { key: { type: "string", enum: ["left", "right", "up", "down", "ret", "esc"] } },
     notes_write: { text: { type: "string", maxLength: 8192 } },
     serial_read: { wait_ms: { type: "integer", minimum: 0, maximum: 5000 } },

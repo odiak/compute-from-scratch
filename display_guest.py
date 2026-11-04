@@ -1,6 +1,7 @@
 """Fixed screen and keyboard operations on a display-enabled VM."""
 import json
 import socket
+from time import sleep
 
 
 class Display:
@@ -38,10 +39,22 @@ class Display:
     def key(self, key):
         if key not in ("left", "right", "up", "down", "ret", "esc"):
             raise ValueError("Unsupported guest key")
+        self.press(key)
+
+    def press(self, key):
         self.command("input-send-event", {"events": [
             {"type": "key", "data": {"down": down, "key": {"type": "qcode", "data": key}}}
             for down in (True, False)
         ]})
+
+    def type_path(self, path):
+        alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
+        punctuation = {"/": "slash", ".": "dot", "-": "minus"}
+        if not 1 <= len(path) <= 24 or any(c not in alphabet and c not in punctuation for c in path):
+            raise ValueError("Use 1 to 24 lowercase letters, digits, slashes, dots, or hyphens")
+        for char in path:
+            self.press(punctuation.get(char, char))
+            sleep(0.03)
 
     def close(self):
         self.stream.close()
