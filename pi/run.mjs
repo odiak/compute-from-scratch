@@ -122,6 +122,10 @@ const stages = {
     tools: ["notes_write", "notes_read", "vm_boot_disk", "serial_read", "serial_send", "serial_send_text", "vm_stop"],
     requiresCampaign: true,
   },
+  "035": {
+    tools: ["notes_write", "notes_read", "vm_boot_disk", "serial_read", "serial_send", "serial_send_text", "vm_stop"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");

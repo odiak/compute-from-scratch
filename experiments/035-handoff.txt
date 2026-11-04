@@ -1,0 +1,45 @@
+COMPLETE final stage C command runtime. VM will be stopped after these notes. All work via guest shell only. Fixed stage033 kernel untouched. Preserved new1,longasm,raw, all inherited sixteen files, original extra1 and extra2. Only extra3/4/5 written.
+
+Persistent deliverables:
+* extra3: complete extended compiler C source, final entry final (15 functions). No main, so old build entry ABI retained.
+* extra4: first TWO functions are reusable C puts/strcmp; then runtime_abi and main implement executable documentation. `cat extra4` reads full documentation; after installing extended compiler, `build extra4` / `exec abi` prints it (tested, exit0). Do not install extra4 as compiler!
+* extra5: complete standalone C command test, includes exact puts/strcmp source copies then ordinary int main(int argc,char **argv). No external linker/preprocessor.
+No other files repurposed. extra5 transiently held diagnostics/legacy run tests and is restored to final command test.
+
+EXACT reproduction from fresh boot (each command separate line):
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra3
+install
+build extra3
+install
+build extra5
+exec cmd
+exec cmd hello
+exec cmd goodbye extra
+exec another hello tail
+This ENTIRE sequence was repeated successfully on final fresh boot. All three extra3 builds returned built and installed; extended compiler thus rebuilt its own exact persistent C source twice. Also earlier extended compiler built original extra1, installed it, used that rebuilt old compiler to build extra3, installed and self-rebuilt extra3 again successfully. No equality/size measurement claimed for new generations.
+
+Exec ABI determined experimentally: x0 OS console callback, w1 argc, x2 REAL guest argv (64-bit-pointer slots), w0 result. argc counts words following exec; argv[0] is first supplied word (not synthesized name). `exec` alone is rejected. New main wrapper saves x19/x30 on stack, copies x0 to x19, BL main, restores and returns. Existing w1..w4 function ABI unchanged. Without named main, last function entry remains (compiler ABI). putchar is reserved builtin one-arg call: push x1, mov w0,w1, BLR x19, pop x0; returns original int character. Calls console callback with w0 byte value. Console only valid under main/exec wrapper; do not run console commands with run.
+Compiler argv type3 char**: indexing LSL w0,3 (scale8), address calculation, LDR X0 then type char*. Real 64-bit slot loads (not fake integer vector). Terminator loaded likewise. Guest pointers fit32 bits; inherited local pointer slots/address arithmetic remain32-bit. char** indexing stores NOT implemented; use for reads. char* indexing unsigned byte, int* scales4. argv[i][j] or char*p=argv[i]; p[j] supported.
+
+Strings: lexer scans ordinary single char/double string literals. quoted() decodes \n, \t, \0, escaped slash/quotes (other escaped bytes pass through). Char becomes integer constant; string emitted packed contiguous bytes, NUL terminator and padding, branch over data, backward ADR X0 to literal. PC relative relocatable. Empty string and embedded NUL tested. Bootstrap branch-fix pass threshold narrowed so string ADR not treated as malformed negative B. Other inherited normalization retained. No source-specific recognition or compiler blobs.
+
+Syntax: inherited extra2 dialect plus char**, char/string literals and call statements. ASCII subset, int-returning functions definitions before use; no prototypes, max16 functions, max4 typed parameters, max32 distinct function-wide locals. Types int,char*,int*,char**. No globals, comments, preprocessor, structs, declared arrays, function pointers, casts. Integer literals0..65534. Blocks,declarations,assignments,return,if/else,while,call statements. Expressions literals/locals/calls/parentheses/unary */indexing/*/+/-/</>. NO == != <= >= ! && || / percent & unary minus, ++, compound assignments, for,break,continue. Use if(a-b) / else to compare. Byte-based pointer addition remains inherited (NOT scaled C addition). No adjacent string concatenation. Calls return int, implicit pointer/int conversions inherited. Build ABI x1 src,w2 len,x3 out,w4 byte cap; w0 bytes or0; final1024 bytes scratch; source <=32768, output<=32768. Source unmodified. Compiler max uses same cap rules as old.
+
+Runtime: puts loops bytes then newline, returns length+1; strcmp loops unsigned bytes, returns first delta or terminating byte delta. Copy first2 extra4 funcs before main in independent probe (as done in extra5); no include/linker. A function named main selects command entry even if not last.
+
+Final test extra5 checks argv[argc] null first (90 failure); prints args: then EVERY real argument using C puts; argc<2 prints need a choice, returns11 (hex0b). Else strcmp(argv[1],"hello") nonzero prints "different\nargument", returns23(hex17); equality prints hello matched and tests 'A', empty string NUL, a\0b bytes (91..94 failures), returns7. Observed final boot:
+exec cmd => args:\ncmd\nneed a choice\nexit0000000b
+exec cmd hello => args:\ncmd\nhello\nhello matched\nexit00000007
+exec cmd goodbye extra => args:\ncmd\ngoodbye\nextra\ndifferent\nargument\nexit00000017
+exec another hello tail => prints another/hello/tail, matched, exit7.
+Additional tested hell/helloo/h mismatched23; cmd hello x y z printed all5, exit7. Same binary, output/decision really runtime arguments.
+Extra4 executable ABI documentation built and printed fully with exit0, exercising many literals, escaped slash, newline, quoted strings and repeated C calls.
+Legacy regression transient extra5: int step(int x){return x+3;} int count(int n){int v=0;while(v<n){v=step(v);}return v+7;} built with extended compiler. run0/4/10 -> exits7/13/19. Replaced extra5 with malformed int bad(int x){return x+;} -> build error, run10 still19 (preserved executable). Restored final extra5 and verified hello7. save/append/cat/ls all exercised. Kernel exec/process/file code never modified; no claim of separate spawn/wait tests.
+
+Debug history: initial incorrect guess main argc in w0 and console callback x3 caused hangs. Rebooted. All those compiler variants replaced, not current extra3. A transient assembly console diagnostic in extra5 confirmed callback x0 prints Q and returns7; no assembly used in final new compiler bootstrap other than preserved as new1. Final compiler C reentered source cleanly, final boot tests all returned shell prompt. Earlier runner termination refers to discarded incorrect variant. Current disk is complete verified version.
