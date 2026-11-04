@@ -89,6 +89,12 @@ const stages = {
       "screen_capture", "key_send", "key_type"],
     requiresCampaign: true,
   },
+  "028": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http",
+      "vm_boot_disk", "vm_boot_gui", "vm_boot_browser", "vm_boot_browser_paths",
+      "vm_boot_browser_links", "screen_capture", "key_send", "key_type"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -156,6 +162,7 @@ const descriptions = {
   vm_boot_gui: "Boot the saved image with a persistent disk, framebuffer, and guest keyboard.",
   vm_boot_browser: "Boot with a display, keyboard, disk, and private HTML origin.",
   vm_boot_browser_paths: "Boot with a display, disk, keyboard, and private origin for multiple paths.",
+  vm_boot_browser_links: "Boot with a private HTML origin serving pages with randomized links.",
   key_type: "Press and release physical guest keys for lowercase letters, digits, slash, dot, and hyphen.",
   screen_capture: "Capture the current guest framebuffer.",
   key_send: "Press and release an arrow key, Enter (ret), or Escape (esc) in the guest.",
