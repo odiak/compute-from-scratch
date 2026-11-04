@@ -1,0 +1,43 @@
+Stage-018 FINAL. Saved image11916bytes/0x2e8c,entry0x40200000,AArch64QEMUvirt. VM STOPPED. User reports independent process,GUI,browser,C-control-flow verifiers PASSED. Previous turn stopped VM but WebSocket failure interrupted notes; this write completes handoff.
+
+COMMANDS:
+spawn N: loaded valid PIC app,decimaluint32N. Copy exact loaded bytes to lowest free slot,PID1or2,separate code/stack/context;print pid 1\n or pid 2\n. Invalid/noapp/full=>error\n,no allocation. Exited-unwaited slots stay occupied.
+schedule: PID1first ifbothready,roundrobin afteryield/return,skipfree/exited,rununtilnoready,returnnormalprompt. Empty=no-op. Trusted nonterminating/nonyielding appcanhang;no preemption.
+wait PID:1or2,afterexit print exit +8lowercasehex+LF,thenfreeonlythatslot. Missing/free/outofrange=>no pid\n;ready=>error\n(notfreed). Malformedsyntaxoldparsercleanunknowncommand. PIDs reused1/2. OriginalrunABIunchanged.
+
+PROCESS ABI:
+Entryx0=existingputc402008a8,w1=N,x2=yield(void)ordinaryfunctionpointer,SPseparatealigned16,x30=exittrampoline. putcclobbersx1/x2;capturecallbacks beforecalling. Nonleafprocess savesinitialLRonownstack,usuallyputc19/yield20,BLRcallbacks,restoreLRbeforeRET. FinalRETrecords w0uint32exit,returns scheduler.
+Yield preservesFULL64bitx19..29,SP,resumesimmediatelyaftercall. x30returnaddress/PCsavedtoo. x0..18/NZCVvolatile,noFP/SIMDABI. Currentresumeinitializesx0putc,w1initialN,x2yield,butnotextra volatilepreservationpromise. INTEGER ordinaryABI,noSVC/hostscheduler/IRQ/MMU/isolation.
+
+LAYOUT:
+PID1code40180000..401807ff,PID2code40181000..401817ff(max2048each). Source40140000ordinaryloadedappindependent;as/load/runafterspawncannotchangecopies. CopyDSB/IC IALLU/DSB/ISB.
+PID1downstack40182000..40183fff,initialSP40184000;PID2stack40184000..40185fff,SP40186000. 8KiBeach,notzeroedonreuse;programinitializeslocals.
+Records40170000(PID1),40170100(PID2),256byteseach:
+0..88=12u64x19..x30;96=u64SP;104=u64resumePC(initialcodeentry,yieldcallLR);112=u32initialarg;116=u32state0free/1ready/2exited;120=u32exit.
+Globals40170200:u32currentrecordptr;40170208:u64kernelSP. Schedulekeeps96byteCLIcallee-saveframeonoriginalkernelstack,saveskernelSPbeforedispatch. Yieldstorecontext/SP/LR-PC,restorekernelSP,dispatchnext. Exittrampstorew0/state2,samebackpath. DispatcherloadsSP/callees,initializesvolatileargs,BRx16savedPC. x16scratch. Bootclearsstates;spawnzeros14u64contextwords,fillsLR/SP/PC/arg/state;waitfreesstateonly.
+
+PERSISTENT SOURCES(allguestassembler,noexternalrefs/hostcompilers):
+progMath=PROCESS KERNEL SOURCE4094ASCIIbytes(almost4096limit). as progMath emits1260bytes/315words. LabelsBboot,C CLI,A dispatch,Y yield,X exit,S print,D decimalparser. .wordonlyunsupportedinstructionforms/cross-ABIhelpers. Guestassembled/serialdumped,appendedtokernel. Later temporary guestcompiler compared EVERY1260byte,reassembledfrompersistedfile,againstactualkernel;match,buildprogMath/runreturnedsource-length0xffe. Temporarydebugcode removed.
+beta=main PICprocess test,as emits140bytes. 64byteframe,saves19/20/21/LR,argSP+32,counterSP+36. putc19/yield20/counter21. Printsarg+counter,updatesstackcounterand21,yields3times;resumechecksstackcounter==21(failureexitff),successarg+3. Restorescallee/SP/LR,RET. Copieswith65/97=>AaBbCc,exit44/64hex. Stacklocals/runtimeargs,callee-preservation,resumptionverified.
+Abc123xyz789=fast PICtest,as8bytes:mov w0,w1;ret;usedbothrunandspawn. Temporarilytestedconstant43981/abcdversion;currentfile returnsarg.
+Unchanged:progBadCcompiler3488,alphaCsample,prog8BROWSER RENDERER3355,progFwdbrowserintegration974,emptyhexreturn42. EightFSslotsfull;oldreservedprogMathmemorydemo/beta/Abctexttestsreused.
+
+REPRODUCE/PATCHES:
+Stage017image10656/29a0. Append asprogMath1260bytesatoffset29a0/address402029a0,end2e8c. Patcholdwords:
+0620=140008e7(B29bc,C CLIhook,insteadB710)
+247c=14000149(B29a0bootstateinit,insteadB4c).
+BootB7instructionszeroesrecordstates116/372,BR4020004coldNICscan,x0UARTpreserved,noSPneeded. C29bc savesx19..30in96byteframe,handlesnewcommandsorrestores/B710oldparser. Handledreturnrestorescallee/SP,x0UART,x8linebuf,B402005c4 NORMALPROMPT. CRUCIALpool2e28,+32word2e48=402005c4(decimal1075840452),NOT5bc:5bcbootinitializerwouldresetappflag/GUI. Draftbugfixedbeforefinaltests. Fallbackpool+36=40200710.
+Priorpatchesretained:70cB2100,5d8BL233c,2cB2470,480B2480,2254B2514,2420B2548. ReassemblingoldprogFwdrestores247cB4c,soREAPPLYstage018bootpatchafterward. Newmodulebytecomparedafterallfixes.
+
+FINALTESTS:
+Disk20261104T011536.306011Z:empty schedule/missingwait/noappspawn clean. asbeta/spawn65/spawn97=>PID1/2;thirdspawnerror;readywaiterror. OVERWROTEloadedapp loadfileempty/run42 BEFOREschedule;stillAaBbCc,wait1=00000044,wait2=00000064,repeatwait1nopid. Provescopiedcodeindependentfromloadedapp.
+Reuse:asbeta/spawn66/spawn98/schedule=>BbCcDd;fullafterexiterror. wait2=65frees2;assembledconstantabcd,spawn0=>PID2reusedwhilePID1reserved;wait1=45;onlyPID2schedule/wait2=0000abcd. NextspawnPID1,reused/scheduled/waitedabcd. Overflow4294967296,-1,1x errors(noallocation),max4294967295accepted. CurrentAbcreturnarg as/run123=>7b;spawnmax/spawn0/schedule/wait1=ffffffff/wait2=00000000. Missingwait9nopid. asprogBad/install/buildalpha/run4=>1c.
+GUI20261104T012108.497803Z:RIGHTscreen-001;asbeta/bothspawn/schedule/waitsAaBbCc/44/64/echo;screen-002stillRIGHT(noreset),LEFTscreen-003works.
+Browser20261104T012305.992906Z:actualHTMLHELLO WORLD/TINY BROWSER,screen-001;asbeta/spawn/schedule/waits/echo/loadfileempty/run42works;screen-002SAMEpage.
+HTTP20261104T012450.420264Z:Hello, world! dbc9c652b72a/prompt,echo,knownreturnargimage/run123=7b;emptyschedule/missingwaitclean.
+Plain20261104T012623.391983Z:BOOT/prompt,echo,schedule,missingwait2,loadknownreturnarg/run123=7b;STOPPED. Noimagechangesaftertests. Userindependentprocess/GUI/browser/CcontrolflowverifiersPASSED.
+
+PREVIOUSFEATURES/ABI:
+runentry40140000,x0putc402008a8,w1uint32default0,SP40110000aligned16/4KiBbelow,preserve19..29/SP,RET w0;putcclobbers1/2. installcompiler40150000..507ff,len40150800bootzero;buildx0putc/x1exactsource/w2len/x3out40141000/w4cap2048,return4..2048multiple4or0,transactional. Appflag40142000,size42004. asprogBad/install/buildalpha/run0/2/4=>0/10/1chex. Csubsety/xassignments,sequentialif/while,EXPR+/-/*/parens/literals0..65535,W32nonzerotruth;badsourcekeepsapp.
+BrowserRENDERERfilenameprog8,as1084bytes2564..299f;core2564/headerstrip2960,x26fullresponse/x27end->bodyafterCRLFCRLF;h1/pactualtext,ownA-Z5x7font,cyan2xheading4,4upperhalf,white1xparagraph4,68lowerhalf,wordwrap. Browserflag40163000;combinedNIC+keyboardGET/index.html28bytes,ordinaryHTTPGET/hello23,existingTCPACKpayload+FINbeforeGUI. AdapterprogFwdas244bytes2470..2563(beforestage018247cpatch). GUIRAM40160000..61fff,framebuffer40300000..40312bff,160x120XRGB8888/pitch640;plainleft/rightpanelsretained. FWcfg09020000/ramfbBE28byteconfig,modernvirtioKeyboardID18queue8,polling. Newprocess4017/4018areasdisjoint.
+FS8files4096ASCII,nodelete,whole9000hexprefixsync. DirLBA0..1,128byterecords;filei LBA8+8i/cache40121400+i*4096. Asworkspace40145000..48fff. Trustedcode/noisolation/noTCPtimeouts/crashatomicitylimitsremain.
