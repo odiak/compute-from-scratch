@@ -16,7 +16,7 @@ An experiment to see how far GPT-6.1 Sol can build a software stack from machine
 | Small OS | Handle the console, memory, and program loading and exit. Start with a single task and define a calling convention between programs and the kernel. Complete (007). |
 | Persistent disk and filesystem | Read and write a virtual block device, and save and reload source files and programs across reboots. Complete (008 and 010). Verified raw UART imports up to 8 KiB and byte-for-byte persistence across reboot (022). |
 | Assembler | Translate AArch64 instructions and labels into machine code inside the guest, then run the result. Verified the instruction coverage and capacity needed to assemble a compiler in the guest (009–014). |
-| Compiler | Build a compiler with the guest assembler. Verified a single-function C subset with runtime arguments, integer expressions, local variables, branches, and loops (014–015). Verified helper function definitions and calls (021), and compilation of imported multiline C source with whitespace and comments (023). |
+| Compiler | Build a compiler with the guest assembler. Verified a single-function C subset with runtime arguments, integer expressions, local variables, branches, and loops (014–015). Verified helper function definitions and calls (021), and compilation of imported multiline C source with whitespace and comments (023). Verified taking the address of a local integer and reading and writing through a pointer (024). |
 | GUI and browser | Framebuffer and keyboard input are complete (016). Render simple HTML fetched from the host. Complete (017). |
 | Self-hosting assembler | Use the kernel assembler to build a seed, then assemble its own source as a guest application. Compare generated code across generations. Complete (019). |
 | Processes and system calls | Give each program its own stack and execution state. Support cooperative scheduling, process exit and waiting, and file and console I/O. Cooperative processes and basic file I/O are complete (018 and 020). |
@@ -129,7 +129,7 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 | 小さなOS | コンソール、メモリ、プログラムのロードと終了を扱う。最初は単一タスクで、プログラムとカーネルの呼び出し規約を定める。完了（007） |
 | 永続ディスクとファイルシステム | 仮想ブロックデバイスを読み書きし、再起動をまたいでソースとプログラムを保存・再読込する。完了（008・010）。UARTから最大8 KiBのファイルを取り込み、再起動後もバイト単位で一致することを確認済み（022） |
 | アセンブラ | ゲスト内でAArch64の命令とラベルを機械語に変換し、生成物を実行する。コンパイラをゲスト内で組み立てられる命令と容量を確認済み（009–014） |
-| コンパイラ | ゲスト内アセンブラでコンパイラを組む。実行時引数・整数式・局所変数・分岐・ループを含むCサブセットを確認済み（014–015）。補助関数の定義と呼び出し（021）、空白やコメントを含む複数行のCソースを取り込んでコンパイルする処理（023）を確認済み |
+| コンパイラ | ゲスト内アセンブラでコンパイラを組む。実行時引数・整数式・局所変数・分岐・ループを含むCサブセットを確認済み（014–015）。補助関数の定義と呼び出し（021）、空白やコメントを含む複数行のCソースを取り込んでコンパイルする処理（023）、ローカル整数のアドレス取得とポインタ経由の読み書き（024）を確認済み |
 | GUIとブラウザ | フレームバッファとキー入力は完了（016）。ホストから取得したシンプルなHTMLを画面に描画する。完了（017） |
 | アセンブラの自己ホスト | カーネル内のアセンブラで種を作り、ゲストアプリとして自分のソースを組み立て直す。世代間で生成コードを照合する。完了（019） |
 | プロセスとシステムコール | 複数のプログラムに独立したスタックと実行状態を持たせ、協調スケジューリング、終了・待機、ファイルやコンソールの入出力を扱う。協調プロセスと基本ファイル入出力は完了（018・020） |

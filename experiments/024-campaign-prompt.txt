@@ -1,0 +1,5 @@
+Extend the stage-023 guest C compiler stored as empty. Keep the kernel fixed. Use only the guest shell, disk, assembler and compiler ABI. Preserve the old working source while trying a replacement, and preserve progFwd. The limits are 8192 source bytes and 2048 compiled bytes.
+
+Support a local int pointer p initialized as int *p = &y; after int y = EXPR; in f. Support reading *p as an expression factor and writing through *p = EXPR; as a statement, including inside existing control blocks. Keep y and *p coherent in both directions. Emit actual stack-address and pointer load/store instructions. Use the existing runtime x argument and preserve the ABI, expression temporaries, control flow, helper calls and lexical behavior. Reject unsupported pointer forms and references without the declaration. No pointer arithmetic or additional pointer types are needed.
+
+Test assignments in both directions and calls while the pointer is live. Demonstrate that multiple runtime arguments to the same compiled image give the right result. Record the exact compiler file name, tested syntax, and ABI details, save the final source, and stop the VM.
