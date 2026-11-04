@@ -1,0 +1,1 @@
+ldr x22,[sp,24];.word 3533783063;mov w4,32;LP:;ldr w1,[x23,8];cmp w1,2;b.eq DN;add x23,x23,512;sub w4,w4,1;b.ne LP;mov x23,0;DN:;.word 2034370264;cmp w7,8;.word 402652986;BR:;mov w1,0;adr x16,SH;ldr w16,[x16];.word 3592356352;SH:;.word 1075844176;;;

@@ -1,0 +1,32 @@
+FINAL: saved image13412 bytes, kernel base0x40200000. VM stopped. Kernel stage; progBad C compiler, progFwd self-hosted assembler, progMath/prog8 preserved. alpha was temporary assembly scratch then restored from inherited notes (two leading spaces; int g(int x){ return x-1;} int f(int x){int y=7;while(g(x)){y=y+g(x);x=x-1;}return y+x;}). Other original files untouched.
+
+FINAL CORRECTION / PROCESS REGRESSION: independent stage020 exposed wrong PP constant offsets. Corrected image12368..12379 to hex 000400400014004000000009 (table0x40000400,data0x40001400,UART0x09000000). Old notes'12372 patch was WRONG. Final saved image and kernel0/kernel1 snapshots include correction. Tested real process ABI on final image: assembled program saved x19/x30, kept dispatcher x3 inx19, opened beta(name length4), read3 into local data, wrote3 to fd1, closedfd3, returned0. spawn0 twice ->pid1,pid2; schedule -> exact 'intint' followed shell prompt (six expected file bytes); wait1/wait2 ->exit00000000. This confirms both descriptor slots and UART write. Check snapshot source restored afterwards, snapshots regenerated and verified=00003464.
+
+DISK: block queue base0x40000000, disk image RAM0x40000400; transfer0x40000 bytes. Header4096 bytes;16 records*128; name length byte0, size LE16 bytes2..3, name bytes4..15, markerA5 at record80. Data disk offset4096+slot*8192; max8192. Disk offset0x800 (queue+3072) LE32 marker8192 distinguishes new stride. First old-format boot copies old eight4096 blocks backwards to8192 stride, keeps records, writes marker/disk. Original legacy inline records/converter retained. Boot return clears status even when migration skipped. 16 slots occupied.
+
+recv NAME N: existing alphanumeric name1..12; strict decimal0..8192. Invalid args/size/full store reject before ready, without changing previous file. ready LF, exactlyN RAW UART bytes into0x40050000, then commit/save and saved LF/prompt. No LF payload terminator. Polls UART FR. Entry restores disk base, rediscovers MMIO device and loads queue avail index before request. Scheduler ABI retained. cat emits exact contents plus oneLF.
+
+DISK FILES / REPRODUCE:
+ FsBoot: exact148-byte migration block, install image12416.
+ FsRecv: as FsRecv;run0 exports BO..EN hex (776 bytes) for image12564; exclude initial B EX and exporter. Apply BO+28 patch bb000014 (branch to FsFix instead of cmpw7,8). Valid .word0 padding after exporter makes source4252 bytes, testing long assembly input.
+ FsFix: exact52-byte recv trampoline at13340 +20-byte boot return at13392. Fixed-position raw branch returns to recv+32. as FsFix succeeds; do not run directly.
+ Check: as Check;run1 compares all13412 RAM kernel bytes against kernel0+kernel1, success00003464. run0 regenerates snapshots in slots12/13; subsequent ordinary save/append flushes disk.
+ kernel0: first8192 binary image bytes; kernel1: remaining5220; concatenate for complete final image. Both snapshots regenerated AFTER process PP correction.
+ bin:12 bytes 00 0a 0d ff 80 1b 41 00 42 0a 7f 55.
+ src:30 bytes = two spaces + 'int f(int x){\nreturn x+2;\n}\n'. Exact multiline import retained. Compiler's inherited grammar accepts space but not LF, so build src gives build error; kernel does not alter bytes.
+
+Raw patches to ORIGINAL12416-byte image (offset ->LE hex):
+2368 1600a8d2;2564 8100a052;2628 8f090014;3032 0d028052;3272 1a028052;4840 a534028b;4872 1f0a4071;10744 c7010014;12212 0f028052;12332 080940911f2003d5;12368 000400400014004000000009.
+Append FsBoot12416, FsRecv BO..EN patched12564, FsFix13340. FsBoot SH points13392. These cover disk relocation/transfer/limits/counts/read syscall stride/constants. Compiler unchanged.
+
+PASSED TESTS:
+- bin ready then11 bytes ->no output;12th byte WITHOUT LF ->saved/prompt; exact cat, across multiple reboots. NUL/LF/CR/FF/80/ESC/7F retained.
+- src multiline N30 exact contents, across multiple reboots.
+- Invalid8193,-1,1x,missing args,bad-name,huge decimal rejected before ready, previous src/bin intact. N0 ready/saved and cat onlyLF.
+-8192 recv (former big):1024 bytes=4*00..FF;7168 bytes=112 lines of64 bytes (3*'0123456789abcdef'+'0123456789abcde'+LF). Guest byte comparison returned8192 before AND after reboot. Test slot later became kernel1.
+-8192-byte C build (former zero): spaces then unchanged beta source at EOF. as progBad;install;build zero;run2=0000001c. Slot later became kernel0.
+-FsRecv4252 bytes assembles, including after reboot; progFwd/progBad assemble. compiler install/build beta/run2=0000001c. beta cat exact original 'int g(int x){return x*2+1;} int f(int x){return x+g(x)+g(x+1)*3;}'. Original compiler/assembler files not modified.
+-Check run1 exact13412 snapshots across reboot (then regenerated and verified again after final PP fix).
+-Final process regression described above emits six bytes with two spawned processes, both wait0.
+
+Inherited compiler ABI: as progBad;install;build SOURCE;run N. Optional expression-only g precedes entry f; x argument, optional f localy, assignments/if/while assignment blocks/return; +,-,*,parentheses,g calls. Space-only whitespace, not general C. Use shell as for progBad; standalone progFwd has label-hash collisions. Process syscalls: x3 dispatcher, w0=1 open(x1name,w2len),2 read(w1fd,x2buf,w3count),3 write,4 close; fd3/4 readonly files now using8192 stride and old inline fallback.
