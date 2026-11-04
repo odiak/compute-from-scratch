@@ -22,7 +22,7 @@ An experiment to see how far GPT-6.1 Sol can build a software stack from machine
 | Processes and system calls | Give each program its own stack and execution state. Support cooperative scheduling, process exit and waiting, and file and console I/O. Cooperative processes and basic file I/O are complete (018 and 020). Verified passing argc and argv to a loaded executable (029), and C command-line programs with string literals, putchar, puts, and strcmp (035). |
 | C compiler and minimal libc | Gradually add multiple functions, types, pointers, arrays, strings, and preprocessing. Test the features of the target C standard and provide library routines for I/O and string operations. Verified runtime indexing and byte loads and stores for a local char array (025), and verified up to four named integer locals and independently named function parameters (030). Used a guest-assembled seed with named functions and typed pointers to build and run a compiler written in C (032). |
 | Self-hosting C compiler | Have a seed compiler running in the guest build its own C source. Use the resulting compiler to rebuild itself and run regression tests. Verified byte-identical self-builds over two successive C-built generations and execution of a separate test program (034). |
-| Open-source CLI | Have the observer supply the source of a small CLI with a pinned version and hash. Build it in the guest, verify its inputs and outputs, and record any porting changes. |
+| Open-source CLI | Have the observer supply the source of a small CLI with a pinned version and hash. Build it in the guest, verify its inputs and outputs, and record any porting changes. Verified sbase 0.1 echo with a guest-side portability adapter and an upstream host reference (036). |
 | External network | Establish offline reproducibility first, then verify the workflow from source retrieval to build with a restricted set of sources. |
 
 After the C compiler bootstrap and self-hosting, work moves to OS and minimal libc and an offline build of an existing open-source CLI. GUI and browser development and restricted external access come last. Earlier results carry forward.
@@ -137,7 +137,7 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 | プロセスとシステムコール | 複数のプログラムに独立したスタックと実行状態を持たせ、協調スケジューリング、終了・待機、ファイルやコンソールの入出力を扱う。協調プロセスと基本ファイル入出力は完了（018・020）。ロード済みプログラムへの argc と argv の引き渡し（029）、文字列リテラルと putchar・puts・strcmp を使うCコマンドの実行（035）を確認済み |
 | Cコンパイラと最小libc | 複数関数、型、ポインタ、配列、文字列、前処理などを段階的に追加する。対象とするC規格の機能をテストし、入出力・文字列操作などのライブラリを用意する。ローカルの文字配列を実行時の添字で読み書きできること（025）と、最大4個の名前付き整数ローカル変数および関数ごとの引数名（030）を確認済み。名前付き関数と型付きポインタを扱う種コンパイラで、C製コンパイラのビルドと動作を確認済み（032） |
 | Cコンパイラの自己ホスト | ゲストで動く種コンパイラがコンパイラ自身のCソースをビルドできるようにし、生成したコンパイラで再ビルドと回帰テストを行う。C製コンパイラによる2世代の自己ビルドがバイト単位で一致し、別のCプログラムも実行できることを確認済み（034） |
-| オープンソースCLI | 観測側が版とハッシュを固定した小さなCLIのソースを投入し、ゲスト内でビルドして入出力を照合する。必要な移植差分を記録する |
+| オープンソースCLI | 観測側が版とハッシュを固定した小さなCLIのソースを投入し、ゲスト内でビルドして入出力を照合する。必要な移植差分を記録する。sbase 0.1のechoをゲスト内で移植・ビルドし、ホストでビルドした原本と入出力を照合済み（036） |
 | 外部ネットワーク | オフラインでの再現を確立した後、まず取得先を限定してソース取得からビルドまで検証する |
 
 Cコンパイラの立ち上げと自己ホストに続いて、OSと最小libc、既存OSSコマンドのオフラインビルドへ進む。GUI・ブラウザの発展と取得先を限定した外部通信は最後に行う。到達済みの成果は引き継ぐ。
