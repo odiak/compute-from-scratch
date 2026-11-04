@@ -1,0 +1,41 @@
+Stage-015 FINAL: compiler extended entirely inside guest. Kernel remains fixed/UNCHANGED stage013 image (8281bytes,entry0x40200000); no image edits, external references/binaries/assembler, load or loadfile. Only shell save/append, guest as/install/build/run. Updated COMPLETE compiler assembly persists in EXACT filename progBad (reserved compiler-source name retained from stage014). Source3488ASCIIbytes, within4096 limit; as/install verifies binary fits2048. VM STOPPED.
+
+REPRODUCE:
+vm_boot_disk;as progBad;install;build alpha;run 0;run 2;run 4
+Expected assembled/installed/built, exit00000000/00000010/0000001c. Installedslot/appRAMvolatile:repeatas/installafterboot. Sourcefilespersistent.
+alpha currently:
+int f(int x){int y=0;if(x){y=y+2;}while(x){y=y+3;x=x-1;}if(y){y=y*2;}return y;}
+ForpositiveN, result2*(2+3*N);N0result0. N1000alsoverified6004(hex1774). Loop executesruntimeNiterations;B/B.EQrealnativebranches,not shell evaluation.
+
+LANGUAGE:
+Originalexpression-only int f(int x){return EXPR;} remains valid. EXPR x,declaredy,unsigneddecimal0..65535,parentheses,binary+/-/* withnormalprecedence/leftassociativity. OptionalASCIIspaces,keywords/tokenscase-sensitive. NativeW32arithmetic wrap;no unaryoperators/comparisons/comments/hex/functions/extraidentifiers.
+NEWoptional SINGLE int y=EXPR; onlyatbodybeginning. y unavailableuntilinitializercomplete(rejectself-reference/uninitializeduse). Assignments x=EXPR; or y=EXPR; beforefinalreturn. braced if(EXPR){assignments} and while(EXPR){assignments},0ormoreassignmentsperblock. Anysequenceofassignments/if/whilepermitted,thenmandatoryfinalreturnEXPR;andclosingbrace/EOF. Nestedcontrol,else,declarationsinsideblocks/afterstatements,duplicatey,otherlocals,earlyreturnallrejected. Nestedexpressionparenthesesstillallowed(depth64limit). ConditiontrueforANYnonzero32-bitvalue(includingnegative),falseonlyzero. Allmalformedinputreturns0/build errorandkeepspreviousapp.
+
+REGISTER ALLOCATION / PARSER:
+Compilerpreservesx19..29andSP,nonleafLRsaved16byteframes;onlycaller-savedregsused. x8outputbase,x9sourcecursor,x10sourceend,x11outputcursor,x12outputend,x13opcodepool;w14stickyerror,w15factor-depth,w16haveY. NEWw5emittedWORDcounter,zeroedentryandincrementedonlyonsuccessfulWemit. w7controlkind0if/1while,w17conditionstartwordindex,w18conditionalbranchslotindex. Thesecontextregsneverclobberedbyexpression/assignmenthelpers;singlecontextiswhynestedcontrolisrejected. Allper-buildstateinitializedentry.
+Runtimecompiledfunction usesw1mutablex,w3localy,w0accumulator,w2poppedLHS,SP16bytetemporaryframes. No callee-savedregs orLRchanged;allpush/popbalanced,RETkernel. DeclarationemitsMOVw3,w0afterinitializercode;assignmentemitsMOVw1,w0 orMOVw3,w0. Factorsx/yemitMOVw0,w1/w3. y staysstableacrossliteral/binarycode.
+Labels in source: E/T/F recursive-descent expressions,shortenedfromstage014;E additiveleftloop,T multiplicativeleftloop,F primaries/decimal/depth. A assignmenthelper checksx/yanddeclaration,storeschosenopcodepooloffset44/48atcompilerSP+8acrossE,expects=/;andemitsmove. K reusablekeyword/templateparser;pf initialfunctiontemplate,di declaration,ii if(,ww while(,rr return. st mainstatementloop,ci/cw selectcontroltype,ct conditioncompile,lb assignment-onlyblock,be closeblock,pt branchpatch,rt finalreturn. S skipspaces,P boundsafepeek,Q punctuation,C constantemit,W rawemit,G/H runtimepush/poppair,J commonpairhelper.
+Initialint/ifdisambiguationusesone-byteprefixlookahead;KthenvalidatestokenswithboundedP. Templatesbyte0skipoptionalspaces,32requirespace/skiprest,1end. Prefixnowendafter{ratherthanreturn. AfterreturnrequiresSPACEor'('asbefore,rejectreturnx. mainchecksclosingbrace/EOF/errorbeforeemittingRET/returningbytecount.
+
+NATIVE CONTROL CODEGEN:
+AfterKconsumesif(/while(,savew17=currentwordcountBEFOREconditionEXPR. E emitsconditiontow0;parse)/{;emitCMPw0,#0;savew18=currentcount;emitB.EQ0placeholder;compileassignmentsuntil}. Ifwhile,emitBback withimm26=(w17-currentcount)&03ffffff. ThenpatchsavedB.EQwordwith54000000|((currentcount-w18)<<5),soskipsentirebodyANDwhilebackedge. Patchaddress=outputbase+(w18<<2). Returntostforsequentialconstruct. ExpressionsbalancedSPbeforeCMP/branch. Branchesrelativewordindices,so relocationstaging->usualrunbufferworks. No runtimeinterpretation/unrolling.
+C helper takesw0poolBYTEoffset,loadswordandTAILSW;Wchecksout+4<=end,stores/advancescursorandincrementsw5. Errorsticky,allparserframesunwindnormally,outputneverpublishedonerror. PointerW-arithmetic/comparisonsassumeABI RAMaddressespositive<0x80000000. Compilerstackfactor-depth64keeps<4KiB. Outputcap2048bytesenforcedincludingnewbranches.
+Opcodepooloffsets0..36unchangedfromstage014: MOVw0,w1;MOVZbase;SUBSP16;STRw0SP;LDRw2SP;ADDSP16;ADD/SUB/MULw0,w2,w0;RET. NEW:
++40 704840672 MOVw0,w3 (2a0303e0)
++44 704644065 MOVw1,w0 (2a0003e1)
++48 704644067 MOVw3,w0 (2a0003e3)
++52 1895825439 CMPw0,#0 (7100001f)
++56 1409286144 B.EQ0 (54000000)
++60 335544320 B0 (14000000)
++64 67108863 imm26mask.
+Keywordtemplatewords:pf544501353,2621542,544501353,2687096,379;di544501353,20775033;ii671114857,1;ww1818847351,19398757;rr1970562418,93810. All.Worddataassembledinguest,compilerPICviaADR.
+
+VERIFICATION live diskVM20261103T234945.158142Z:
+Oldalphaexpression(x+2)*3afteras/installstill15/66for3/20. int y=0;while(x){y=y+x;x=x-1;}return y ->6/15/0for3/5/0(SAMEcompiledimage). int y=2;if(x){y=(x+1)*3;}return y ->2/15/6for0/4/1(SAMEimage,bothpaths). Finalsequentialif/while/ifalpha->0/16/28/6004for0/2/4/1000. if(x-1) trueonnegative:withy2/set9,inputs0/1/2->9/2/9. Declarationinit/assignments int y=(x+2)*3;y=y-1;x=y*2;return x+y ->42/195for3/20.
+Undeclaredyread,yassignmentwithoutdecl,seconddeclaration,missingsemicoloninsidewhile,nestedwhileinsideif,andelseallbuild error;eachrun3still42frompriorvalidapp. x=x+2;return x*3 ->15/66withouty. Originalexpressionreturnx+2*3 ->9/26(keptprecedence). NoSP/globalleaksaftererrors.
+StoppedthenFRESHBOOT20261104T000044.036618Z:as progBad/install/buildalpha->assembled/installed/built;run0/2/4->0/16/28. Confirmscompleteupdatedassemblysourcepersisted. vm_stop completed;VMSTOPPED.
+
+FIXED OS ABI / STATE:
+run N:uint32decimalNdefault0;entry0x40140000,x0putc0x402008a8,w1arg,SP0x40110000aligned16,4KiBbelow;RET w0exit;preserve19..29/SP/nonleafLR. putcASCIIw0clobbersx1/x2. install copiestrackedloadedsize to0x40150000..507ff,installedsize0x40150800bootzero,PICrequired. build passesx0putc,x1exactnonNULsource,w2len,x3output0x40141000,w4cap2048;returnlength4..2048multiple4or0. Kernelpublishestransactionally. Loadedflag0x40142000,size42004. App/compilertrusted,noisolation/timeouts/faultrecovery.
+Guestas max512words/128labels/512fixups,source4096,stage012formsavailableSP/LDRSTR/ADR/BLR/MUL/AND/ORR/LSL/.word;noXregisterADD/SUB/CMP(useWpointermathwherefit). Oldasmstill8words. Shellline128,save/appendchunksfitline;serial_send_textLFbatchmax4096.
+Disk8files4096ASCIIeach,no delete,allslotsfull. progBad compiler(index6),alpha finalCtest(index0);beta/Abc123xyz789/empty/progFwd/progMath/prog8unchanged. DirectoryLBA0..1 records128byte,namelenbyte0/u16len+2/name+4/marker80A5;filei dataLBA8+8i,RAM0x40121400+i*4096. Kernelimage8281unchanged,onlyprogBad/alphaedited. CompletecompilerSOURCE=progBad3488bytes;sampleC=alpha. VMSTOPPED.
