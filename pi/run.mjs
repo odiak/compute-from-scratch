@@ -38,6 +38,11 @@ const stages = {
       "vm_boot_disk", "vm_boot_gui", "screen_capture", "key_send"],
     requiresCampaign: true,
   },
+  "017": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http",
+      "vm_boot_disk", "vm_boot_gui", "vm_boot_browser", "screen_capture", "key_send"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -103,6 +108,7 @@ const descriptions = {
   vm_boot_http: "Boot with the private ARP peer and host HTTP origin.",
   vm_boot_disk: "Boot the saved image with the campaign’s persistent virtual disk.",
   vm_boot_gui: "Boot the saved image with a persistent disk, framebuffer, and guest keyboard.",
+  vm_boot_browser: "Boot with a display, keyboard, disk, and private HTML origin.",
   screen_capture: "Capture the current guest framebuffer.",
   key_send: "Press and release an arrow key, Enter (ret), or Escape (esc) in the guest.",
   vm_stop: "Stop the running VM.",

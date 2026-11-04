@@ -24,7 +24,7 @@ class Guest:
         self.run = None
         self.offset = 0
 
-    def boot(self, network=False, tcp=False, http=False, disk=False, observer_socket=None, display=False):
+    def boot(self, network=False, tcp=False, http=False, disk=False, observer_socket=None, display=False, browser=False):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
@@ -54,7 +54,7 @@ class Guest:
             ])
             record["peer_mac"] = link.mac.hex(":")
             if http:
-                self.http = HelloServer(self.run)
+                self.http = HelloServer(self.run, browser=browser)
                 link.tcp = TcpPeer(link.mac, http=self.http)
             elif tcp:
                 link.tcp = TcpPeer(link.mac)
@@ -166,6 +166,7 @@ def main():
         "vm_boot_http": lambda _: guest.boot(network=True, http=True),
         "vm_boot_disk": lambda _: guest.boot(disk=True),
         "vm_boot_gui": lambda _: guest.boot(disk=True, display=True),
+        "vm_boot_browser": lambda _: guest.boot(network=True, http=True, disk=True, display=True, browser=True),
         "screen_capture": lambda _: guest.screen_capture(),
         "key_send": lambda args: guest.key_send(args["key"]),
         "vm_stop": lambda _: guest.stop(),

@@ -70,7 +70,8 @@ class TcpPeer:
             return None
         data = tcp[header:]
         if self.http:
-            if not (data.startswith(b"GET /hello HTTP/1.0\r\n")
+            request_line = f"GET {self.http.path} HTTP/1.0\r\n".encode()
+            if not (data.startswith(request_line)
                     and data.endswith(b"\r\n\r\n") and len(data) <= 1024):
                 return None
             payload, response_flags = self.http.request(data), 0x19
