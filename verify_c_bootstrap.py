@@ -20,9 +20,9 @@ SEED_PROBE = (
 )
 
 
-def executable(guest, socket, size_address):
+def executable(guest, socket, size_address, capacity=8192):
     length = int.from_bytes(read_memory(socket, size_address, 4, guest.run / "size.bin"), "little")
-    if length < 4 or length > 8192 or length % 4:
+    if length < 4 or length > capacity or length % 4:
         raise ValueError(f"Invalid executable size {length}")
     return read_memory(socket, 0x40140000, length, guest.run / "executable.bin")
 
