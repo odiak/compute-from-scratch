@@ -48,6 +48,10 @@ const stages = {
       "vm_boot_disk", "vm_boot_gui", "vm_boot_browser", "screen_capture", "key_send"],
     requiresCampaign: true,
   },
+  "019": {
+    tools: ["notes_write", "notes_read", "vm_boot_disk", "serial_read", "serial_send", "serial_send_text", "vm_stop"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -227,6 +231,7 @@ const { session } = await createAgentSession({
   settingsManager: SettingsManager.inMemory({
     compaction: { enabled: true },
     retry: { enabled: false },
+    transport: "sse",
   }),
 });
 try {
@@ -236,7 +241,7 @@ try {
     throw new Error("Unexpected active tools: " + active.join(", "));
   }
   writeFileSync(join(trial, `${stage}-config.json`), JSON.stringify({
-    provider: model.provider, model: model.id, activeTools: active,
+    provider: model.provider, model: model.id, transport: "sse", activeTools: active,
     systemPrompt: session.systemPrompt,
   }, null, 2) + "\n");
   appendFileSync(join(trial, `${stage}-prompts.jsonl`), JSON.stringify({
