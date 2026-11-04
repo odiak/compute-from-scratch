@@ -1,0 +1,39 @@
+Stage-016 FINAL: saved9328-byte(0x2470) raw little-endian AArch64 image, entry0x40200000,QEMUvirtCortex-A53,endexclusive0x40202470. VM STOPPED. Existing shell,disk,loader,compiler,HTTP preserved. Only provided tools/artifacts,no external references. vm_boot_gui=persistentdisk+ramfb+virtio-keyboard;plain/HTTP withoutdisplay tested.
+
+GUI:160x120,XRGB8888,pitch640. Background RGB16,24,32(word00101820). Leftinclusive x16..71,y36..83;rightx88..143,y36..83. ActiveRGB64,192,240(word0040c0f0);inactive48,64,80(word00304050). Nooverlays,allinteriorpixelsincludingcenters/upperleftinteriorexactfill. Leftinitialactive. EV_KEY1/value1press:RIGHTcode106->right1,LEFT105->left0. Releases/SYN/otherkeysignored. Fullpaintonpress. Serialconsoleworkswhilekeysprocessed.
+
+BUILT USING GUEST ASSEMBLER WHERE FEASIBLE: compiler progBad3488bytes and Calpha preserved. Reservedprog8 now GUIpainter assemblysource(old130instrtestreplaced). as prog8 emitted164bytes;our guestdumpapp temporarilyinprogMath,installedandinvokedthroughbuild,serialdumpedactualassembledbytes;appendedverbatimtokernel205c. Otherdriversrawkernelcodebecausehalfword/REV/STPoutsideassemblerforms. progMath restoredtooriginalADR/data/stackbyteexampleafterdebug. Nodumpcodeinkernel.
+
+CODE(offsetsfrom0x40200000):
+Onlyoldcodepatches:70cB2100(word1400067d)insteadB940 AFTERSPinit;5d8UARTpollBL233c(word94000759)insteadLDRw1FR. BOOTfirst44bytesunchanged;network/HTTPcompletebeforeGUIasbefore. Oldend2059;3padzeros;205c..20ffpainter,2100..2338GUIinit,233c..23a4wrapper,23a8..246ckeypoll,end2470.
+205c painterw0=selection0left/nonzeroright,leafusesx0..7/x18,keepsx9..17/callees. ADRlocalpool20f0(40300000,00101820,0040c0f0,00304050). Nestedrow/pixelloopsall19200pixels;literalbounds36/84,16/72,88/144;swapcolorsforright. PrivatekernelABIw0selected,NOTnormalrunABI(x0consoleptr).
+2100 clears2000hexGUIRAM,findsFWcfg etc/ramfb,DMAmodeconfig,paintsleft,scansID18,setskeyboardeventqueue. 2334restoreUARTx0/B940olddiskinit/prompt. Nodisplay/count0or>256/notfound/DMAerror ->skipGUIandoldboot;keyboardptrremains0. x8linebuffer/x19appbasepreserved.
+233c wrapper160bytestacksavesx0..18+LR,BL23a8,restoresall,originalLDRw1UARTFR+18,RET. NZCVnotpreserved,inputpathdoesn'tdependonoldflags. x19..29untouched. 23a8 pollcomparesused.idx/consumer,readsreturnedID/event. 2420storesselection,2424BLpainter. 2430 repostheadavailidx&7,DMB,publishidx/notify0,consumer++,repeat. OwnLRinx17(painterpreserves17).
+IMPORTANTFIX23d0=9108114e ADDx14,x10,#204. Splitusedringentriesstart+4,NOT+8. Draft+208readlength8asID,ignoredkeys;correctedbeforefinaltests. Finalimageunchangedsincethisfix.
+
+MEMORY:
+Framebuffer0x40300000..40312bff,76800bytes,outsidekernel/app/disk. GUIbase0x40160000,clear0x2000. Descs+000..07f,avail+100,used+200. Stateu32consumer+300,availcounter+304,keyboardMMIO+308(0absent),selected+30c. Eventbuffers+800..83f(8x8). FWrecordbuffer+1000(64),DMAdescriptor+1100(16),ramfbcfg+1120(28). Nooldregionoverlap.
+
+FW_CFG (discovered/probed insideguest):
+MMIO09020000,data8+0,selectorBE16+8,DMAaddrBE64+10hex. Selector0readQEMU;directoryselector0019(nativeSTRH1900),streamBE32countthen64byterecords(sizeBE32,selectorBE16,reserved16,name56). GUIprobe10files,ramfbsize28/selector25;kernelMATCHESNAMEetc/ramfbNUL,nothardcode25.
+RAMFBcfg28bytesallBE:addr64=40300000,fourcc32=34325258(XR24/XRGB8888),flags0,width160,height120,stride640. DMA16bytesBEcontrol=(selector<<16)|18hex(SELECT8|WRITE10hex),len28,addr40161120. DMBthenBE64descriptoraddr40161100toFW+10hex. Pollcontrol0success;nativebit24(BEerrorbit0)skip. CurrentMMU/cacheoffQEMUcoherent;cacheenablewillneedDMA/framebufferexplicitcleaning.
+
+KEYBOARD:
+Scan32virtioMMIOslots0a000000stride200,DeviceID18. Observed0a003c00,notfixed. Reset,status3,onlyVERSION_1high1/low0,status11,queue0Num8,highaddresses0,Ready1,status15. EightdescriptorsRAM+800+i*8,len8,WRITE2,next0. Availheads0..7idx8. Usedheaderflagsu16/idxu16,entries+204(id32,len32,stride8). EventLEu16type/u16code/u32value. Eventqueueonly,nostatus/LEDqueue. Repostconsumedhead/barriers/notify. Polling,nointerrupts/GIC. Countersnotwrap-safeafter65535events,noID/lengthvalidation;fixedsinglekeyboardprofile. InputupdatesonlywhileshellUARTinputloopruns,notduringlong/nonreturningapps(single-tasknotpreemptive).
+
+FINALTESTS:
+GUIrun20261104T001440.867440Z:
+screen-001.png LEFTactiveinitial.
+keyright/wait500ms/screen-002.png RIGHTactive.
+Serialecho/help/asprogBad/install/buildalpha/run4 ->exit1cwhileGUIactive.
+keyleft/wait500ms/screen-003.png LEFTactive.
+keyright/screen-004.png RIGHTactive.
+keyleft/echoafter-queue-wrap/loadfileempty/run42/screen-005.png LEFTactive.
+Includesringwrapafter8entries,workingconsole/disk/compiler. Captures160x120. RunIDdistinguishesearlierdraftcaptures.
+Plain20261104T001834.559793Z:BOOT/prompt,echo,rawreturnargload/run123=7b,buildnodisk,stopped.
+HTTP20261104T001859.102692Z:BOOT/MAC02:84:c8:27:18:f2/Hello, world! 1a349a97504e/prompt;echo,load/run42,asnodisk,stopped. ImageSAVED,VMSTOPPED.
+
+COMPILER/DISK/ABI PRESERVED:
+CompilerSOURCEprogBad3488bytesUNCHANGEDstage015. Freshbootrestore:as progBad;install;build alpha;run0/2/4=>0/16/28. alpha=int f(int x){int y=0;if(x){y=y+2;}while(x){y=y+3;x=x-1;}if(y){y=y*2;}return y;}. Csubsetoptionalinitialy,mutablex/yassignments,sequentialbracedif/while(assignment-onlybodies),finalreturn;EXPRx/y,literals0..65535,parentheses,+/-/*precedence. NonzeroW32truth,nonnestedcontrol,noelse;B/B.EQrealruntimecode,errorskeeppriorapp. Compilerregsx8outbase/x9input/x10end/x11out/x12cap/x13pool,w14error,w15depth64,w16haveY,w5wordcount,w7kind,w17loopstart,w18skipindex. Fitsguestasm512words/2048bytes.
+runN:uint32default0,entry40140000 x0putc402008a8/w1N/SP40110000aligned16,4KiBbelow;preserve19..29/SP,RET w0exit. putcclobbersx1/x2. installPICcompiler40150000..507ff,lenflag40150800bootzero;buildx0putc/x1exactsource/w2len/x3out40141000/w4cap2048,return4..2048multiple4or0,transactional. Appflag40142000,size42004. Asmode45000/labels46000/fixups47000..48fff;linebuffer40105000..507f. AllseparatefromGUIRAM40160000.
+Disk8files4096ASCII,allfull,no delete. DirectoryLBA0..1(records128,namelen0/u16len+2/name+4/marker80A5),filei LBA8+8i,RAM40121400+i*4096;whole9000hexprefixsync. Olddriver940/A50unchanged. FilesalphaCtest,beta,Abc123xyz789,empty4096hexreturn42,progFwdoldasm,progMathrestoredmemorydemo,progBadcompiler,prog8GUIpainter. Existingtrustedcode/noisolation/timeouts/crashatomicitylimitsremain.

@@ -33,6 +33,11 @@ const stages = {
     tools: ["notes_write", "notes_read", "vm_boot_disk", "serial_read", "serial_send", "serial_send_text", "vm_stop"],
     requiresCampaign: true,
   },
+  "016": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http",
+      "vm_boot_disk", "vm_boot_gui", "screen_capture", "key_send"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -97,6 +102,9 @@ const descriptions = {
   vm_boot_tcp: "Boot the saved guest with the private ARP and TCP challenge peer.",
   vm_boot_http: "Boot with the private ARP peer and host HTTP origin.",
   vm_boot_disk: "Boot the saved image with the campaign’s persistent virtual disk.",
+  vm_boot_gui: "Boot the saved image with a persistent disk, framebuffer, and guest keyboard.",
+  screen_capture: "Capture the current guest framebuffer.",
+  key_send: "Press and release an arrow key, Enter (ret), or Escape (esc) in the guest.",
   vm_stop: "Stop the running VM.",
   serial_read: "Read new guest serial output. Optionally wait up to wait_ms (0 to 5000) for data.",
   notes_write: "Replace your campaign handoff notes with up to 8192 characters.",
@@ -119,6 +127,7 @@ const tools = names.map(name => {
     },
     serial_send: { hex: { type: "string", maxLength: 512 } },
     serial_send_text: { text: { type: "string", maxLength: 4096 } },
+    key_send: { key: { type: "string", enum: ["left", "right", "up", "down", "ret", "esc"] } },
     notes_write: { text: { type: "string", maxLength: 8192 } },
     serial_read: { wait_ms: { type: "integer", minimum: 0, maximum: 5000 } },
   }[name] ?? {};
@@ -171,6 +180,12 @@ const tools = names.map(name => {
         output = { text: readFileSync(notes, "utf8") };
       } else {
         output = await callBroker(name, args);
+      }
+      if (name === "screen_capture") {
+        return { content: [
+          { type: "text", text: output.filename },
+          { type: "image", data: output.png, mimeType: "image/png" },
+        ] };
       }
       return { content: [{ type: "text", text: JSON.stringify(output) }] };
     },

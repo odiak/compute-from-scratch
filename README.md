@@ -82,3 +82,12 @@ python3 verify_http.py "$campaign/work/runs/$run_id"
 ```
 
 005ではゲストの `GET /hello HTTP/1.0` を固定のローカルHTTPオリジンへ渡す。観測側はPCAP、ホストのアクセスログ、シリアル出力を照合する。オリジンは起動ごとに異なる識別子を本文に含める。
+
+## GUIの観測
+
+```sh
+node pi/run.mjs 016 "$campaign"
+python3 verify_gui.py experiments/016-campaign.hex
+```
+
+016はramfbとvirtioキーボードを使う。観測側はスクリーンショットの色、キー入力での変化、シリアルシェルの応答を確認する。

@@ -1,4 +1,5 @@
 """Persistent VM broker. Closing stdin stops the VM."""
+import base64
 import json
 import os
 import subprocess
@@ -7,6 +8,7 @@ from pathlib import Path
 from time import monotonic, sleep
 
 from arp_link import ArpLink
+from display_guest import Display
 from hello_server import HelloServer
 from runner import prepare_run
 from tcp_peer import TcpPeer
@@ -18,10 +20,11 @@ class Guest:
         self.process = None
         self.link = None
         self.http = None
+        self.display = None
         self.run = None
         self.offset = 0
 
-    def boot(self, network=False, tcp=False, http=False, disk=False, observer_socket=None):
+    def boot(self, network=False, tcp=False, http=False, disk=False, observer_socket=None, display=False):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
@@ -38,9 +41,11 @@ class Guest:
                 "-device", "virtio-blk-device,drive=storage",
             ])
             record["disk"] = str(path)
+        pass_fds = []
         link = ArpLink() if network else None
         if link:
             fd = link.guest.fileno()
+            pass_fds.append(fd)
             command.extend([
                 "-global", "virtio-mmio.force-legacy=false",
                 "-netdev", f"socket,id=net0,fd={fd}",
@@ -54,17 +59,28 @@ class Guest:
             elif tcp:
                 link.tcp = TcpPeer(link.mac)
                 record["tcp_challenge"] = link.tcp.challenge.decode("ascii")
-        if disk and not network:
+        screen = Display() if display else None
+        if screen:
+            fd = screen.guest.fileno()
+            pass_fds.append(fd)
+            command.extend([
+                "-device", "ramfb", "-device", "virtio-keyboard-device",
+                "-chardev", f"socket,id=display-control,fd={fd}",
+                "-object", "monitor-qmp,id=display-qmp,chardev=display-control",
+            ])
+        if (disk or display) and not network:
             command.extend(["-global", "virtio-mmio.force-legacy=false"])
         try:
             (self.run / "run.json").write_text(json.dumps(record, indent=2) + "\n")
             with (self.run / "serial.log").open("wb") as serial, (self.run / "qemu.log").open("wb") as log:
                 self.process = subprocess.Popen(command, cwd=self.run, stdin=subprocess.PIPE,
                                                 stdout=serial, stderr=log,
-                                                pass_fds=(fd,) if link else ())
+                                                pass_fds=pass_fds)
         except OSError:
             if link:
                 link.close()
+            if screen:
+                screen.close()
             if self.http:
                 self.http.close()
                 self.http = None
@@ -73,6 +89,9 @@ class Guest:
             link.guest.close()
             link.thread.start()
         self.link = link
+        if screen:
+            screen.guest.close()
+        self.display = screen
         self.offset = 0
         return {"run_id": self.run.name}
 
@@ -85,10 +104,27 @@ class Guest:
         if self.link:
             self.link.close()
             self.link = None
+        if self.display:
+            self.display.close()
+            self.display = None
         if self.http:
             self.http.close()
             self.http = None
         return {}
+
+    def screen_capture(self):
+        if self.display is None:
+            raise ValueError("Boot a display-enabled VM first")
+        screenshot = self.display.capture(self.run)
+        if screenshot.stat().st_size > 512 * 1024:
+            raise ValueError("Screen capture exceeds 512 KiB")
+        return {"filename": screenshot.name, "png": base64.b64encode(screenshot.read_bytes()).decode()}
+
+    def key_send(self, key):
+        if self.display is None:
+            raise ValueError("Boot a display-enabled VM first")
+        self.display.key(key)
+        return {"key": key}
 
     def serial_read(self, wait_ms):
         if self.run is None:
@@ -129,6 +165,9 @@ def main():
         "vm_boot_tcp": lambda _: guest.boot(network=True, tcp=True),
         "vm_boot_http": lambda _: guest.boot(network=True, http=True),
         "vm_boot_disk": lambda _: guest.boot(disk=True),
+        "vm_boot_gui": lambda _: guest.boot(disk=True, display=True),
+        "screen_capture": lambda _: guest.screen_capture(),
+        "key_send": lambda args: guest.key_send(args["key"]),
         "vm_stop": lambda _: guest.stop(),
         "serial_read": lambda args: guest.serial_read(args.get("wait_ms", 0)),
         "serial_send": lambda args: guest.serial_send(args["hex"]),
