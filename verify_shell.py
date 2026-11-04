@@ -9,9 +9,9 @@ from guest_tool import Guest
 from verify_http import verify as verify_http
 
 
-def read_prompt(guest):
+def read_prompt(guest, timeout=5):
     output = bytearray()
-    deadline = monotonic() + 5
+    deadline = monotonic() + timeout
     while monotonic() < deadline and not output.endswith(b"shell> "):
         output.extend(bytes.fromhex(guest.serial_read(250)["hex"]))
     if not output.endswith(b"shell> "):

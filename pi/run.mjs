@@ -130,6 +130,11 @@ const stages = {
     tools: ["notes_write", "notes_read", "vm_boot_disk", "serial_read", "serial_send", "serial_send_text", "vm_stop"],
     requiresCampaign: true,
   },
+  "037": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_http",
+      "vm_boot_release", "vm_boot_disk", "vm_boot_gui", "vm_boot_browser", "screen_capture", "key_send"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -193,6 +198,7 @@ const descriptions = {
   vm_boot_network: "Boot the saved guest with a private Ethernet link to the ARP peer.",
   vm_boot_tcp: "Boot the saved guest with the private ARP and TCP challenge peer.",
   vm_boot_http: "Boot with the private ARP peer and host HTTP origin.",
+  vm_boot_release: "Boot with disk and a private HTTP peer with one allowlisted upstream source.",
   vm_boot_disk: "Boot the saved image with the campaign’s persistent virtual disk.",
   vm_boot_gui: "Boot the saved image with a persistent disk, framebuffer, and guest keyboard.",
   vm_boot_browser: "Boot with a display, keyboard, disk, and private HTML origin.",

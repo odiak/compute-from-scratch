@@ -10,6 +10,7 @@ from time import monotonic, sleep
 from arp_link import ArpLink
 from display_guest import Display
 from hello_server import HelloServer
+from release_origin import ReleaseOrigin
 from runner import prepare_run
 from tcp_peer import TcpPeer
 
@@ -25,7 +26,7 @@ class Guest:
         self.offset = 0
 
     def boot(self, network=False, tcp=False, http=False, disk=False, observer_socket=None, display=False, browser=False, paths=False,
-             links=False):
+             links=False, release=False):
         if self.process is not None:
             raise ValueError("Stop the current VM first")
         image = bytes.fromhex((self.workspace / "guest.hex").read_text())
@@ -55,7 +56,8 @@ class Guest:
             ])
             record["peer_mac"] = link.mac.hex(":")
             if http:
-                self.http = HelloServer(self.run, browser=browser, paths=paths, links=links)
+                self.http = (ReleaseOrigin(self.run) if release else
+                             HelloServer(self.run, browser=browser, paths=paths, links=links))
                 link.tcp = TcpPeer(link.mac, http=self.http)
             elif tcp:
                 link.tcp = TcpPeer(link.mac)
@@ -171,6 +173,7 @@ def main():
         "vm_boot_network": lambda _: guest.boot(network=True),
         "vm_boot_tcp": lambda _: guest.boot(network=True, tcp=True),
         "vm_boot_http": lambda _: guest.boot(network=True, http=True),
+        "vm_boot_release": lambda _: guest.boot(network=True, http=True, disk=True, release=True),
         "vm_boot_disk": lambda _: guest.boot(disk=True),
         "vm_boot_gui": lambda _: guest.boot(disk=True, display=True),
         "vm_boot_browser": lambda _: guest.boot(network=True, http=True, disk=True, display=True, browser=True),
