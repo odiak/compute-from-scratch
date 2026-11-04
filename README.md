@@ -17,10 +17,10 @@ An experiment to see how far GPT-6.1 Sol can build a software stack from machine
 | Persistent disk and filesystem | Read and write a virtual block device, and save and reload source files and programs across reboots. Complete (008 and 010). Verified raw UART imports up to 8 KiB and byte-for-byte persistence across reboot (022). |
 | Assembler | Translate AArch64 instructions and labels into machine code inside the guest, then run the result. Verified the instruction coverage and capacity needed to assemble a compiler in the guest (009–014). |
 | Compiler | Build a compiler with the guest assembler. Verified a single-function C subset with runtime arguments, integer expressions, local variables, branches, and loops (014–015). Verified helper function definitions and calls (021), and compilation of imported multiline C source with whitespace and comments (023). Verified taking the address of a local integer and reading and writing through a pointer (024). |
-| GUI and browser | Framebuffer and keyboard input are complete (016). Render simple HTML fetched from the host. Complete (017). |
+| GUI and browser | Framebuffer and keyboard input are complete (016). Verified rendering simple HTML fetched from the host (017). Next, accept a path from the keyboard and navigate between pages by following links. |
 | Self-hosting assembler | Use the kernel assembler to build a seed, then assemble its own source as a guest application. Compare generated code across generations. Complete (019). |
 | Processes and system calls | Give each program its own stack and execution state. Support cooperative scheduling, process exit and waiting, and file and console I/O. Cooperative processes and basic file I/O are complete (018 and 020). |
-| C compiler and minimal libc | Gradually add multiple functions, types, pointers, arrays, strings, and preprocessing. Test the features of the target C standard and provide library routines for I/O and string operations. |
+| C compiler and minimal libc | Gradually add multiple functions, types, pointers, arrays, strings, and preprocessing. Test the features of the target C standard and provide library routines for I/O and string operations. Verified runtime indexing and byte loads and stores for a local char array (025). |
 | Self-hosting C compiler | Have a seed compiler running in the guest build its own C source. Use the resulting compiler to rebuild itself and run regression tests. |
 | Open-source CLI | Have the observer supply the source of a small CLI with a pinned version and hash. Build it in the guest, verify its inputs and outputs, and record any porting changes. |
 | External network | Establish offline reproducibility first, then verify the workflow from source retrieval to build with a restricted set of sources. |
@@ -130,10 +130,10 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 | 永続ディスクとファイルシステム | 仮想ブロックデバイスを読み書きし、再起動をまたいでソースとプログラムを保存・再読込する。完了（008・010）。UARTから最大8 KiBのファイルを取り込み、再起動後もバイト単位で一致することを確認済み（022） |
 | アセンブラ | ゲスト内でAArch64の命令とラベルを機械語に変換し、生成物を実行する。コンパイラをゲスト内で組み立てられる命令と容量を確認済み（009–014） |
 | コンパイラ | ゲスト内アセンブラでコンパイラを組む。実行時引数・整数式・局所変数・分岐・ループを含むCサブセットを確認済み（014–015）。補助関数の定義と呼び出し（021）、空白やコメントを含む複数行のCソースを取り込んでコンパイルする処理（023）、ローカル整数のアドレス取得とポインタ経由の読み書き（024）を確認済み |
-| GUIとブラウザ | フレームバッファとキー入力は完了（016）。ホストから取得したシンプルなHTMLを画面に描画する。完了（017） |
+| GUIとブラウザ | フレームバッファとキー入力は完了（016）。ホストから取得したシンプルなHTMLの描画を確認済み（017）。次にキーボードでパスを入力し、リンクをたどってページを遷移できるようにする |
 | アセンブラの自己ホスト | カーネル内のアセンブラで種を作り、ゲストアプリとして自分のソースを組み立て直す。世代間で生成コードを照合する。完了（019） |
 | プロセスとシステムコール | 複数のプログラムに独立したスタックと実行状態を持たせ、協調スケジューリング、終了・待機、ファイルやコンソールの入出力を扱う。協調プロセスと基本ファイル入出力は完了（018・020） |
-| Cコンパイラと最小libc | 複数関数、型、ポインタ、配列、文字列、前処理などを段階的に追加する。対象とするC規格の機能をテストし、入出力・文字列操作などのライブラリを用意する |
+| Cコンパイラと最小libc | 複数関数、型、ポインタ、配列、文字列、前処理などを段階的に追加する。対象とするC規格の機能をテストし、入出力・文字列操作などのライブラリを用意する。ローカルの文字配列を実行時の添字で読み書きできることを確認済み（025） |
 | Cコンパイラの自己ホスト | ゲストで動く種コンパイラがコンパイラ自身のCソースをビルドできるようにし、生成したコンパイラで再ビルドと回帰テストを行う |
 | オープンソースCLI | 観測側が版とハッシュを固定した小さなCLIのソースを投入し、ゲスト内でビルドして入出力を照合する。必要な移植差分を記録する |
 | 外部ネットワーク | オフラインでの再現を確立した後、まず取得先を限定してソース取得からビルドまで検証する |

@@ -1,0 +1,5 @@
+Extend the stage-024 guest C compiler (disk file prog8). Use the guest assembler and existing compiler ABI. Preserve prog8 and progFwd while testing a replacement. Keep the kernel fixed. The disk file capacity is 8192 bytes and the assembled compiler and generated program are each limited to 2048 bytes.
+
+Add a local char array with a compile-time size in f, declared as char a[N];. Support a[EXPR] = EXPR; and reading a[EXPR] as an expression factor, with a runtime index and actual byte loads and stores. Support at least sizes 1 through 16, in-range indices, and ASCII values. Preserve expression temporaries, helper calls in index or value expressions, and the existing grammar including stage-024 pointers in programs without arrays. The array may be the only local declaration in this stage. Reject invalid sizes, references without declaration, and malformed indexing. No runtime bounds checking is required.
+
+Test a single compiled program with multiple arguments, writes to different elements, and a helper call. Save the exact final source on disk, update the handoff notes, and stop the VM.
