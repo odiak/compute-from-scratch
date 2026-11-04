@@ -1,0 +1,50 @@
+STAGE032 SUCCESS: new guest-assembled C seed bootstrapped a C-written compiler, which compiled and ran further independent source. Kernel remains EXACT stage031 saved image, never patched. Only eight allowed slots were written. All 16 inherited files (alpha,beta,Abc123xyz789,empty,progFwd,progMath,progBad,prog8,FsBoot,FsRecv,bin,src,kernel0,kernel1,Check,FsFix) were left untouched. No builds/executions outside guest. Stage030 src was not needed.
+
+FINAL EIGHT FILES:
+new1 = COMPLETE EXACT ASSEMBLY SEED, assembled by guest as command. It is a general small C compiler, not a special test-compiler helper.
+longasm = COMPLETE EXACT C-WRITTEN COMPILER SOURCE (alpha,digit,ws,ident,key,compile functions). Seed compiles this; install installs that C-built output.
+raw = exact seed dialect / calling conventions / ABI documentation (plain text, NOT executable).
+extra1 = independent C seed-dialect test program: four-argument sum helper plus make(char*s,int n,int*out,int cap). It sums source bytes in a loop, calls sum(v,n,3,4), writes executable return-constant instructions via int-pointer indexing. Separate proof of general seed functionality.
+extra2 = on-disk reproduction manifest and results.
+extra3 = malformed C input: int bad(int x){return x+;}
+extra4 = valid input A EXACTLY int f(int x){return x+7;} followed by LF (26 bytes, received using recv).
+extra5 = valid input B: int Independent(int value){return value+19-4+2;}
+
+REPRODUCTION FROM FRESH BOOT:
+as new1
+install
+build longasm
+install
+build extra4
+run 2        -> 00000009 (9)
+run 5        -> 0000000c (12)
+build extra5
+run 0        -> 00000011 (17)
+run 3        -> 00000014 (20)
+run 20       -> 00000025 (37)
+build extra3 -> build error
+run 20       -> STILL 00000025 (37)
+This COMPLETE chain was repeated successfully on final fresh boot 20261104T101421.953494Z. Serial log explicitly shows assembled,installed,built,installed,built, results9/12,built,results17/20/37,build error,37. ls still lists24 files. Installed compiler/program RAM is not persistent; repeat chain after every boot. Do NOT run new1 directly as a runtime integer function: it implements build ABI and expects pointers.
+
+ADDITIONAL OBSERVED TESTS:
+- Independent seed test: as new1/install/build extra1/install; save extra4 abc/build extra4/run0 =>0x130=304, matching97+98+99+3+3+4. Demonstrates four call arguments, four entry arguments, multiple functions, locals, looping, char pointer reads, int pointer indexing writes, generated executable instructions. extra4 later restored to final input A.
+- A prior add helper / triangular loop program compiled under seed: run3=6,run5=15; signed > comparisons, two-arg calls and while work.
+- Seed built final-LF input A and run8=15.
+- C-built compiler rejected empty extra3 (recv extra3 0), truncated int, literal4096, trailing junk after closing brace, wrong return variable, and missing literal. After EACH rejected build, run20 remained37. extra3 restored to final missing-literal test.
+- Final C compiler has capacity checks before writes, minimum12, cap clamp8192; literals bounded4095 before multiplication can overflow; bounded source reads. Shell build stages output and only replaces current runnable program on successful nonzero length.
+
+EXACT SEED DIALECT (also raw on disk):
+Translation unit1..16 named int-returning function definitions, definitions before calls (recursion allowed). LAST function is entry, arbitrary name. Up to FOUR typed parameters. Types int,char*,int*. Guest pointers32-bit; implicit pointer/integer conversions allowed (needed for natural low-level compiler programming); pointer arithmetic byte-based, use p[i] for int pointer scaling4. No globals, arrays, preprocessor, comments, strings, char literals, casts, structs, address-of, division/modulo, ++, break, logical/equality operators, unary minus. Use (0-value) instead. Decimal literals0..65534. Identifiers [A-Za-z_][A-Za-z_0-9]*, case-sensitive, up to31 bytes, no keyword names (int,char,return,if,else,while). Maximum32 unique variables INCLUDING parameters per function, function-wide scope/no shadowing. Declarations anywhere, optional initializer, otherwise zero. Expressions: literals, variables, function calls0..4 args, parentheses, unary pointer *, pointer indexing, binary * > precedence +,- > precedence <,> (left associative); signed comparisons yield0/1, 32-bit wrapping arithmetic. Statements: blocks, declarations, name=expr;, p[i]=expr;, *p=expr;, return expr;, if(expr) statement [else statement], while(expr) statement. No free expression/call statements; assign helper result to local instead. Char reads unsigned. Whitespace bytes<=32 including NUL extension; length-bounded source, no terminator required. Implementation is a small permissive low-level C dialect, not an ISO C validator/type checker.
+
+ABI / EMISSION:
+Seed build entry x1 source,w2 byte length,x3 output,w4 byte capacity; returns w0 emitted bytes or0. C-written compiler uses SAME build ABI. All generated C functions: w1,w2,w3,w4 arguments, w0 result; x29 preserved, stack16-aligned. Output starts PC-relative B to last function. Named functions have256-byte stack frames, save x29/x30; locals frame based, expression temporaries16-byte aligned; relative BLs, no absolute runtime helpers. Seed preserves x19..28/x30 and puts all parser symbol/token storage in1632-byte stack workspace. No fixed data addresses in final seed. All executable templates are assembler-generated instructions plus a few .word encodings for missing assembler mnemonics. Generated/installed output stayed within shell8192-byte bounds.
+
+C-BUILT TARGET DIALECT:
+int NAME(int PARAM){return PARAM {(+|-) DECIMAL}*;} with whitespace and ASCII identifiers. PARAM reference must match actual declared name. Decimal0..4095. No multiplication, parentheses, other variables or multiple functions in this narrower target dialect. Generated code is mov w0,w1 followed by SOURCE-DIRECTED add/sub immediate instructions and ret. Thus result varies with both source and actual runtime argument. No hardwired source names or compiler-specific runtime service. Source itself is C compiled by the general seed. Self-compilation is not claimed/needed.
+
+DEVELOPMENT CAVEATS, RESOLVED:
+Earlier incomplete attempts rejected whitespace due an accidental >=32 lexer comparison and had an overlapping64-bit call-metadata stack slot plus incorrect ASR/cset constants. All fixed. Removed obsolete diagnostics and broken unused helper routines. Symbols now stack-based, not beyond installed image. Some warm as attempts immediately after in-place disk source patching reported assembly error, but fresh boots assembled exact persisted source correctly. Final source needs NO patch utility, edits or migration; final fresh-boot chain above passes. raw used to be a dangerous in-place source patch utility, but was OVERWRITTEN with plain-text dialect docs. extra1 used to be diagnostics, now independent C test. No unfinished acceptance item remains.
+
+STAGE031 DISK FORMAT preserved: virtual1MiB, driver first0xe0000. Directory24 fixed128-byte slots at disk0. byte0 name length, u16 LE length+2, name+4. +80=a5 => external data at disk4096+slot*32768, else inherited inline entry+16. Filesmax32768, code8192. New files are slots16..23 in listed order. Exact extraction: preserve logical lengths, do not trim spaces/NULs/newlines. Guest cat adds framing newline/prompt. recv NAME N accepts raw bytes up to32768. Seed is new1 slot16, C compiler longasm slot17, docs raw18,extra1 slot19,extra2 slot20,extra3 slot21,extra4 slot22,extra5 slot23. Kernel stage031 migration format details in earlier campaign logs; no migration changes made this stage.
+
+Final VM is to be STOPPED immediately after these notes. User-facing final should simply report files/reproduction and successful results, not claim selfhosting.
