@@ -6,4 +6,4 @@
 
 初期候補は従来の `while` を含む入力を拒否した。観測した失敗を伝える続行指示1回の後、式・制御フロー・関数呼び出しの回帰検証がすべて通った。[引き継ぎメモ](023-handoff.txt)に字句規則と修正点を記録した。
 
-再現は `python3 verify_c_lexing.py experiments/022-campaign.hex experiments/023-compiler.s`。
+再現は `python3 verify_c_lexing.py experiments/022-campaign.hex experiments/023-compiler.s`。 [トランスクリプト](023-transcript.md)にPiの操作と観測側の続行指示を収録した。
