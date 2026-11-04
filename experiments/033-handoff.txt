@@ -1,0 +1,50 @@
+STAGE033 FINAL. Saved kernel length16216 (0x3f58), derived from stage031 length16008 (0x3e88). Stage032 disk retained. Final logical bytes of ALL24 disk files retained; only extra3/extra4 borrowed. Restored extra3 EXACT26 bytes 'int bad(int x){return x+;}' (NO LF), extra4 EXACT26 bytes 'int f(int x){return x+7;}' + LF. No other file written; new1,longasm,empty never borrowed. Final ls lists all24; cat confirms both restored. One early erroneous diagnostic load fault forced a reboot before extra4 restoration; subsequently recovered/restored it. Later every intentional reboot followed restoration. This procedural blemish is disclosed; final files are correct.
+
+LIMITS / ADDRESSES:
+program0x40140000..0x40148000 (32768 bytes); installed compiler0x40150000..0x40158000 (32768). Staged code0x41000000..0x41008000. Metadata moved OUT of code:0x41100000 active flag, +4 program BYTE size, +8 installed compiler BYTE size. Metadata was formerly program+8192/+8196 and installed+8192. Build ABI unchanged: x1 source,w2 byte length,x3 output,w4 BYTE CAPACITY; w0 byte size or0. Shell now passes32768 and rejects >32768, zero/too short/non-word-aligned output before commit. Normal assembly already allowed8192 INSTRUCTIONS; final commit limit raised32768 bytes. Raw loadfile final code check also32768. Shell command limits unchanged. Assembler config at0x40149000 (formerly40145000), label table0x41200000 (128 symbols unchanged), fixup records0x41300000..0x41320000 (8192*16 bytes). Init clears full128KiB fixup region, then original12KiB label workspace clear (x5=x25, NOT x19!). Source files/imports stillmax32768. Spawn retains8192-byte slots and explicitly rejects larger byte sizes BEFORE allocation/copy. argv/process I/O/fs/browser code otherwise untouched.
+
+IMPORTANT ROOT CAUSE FIX: Initial relocation of fixup workspace merely to program+b000 hit existing process state at0x40161000, causing as to fail at5633 words (22532 bytes). It is now separate0x41300000 and fully cleared on EVERY assembly. Full32768 boundary now passes. A temporary diagnostic error hook was REMOVED; two trailing NOPs remain. Earlier accidental init x5=x19 would clear runnable code; corrected final trampoline to x5=x25. Final transactional test confirms code at byte8196 survives failed assembly.
+
+FINAL OBSERVED TESTS:
+Run20261104T110327.546753Z, final saved image: helper generated EXACT8192 repetitions 'ret;' as32768-byte source in RAM extra4; as extra4 -> assembled; install -> installed. Installed-size peek returned00008000. Installed LAST word at0x40157ffc returnedd65f03c0 (ret). Thus full assembled+installed boundary, not merely built boundary. as extra3 (malformed C treated as asm) -> assembly error; program word at byte8196 stilld65f03c0. Small as failure also leaves run2=9. Earlier small run42 survived as failure.
+Then restored extra4 and executed EXACT bootstrap: as new1;install;build longasm;install;build extra4;run 2 ->00000009. exec 2 ->00000008 (argc1+7); spawn 2 ->pid1. build extra3 ->build error;run2 STILL9. Final as extra3 ->assembly error;run2 STILL9. 'wait 1' gave error and 'waitpid 1' unknown; no claim those are supported syntax.
+
+LARGE TOOL / BUILD DEMONSTRATION (run20261104T103537.526646Z; observer also independently passed it): assembled+installed tool8624 bytes. Entry B reaches its actual compiler body at byte8468 (>8192), with templates at8612. It requires w4==32768 (proves BYTE capacity), emits exactly32768 bytes, with initial B to executed instructions at8196,8200,8204 returning runtime w1+7. as extra4;install;build extra3;run2 ->9;exec2 ->8;spawn2 ->error (explicit oversized rejection). build extra4 ->build error because compiler RETURNED32772 after writing staging; run5 STILL12 from prior32768-byte program. Thus returned size >capacity cannot replace previous program. Final workspace changes only fix assembly bookkeeping, not ABI/emission. Observer confirmed current pipeline generated32768 ran and survived oversized return rejection.
+
+EXACT LARGE TOOL SOURCE REPRODUCTION (borrow extra4, restore before reboot): recv extra4 10000; send EXACT 'b far;' +2116 copies 'ret;' + BODY below +1054 spaces. BODY length476; whole source10000. Assembler syntax is decimal numbers and semicolon separators. BODY:
+far:;mov w5,32768;cmp w4,w5;b.ne fail;mov x5,x3;mov w6,54531;lsl w6,w6,16;mov w7,8223;orr w6,w6,w7;mov w8,8192;fill:;str w6,[x5];add x5,x5,4;sub w8,w8,1;cmp w8,0;b.ne fill;adr x5,entry;ldr w6,[x5];str w6,[x3];mov w5,8196;add w5,w3,w5;adr x7,body;ldr w6,[x7];str w6,[x5];ldr w6,[x7,4];str w6,[x5,4];ldr w6,[x7,8];str w6,[x5,8];ldrb w5,[x1];cmp w5,98;b.eq excess;mov w0,32768;ret;excess:;add w0,w4,4;ret;fail:;mov w0,0;ret;entry:;.word 335546369;body:;mov w0,w1;add w0,w0,7;ret;
+Normal source extra3 starts'i'; oversized-return source extra4 starts'b'. Restore: recv extra4 26, then exact original including LF. Repeat disk C chain above afterward.
+
+FULL ASSEMBLED BOUNDARY REPRODUCTION: recv extra4 32768, send8192 copies'ret;' EXACT (no extra LF), as extra4;install. Or guest-assembler RAM generator below, used in final test. Borrow extra3; recv extra3 251; send this exact251-char helper:
+mov w5,16459;lsl w5,w5,16;mov w6,5120;add w5,w5,w6;mov w7,15220;lsl w7,w7,16;mov w8,25970;orr w7,w7,w8;mov w8,8192;fill:;str w7,[x5];add x5,x5,4;sub w8,w8,1;cmp w8,0;b.ne fill;mov w5,0;strb w5,[x22,3842];mov w5,128;strb w5,[x22,3843];mov w0,32768;ret;
+as extra3; restore extra3 via recv26 BEFORE run; run0 ->8000 creates source in RAM extra4; as extra4;install. This targets existing stage032 RAM FS directory at40400400, slot22 length at40400f02, external data404b1400. After test restore extra4 via recv26 (writes whole disk cache, so do not leave RAM directory modified).
+Peeks: load 1022a8d2000a40b9c0035fd6;run0 ->installed byte size8000. load b002a8d2101e409100fe4fb9c0035fd6;run0 ->last installed wordd65f03c0. For transactional as test, do as extra4;as extra3; then load 9002a8d2000660b9c0035fd6;run0 ->program word8196 stillret. Peeks replace only first few program words, not installed compiler.
+
+BINARY-SAFE32KiB IMPORT VERIFIED: recv extra4 32768 printed ready, accepted EXACT32768 bytes, then saved+shell prompt. Payload32280 spaces +16 repetitions hex00ff0a0d01020304807f111213141516 (256 bytes) +232 spaces. cat emitted all32768 bytes, with exact NUL/FF/LF/CR/highbit/control pattern at tail, followed by framing LF/prompt. Sent in paced chunks <=4000 bytes after ready; rejected oversize tool calls sent nothing and weren't counted. Observer separately confirmed32768 recv/cat on current image. No recv parser/driver patches needed or made. Restore extra4 after test. Do not trim source/file bytes.
+
+EXACT PATCH MANIFEST (hex OFFSETS -> replacement hex; all unlisted original bytes retained):
+1144 510b0014
+1e90 01080014
+1ea8 fe07001400080014
+1ebc ff07001401080014
+1ec8 0208001404080014
+1ee0 02080014
+1ee8 03080014
+1f34 f3070014
+1f58 ed070014
+3db4 59000014
+2e3c 00001041
+1f70 04009052
+1f98 bf214071
+34ec bf214071
+1540 6f264091
+1574 1924a8d21a26a8d26e0a0014
+159c 6f264091
+15ac 6f264091
+15bc 6f264091
+2a7c 2a050014
+APPEND at3e88 (208 bytes), exact:
+1022a8d2010200b9aef4ff171022a8d2020240b9fef7ff171022a8d21f0200b901f8ff171022a8d21f0600b9fff7ff171022a8d2010200b900f8ff171022a8d20d0600b9fef7ff171022a8d2010200b9fdf7ff171022a8d20d0600b9fbf7ff171022a8d2010240b9fdf7ff171022a8d20d0640b9fcf7ff171022a8d20d0a00b90cf8ff171022a8d2010a40b912f8ff171022a8d2060240b9a6ffff171f0b40716870ff54f30140b9d4faff170526a8d204008852bf8400f884040071c1ffff54e50319aa8df5ff171f2003d51f2003d5
+3e88..3f24:13 metadata redirects using caller-scratch x16;3f24..3f34 spawn bound;3f34..3f50 full fixup clear/init;3f50..3f58 NOPs. Build call wrapper still preserves ABI/callee registers. Final1158 is ORIGINAL e4018052, NOT temporary debug branch. Original source compiler's own8192 clamp in longasm is unchanged (all disk bytes preserved); expanded shell allows future larger tools. This prepares executable pipeline, does not claim C compiler self-compilation.
+
+Observer confirmed all 24 directory entries and logical contents were identical. Unused file padding still contained test bytes, so the complete pre-stage disk image was restored and compared byte for byte after the VM stopped. The patch manifest reproduces the saved kernel exactly.

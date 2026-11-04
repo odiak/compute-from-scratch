@@ -13,7 +13,7 @@ An experiment to see how far GPT-6.1 Sol can build a software stack from machine
 | Boot and serial I/O | Boot from raw machine code and verify character input and output. Complete (001–002). |
 | Ethernet, TCP, and HTTP | Implement ARP and TCP, then retrieve the body of an HTTP response from the host. Complete (003–005). |
 | Serial shell | Enter and run multiple commands in the same VM and receive their results and a prompt. Complete (006). |
-| Small OS | Handle the console, memory, and program loading and exit. Start with a single task and define a calling convention between programs and the kernel. Complete (007). Verified assembled, installed, and generated executables up to 8 KiB (026). |
+| Small OS | Handle the console, memory, and program loading and exit. Start with a single task and define a calling convention between programs and the kernel. Complete (007). Verified assembled, installed, and generated executables up to 8 KiB (026) and then 32 KiB (033). |
 | Persistent disk and filesystem | Read and write a virtual block device, and save and reload source files and programs across reboots. Complete (008 and 010). Verified raw UART imports up to 8 KiB and byte-for-byte persistence across reboot (022). Verified guest-side migration to 24 files of up to 32 KiB, including assembly and C sources larger than 8 KiB (031). |
 | Assembler | Translate AArch64 instructions and labels into machine code inside the guest, then run the result. Verified the instruction coverage and capacity needed to assemble a compiler in the guest (009–014). |
 | Compiler | Build a compiler with the guest assembler. Verified a single-function C subset with runtime arguments, integer expressions, local variables, branches, and loops (014–015). Verified helper function definitions and calls (021), and compilation of imported multiline C source with whitespace and comments (023). Verified taking the address of a local integer and reading and writing through a pointer (024). |
@@ -128,7 +128,7 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 | 起動・シリアル | 生の機械語から起動し、文字の出力と入力を確認する。完了（001–002） |
 | Ethernet・TCP・HTTP | ARPとTCPを実装し、ホストのHTTP応答本文を取得する。完了（003–005） |
 | シリアルシェル | 同じVMで複数のコマンドを入力・実行し、結果とプロンプトを返す。完了（006） |
-| 小さなOS | コンソール、メモリ、プログラムのロードと終了を扱う。最初は単一タスクで、プログラムとカーネルの呼び出し規約を定める。完了（007）。アセンブル・インストール・ビルドで最大8 KiBの実行コードを扱えることを確認済み（026） |
+| 小さなOS | コンソール、メモリ、プログラムのロードと終了を扱う。最初は単一タスクで、プログラムとカーネルの呼び出し規約を定める。完了（007）。アセンブル・インストール・ビルドで8 KiB（026）、続いて最大32 KiB（033）の実行コードを扱えることを確認済み |
 | 永続ディスクとファイルシステム | 仮想ブロックデバイスを読み書きし、再起動をまたいでソースとプログラムを保存・再読込する。完了（008・010）。UARTから最大8 KiBのファイルを取り込み、再起動後もバイト単位で一致することを確認済み（022）。ゲスト内で24ファイル・各32 KiBの形式に移行し、8 KiBを超えるアセンブリとCソースを処理できることを確認済み（031） |
 | アセンブラ | ゲスト内でAArch64の命令とラベルを機械語に変換し、生成物を実行する。コンパイラをゲスト内で組み立てられる命令と容量を確認済み（009–014） |
 | コンパイラ | ゲスト内アセンブラでコンパイラを組む。実行時引数・整数式・局所変数・分岐・ループを含むCサブセットを確認済み（014–015）。補助関数の定義と呼び出し（021）、空白やコメントを含む複数行のCソースを取り込んでコンパイルする処理（023）、ローカル整数のアドレス取得とポインタ経由の読み書き（024）を確認済み |

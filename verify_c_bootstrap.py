@@ -20,8 +20,8 @@ SEED_PROBE = (
 )
 
 
-def executable(guest, socket):
-    length = int.from_bytes(read_memory(socket, 0x40142004, 4, guest.run / "size.bin"), "little")
+def executable(guest, socket, size_address):
+    length = int.from_bytes(read_memory(socket, size_address, 4, guest.run / "size.bin"), "little")
     if length < 4 or length > 8192 or length % 4:
         raise ValueError(f"Invalid executable size {length}")
     return read_memory(socket, 0x40140000, length, guest.run / "executable.bin")
@@ -33,6 +33,7 @@ def main():
     workspace = Path(tempfile.mkdtemp(dir=root)).resolve()
     (workspace / "guest.hex").write_bytes(Path(sys.argv[1]).read_bytes())
     seed, compiler = (Path(path).read_bytes().strip() for path in sys.argv[2:4])
+    size_address = int(sys.argv[4], 0) if len(sys.argv) > 4 else 0x40142004
     guest = Guest(workspace)
     with tempfile.TemporaryDirectory(dir="/tmp") as temp:
         socket = Path(temp) / "qmp.sock"
@@ -44,7 +45,7 @@ def main():
             command(guest, b"as seed", b"assembled\n")
             command(guest, b"install", b"installed\n")
             command(guest, b"build compiler", b"built\n")
-            next_compiler = executable(guest, socket)
+            next_compiler = executable(guest, socket, size_address)
             command(guest, b"install", b"installed\n")
             installed = read_memory(socket, 0x40150000, len(next_compiler), guest.run / "compiler.bin")
             if installed != next_compiler:
@@ -55,20 +56,20 @@ def main():
                 number = secrets.randbelow(300) + 2
                 receive(guest, b"sample", f"int f(int x){{return x{operator}{number};}}".encode())
                 command(guest, b"build sample", b"built\n")
-                code = executable(guest, socket)
+                code = executable(guest, socket, size_address)
                 if code == previous:
                     raise ValueError("Different C source produced identical code")
                 for x in (0, secrets.randbelow(40) + 1, secrets.randbelow(900) + 100):
                     expected = x + number if operator == "+" else x - number
                     command(guest, f"run {x}".encode(), f"exit {expected & 0xffffffff:08x}\n".encode())
-                if executable(guest, socket) != code:
+                if executable(guest, socket, size_address) != code:
                     raise ValueError("Generated code changed after execution")
                 previous = code
 
             for invalid in (b"int f(int x){return x+;}", b"int f(int x){return x+4;} junk"):
                 receive(guest, b"sample", invalid)
                 command(guest, b"build sample", b"build error\n")
-                if executable(guest, socket) != previous:
+                if executable(guest, socket, size_address) != previous:
                     raise ValueError("Invalid source replaced the previous executable")
             receive(guest, b"probe", SEED_PROBE)
             command(guest, b"as seed", b"assembled\n")
