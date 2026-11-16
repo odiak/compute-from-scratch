@@ -142,19 +142,23 @@ const stages = {
   "039": {
     tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
     requiresCampaign: true,
+    notesMaxLength: 16384,
   },
   "040": {
     tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
     requiresCampaign: true,
+    notesMaxLength: 16384,
   },
   "041": {
     tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
     requiresCampaign: true,
+    notesMaxLength: 16384,
   },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
 const names = definition.tools;
+const notesMaxLength = definition.notesMaxLength ?? 8192;
 if ((definition.requiresCampaign || mode) && !previous) throw new Error("Pass a campaign directory");
 if (mode && mode !== "--fresh" && (mode !== "--continue" || !unmetCondition?.trim() || !observation?.trim())) {
   throw new Error("Use --fresh or --continue UNMET_CONDITION OBSERVATION");
@@ -225,7 +229,7 @@ const descriptions = {
   key_send: "Press and release an arrow key, Enter (ret), or Escape (esc) in the guest.",
   vm_stop: "Stop the running VM.",
   serial_read: "Read new guest serial output. Optionally wait up to wait_ms (0 to 5000) for data.",
-  notes_write: "Replace your campaign handoff notes with up to 8192 characters.",
+  notes_write: `Replace your campaign handoff notes with up to ${notesMaxLength} characters.`,
   notes_read: "Read your campaign handoff notes.",
   serial_send_text: "Send up to 4096 UTF-8 bytes as literal serial input. Include LF to submit each shell line.",
   serial_send: "Send up to 256 bytes encoded as hex to the running guest.",
@@ -247,7 +251,7 @@ const tools = names.map(name => {
     serial_send_text: { text: { type: "string", maxLength: 4096 } },
     key_type: { path: { type: "string", maxLength: 24 } },
     key_send: { key: { type: "string", enum: ["left", "right", "up", "down", "ret", "esc"] } },
-    notes_write: { text: { type: "string", maxLength: 8192 } },
+    notes_write: { text: { type: "string", maxLength: notesMaxLength } },
     serial_read: { wait_ms: { type: "integer", minimum: 0, maximum: 5000 } },
   }[name] ?? {};
   return {
@@ -347,9 +351,10 @@ try {
   writeFileSync(join(trial, `${stage}-config.json`), JSON.stringify({
     provider: model.provider, model: model.id, transport: "sse", activeTools: active,
     systemPrompt: session.systemPrompt,
+    notesMaxLength,
   }, null, 2) + "\n");
   appendFileSync(join(trial, `${stage}-prompts.jsonl`), JSON.stringify({
-    timestamp: new Date().toISOString(), mode, unmetCondition, observation, prompt,
+    timestamp: new Date().toISOString(), mode, unmetCondition, observation, prompt, notesMaxLength,
   }) + "\n");
   session.subscribe(event => {
     if (["message_end", "tool_execution_start", "tool_execution_end", "compaction_start", "compaction_end"].includes(event.type)) {

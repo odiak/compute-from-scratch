@@ -1,0 +1,46 @@
+STAGE039 implemented; supersedes baseline-only handoff. VM STOPPED after clean boot20261116T113902.785095Z. All work offline/in guest, no host compiler/download/command-specific adapter. Observer acceptance pending.
+
+UPSTREAM NEVER WRITTEN: alpha cat.c824 bytes;beta basename.c549;Abc123xyz789 arg.h1310;extra5 echo.c421. Original observer hashes unchanged. All library IMPLEMENTATIONS GUEST-WRITTEN (libc,concat,libgen basename,putword/fshut,string/error helpers). arg.h is upstream, included intact by utilh as "Abc123xyz789". No macro or command algorithm adapters.
+
+CLEAN BOOT,semicolon=newline:
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install
+Then build catbuild;exec cat ARGS / build basebuild;exec basename ARGS / build Check;exec echo ARGS / build empty;exec filedemo.
+Do NOT install commands as compilers. Inherited one executable slot; exec first word supplies argv0. Failed builds preserve prior program.
+catbuild ordinary LF-separated #include "libc" then #include "alpha"; basebuild libc+beta; Check NOW libc+extra5 echo manifest, NOT comparator. empty unrelated C file/error program. Generic preprocessing/TU combining shares ONE libc source before exact command/header inputs. No manually copied library definitions. Definitions-before-use,no object linking. All exact current sources persistent(cat NAME), exact kernel saved campaign image.
+
+FINAL TWO-GENERATION SELFHOST:
+build FsFix;exec admin snapshot
+build extra2;install
+build FsFix;exec admin compare
+exec admin snapshot
+build extra2;install
+build FsFix;exec admin compare
+Both compare=>Y LF/0 on final clean boot; snapshots S LF/0. Compares ALL65532 bytes40150000 with40940000 snapshot,entire compiler+unchanged tail,not hash. Refresh each transition/boot.
+FsFix C admin: snapshot,compare,decode FILE(@=>LF),remove FILE(clear directory+commit). Never decode upstream. extra4 generic editor NOT normal build path: reads script from FsFix only when intentionally replacing admin source; A..X destination slot0..23 then old`new` pairs. DO NOT run with current FsFix C source! Final bootstrap needs no editor/scripts/admin.
+
+RUNTIME:
+libc open(name,flags),read(fd,char*,n),write(fd,char*,n),close(fd),errno; standard fd0/1/2. stdioh stdin0/stdout1/stderr2 integers. fcntlh O_RDONLY0,O_WRONLY1,O_RDWR2,O_CREAT64,O_TRUNC512(add independent flags). read count/EOF0/-1,write count/-1,close0/-1. errno9 EBADF,2 ENOENT,5 EIO,28 ENOSPC,24 EMFILE,22 EINVAL,36 ENAMETOOLONG. Flat persistent FS24 files,12-char names,32768 bytes/file,fd3..15. Disk FULL24; admin remove frees slot. Never truncate upstream files.
+Generic startup calls reserved ordinary C __start(argc,argv) if defined; returns adjusted argc,modifies argv in-place. libc resets fd table,parses PREFIX redirections < FILE, > FILE, 2> FILE,removes them before upstream main. E.g. exec cat < persist stdioh - libgenh. Other operands unchanged. Reusable ABI,not source translation. Small shell argv/line limits remain.
+Console PL011 RX,Ctrl-D EOF. stdout/stderr same terminal but independently redirectable. Unbuffered,writes synchronously commit disk,close dirty metadata. concat -1 input/-2 output errors;commands exit1;operation/name error text,errno exposed. fmt/eprintf/weprintf fixed-one-string %s subset.
+putchar inherited callback. exit(status) unwinds to startup SP40900000,restores x19/x30,returns status. diskcommit() calls kernel40200a50,w1=1,result w1=>w0,callee/context preserved,x22/x23 kernel FS/device context. Both reusable intrinsics.
+
+COMPILER/MIGRATION:
+extra2 adds static/extern spelling(flat TU),char locals,void params/return spelling,unary minus,declarator lists(initializer assignment precedence),switch/case/default incl negatives,nested break/continue/for/while. Genuine compare dispatch/branch patch lists. Pointer/char**64-bit,indexed postfix,short-circuit,?:,comma,global reset retained. Keyword tests simplified via same().
+PP adds define tabs,backslash-LF continuations,nested ifndef/ifdef/else/endif,recursive object macros. ARGBEGIN/ARGEND genuinely expanded from ORIGINAL header. Strings/comments protected; generic24-name includes omit dots(stdio.h=>stdioh). Unused function-like helpers retained; their invocation expansion NOT supported. No hardcoded macro translation.
+Redundant final/repaired opcode scans removed;narrow negative B/BL bootstrap correction remains. Raw pre-PP/pre-cast bridge;new1/extra1/extra3 unchanged. Raw/native compiler state moved OUT of output arena to409e0000(16542*65536),code bound cap,no2048 reserve. Temporary raw trace removed. Saved sources bootstrap/selfhost directly,no filename/hash recognition.
+
+KERNEL saved18640 bytes. Active core=accepted stage03818576 bytes with ONLY cap constants changed:8048 044c9d52=>84ff9f52;18564 104c9d52=>90ff9f52. Supplied/checked capacity65532,min4,alignment4,rejections retain old code. Installer7916 a702a8d2/build8020 b402a8d2 restored. Compiler40150000 must not cross shell state40160000. Larger capacity/relocations abandoned.
+Unreachable64-byte alias stub appended18576,no active branch into it. Exact tail:
+a902a8d2ea0313aaeb030d2a2c00a0527f010c6b49000054eb030c2a4c0140392c010039297b0bd54a050091290500916b05007141ffff548711a8d289f5ff17
+No other differences vs accepted stage038. Scratch state409e,PP4098/409c,snapshot4094;libc SP40900000,fd40901000,char40902000,copy40903000,demo40904000. Avoid40780000+4096 fetch state.
+
+ACTUAL TESTS,major cases repeated fresh boot:
+cat console text+LF+04=>identical/0;-u then04=>empty/0. <persist(no operands) and persist(one file)=>persistent C file LF/0. stdioh libgenh exact concat/0. <persist stdioh - libgenh=>header,text,header/0. <persist - - consumes once/0. -u,-uu,-u --,-- with persist all text/0. missing persist=>error then text,exit1. -x/-z/-ux=>usage/1. >progBad persist saved text/0,cat verified. 2>progBad missing persist=>only text terminal/1,cat progBad showed error only. >newoutput persist(full FS)=>redirect open error/1.
+basename normal path=>last component/0; /usr/bin/tool.c .c=>tool/0;/a/b///=>b/0;/ and ////=>slash/0; suffix same whole string or mismatched/longer=>unchanged/0;-- -name=>-name/0;single -=>-/0. Noargs,-x,three operands=>usage/1. stdout redirect saved b LF/0.
+echo noargs LF;-n empty;-n words no LF;normal words LF;-- and noninitial -n literal,all0.
+empty: admin remove persist freed slot17; C created persist,wrote18,closed,reopened,read18,wrote stdout,EOF0,closed. Checks read after close(-1,errno9),missing open(-1,2),write readonly(-1,9),invalid close(-1,9). Output persistent C file LF/0. Fresh boot cat persist BEFORE bootstrap proved persistence; empty rerun0.
+Generic negative switch=>K/0;nested for/switch/break/continue/declarators=>ABA/3;static void/char/unary minus=>AB/fffffffe. Malformed C and missing include failures retained echo. Final boot malformed progBad failed twice,prior cat still read persist/0. progBad restored int main(){return ;}.
+NOT TESTED: backing-disk failure injection,cat write-full branch. Seven-file overflow attempt rejected invalid exec(shell argv limit),not executed.
+
+LIMITS:not full ISO C/libc. Source32768,PP30000,include/macro depth16,32 macros/functions,16 globals,32 locals/function,4 C args,56 case labels,int32,unsigned char,addresses<2^32,fixed scratch/nonreentrant,definitions-before-use. No general typedef/struct/prototypes/variadics/sizeof/local arrays/prefix++/division/bitwise/function-macro invocation. Flattened TU linkage,minimal headers(shared libc definitions expose interfaces first). No pipes/concurrency/process tree/C terminal line editor;GUI/network untested.
+Historical slots repurposed(observer backups):empty=>filedemo(old fixture/compiler copy gone),Check=>echo manifest,FsBoot=>fcntlh,FsRecv=>libgenh,bin=>unistdh,src=>libc,kernel0/1=>catbuild/basebuild,longasm=>persist data,FsFix=>admin,extra4=>editor. Preserve new deliverables and four untouched upstream inputs. VM STOPPED.
