@@ -27,6 +27,19 @@ An experiment to see how far GPT-6.1 Sol can build a software stack from machine
 
 The later campaign built a self-hosted C compiler and a small CLI runtime, built an existing open-source command offline, then verified restricted external retrieval and a guest build. Browser navigation was implemented in stages 027–028 and verified again on the final kernel.
 
+### Next milestones
+
+Each stage below delivers a working development workflow, including the language and OS changes it needs. These are planned acceptance criteria, not completed results.
+
+| Experiment | Goal and acceptance criteria |
+| --- | --- |
+| 038 — Unmodified upstream echo | Compile the exact pinned upstream `echo.c` in the guest with guest headers, libc, and startup code. No source-specific adapter or compiler special cases. Compare output and exit status with the upstream reference, and verify compiler self-rebuilds and byte-identical successive generations. |
+| 039 — Multiple upstream commands | Build several unmodified commands covering string processing, standard input, and file I/O. Share headers and libc across commands and provide a repeatable build path for multiple source files. Compare normal and error cases with upstream references. |
+| 040 — Develop inside the guest | Edit source, build, run, fix, save, reboot, and rebuild inside the guest. Provide a usable editor, redirection, and pipes; demonstrate commands processing each other's output and persistent files. |
+| 041 — Rebuild the environment from source | Starting with a documented minimal boot environment and compiler seed, automatically rebuild the compiler, libc, and command set from exact saved sources. Boot or load the rebuilt environment, repeat the workflow tests, and compare successive compiler generations. |
+
+For all four stages, keep upstream `.c` files byte-for-byte intact. Guest-specific headers, library implementations, startup code, and ordinary preprocessing are allowed; source-specific rewriting is not. Maintain compiler self-hosting, preserve reproducible inputs, and independently verify outputs. Record unsupported features and any build limits. Memory protection, preemptive scheduling, a fuller browser, and direct HTTPS are later, separate milestones.
+
 Each stage builds on the previous artifacts and adds the tools it needs. The observer supplies the public source code initially and keeps both the agent and the guest offline. Record build inputs separately from the environment available for researching solutions.
 
 ### Continuing experiments with Pi
@@ -141,6 +154,19 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 | 外部ネットワーク | オフラインでの再現を確立した後、まず取得先を限定してソース取得からビルドまで検証する。取得先を1件に固定したホストの中継を経由してsbaseのecho.cを取得し、オフラインでビルドして上流版と照合済み（037） |
 
 後半はCコンパイラの自己ホスト、OSと最小libcによるCコマンドの実行、既存OSSコマンドのオフラインビルドを経て、取得先を限定した外部通信とゲストでのビルドまで確認した。段階027・028で作ったブラウザのページ遷移も最終カーネルで再検証した。
+
+### 今後のマイルストーン
+
+今後は、必要な言語機能やOS機能をまとめて実装し、一通り使える開発手順を1段階とする。以下は今後の合格条件であり、完了した結果ではない。
+
+| 実験 | 目標と合格条件 |
+| --- | --- |
+| 038 — 上流のechoを無改変でビルド | 版を固定した原本の`echo.c`を、ゲストのヘッダ・libc・起動処理とともにゲスト内でコンパイルする。ソース固有の変換器やコンパイラの特別扱いは使わない。出力・終了コードを上流版と照合し、コンパイラの自己ビルドと連続世代のバイト一致も確認する。 |
+| 039 — 複数のOSSコマンドを動かす | 文字列処理・標準入力・ファイルI/Oを使う複数のコマンドを無改変でビルドする。ヘッダとlibcを共有し、複数ソースを再現可能な手順でビルドする。正常系・異常系を上流版と照合する。 |
+| 040 — ゲスト内で日常的に開発する | ゲスト内でソースの編集・ビルド・実行・修正・保存・再起動後の再ビルドを完結する。使えるエディタ、リダイレクト、パイプを用意し、コマンド同士の出力と永続ファイルを処理する。 |
+| 041 — ソース一式から環境を再構築する | 明記した最小起動環境と種コンパイラから、保存した正確なソースを使ってコンパイラ・libc・コマンド群を自動ビルドする。再構築した環境を起動またはロードして一連の検証を繰り返し、コンパイラの連続世代も照合する。 |
+
+4段階を通じて、上流の`.c`はバイト単位で保持する。ゲスト向けヘッダ・ライブラリ実装・起動処理と通常のプリプロセッサは認め、ソース固有の書き換えは使わない。自己ホストを維持し、入力を再現できる形で保存して、観測側が出力を独立検証する。未対応機能とビルド容量の制約も記録する。メモリ保護・プリエンプティブなプロセス・本格的なブラウザ・直接のHTTPSは、その後の別のマイルストーンとする。
 
 各段階で前段の成果物を引き継ぎ、その段階で必要なツールを追加する。公開ソースの初回投入は観測側が行い、エージェントとゲストにインターネットへの経路を渡さない。ビルド時の入力と、解法を調べられる環境を分けて記録する。
 

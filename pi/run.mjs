@@ -135,6 +135,22 @@ const stages = {
       "vm_boot_release", "vm_boot_disk", "vm_boot_gui", "vm_boot_browser", "screen_capture", "key_send"],
     requiresCampaign: true,
   },
+  "038": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+  },
+  "039": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+  },
+  "040": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+  },
+  "041": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
