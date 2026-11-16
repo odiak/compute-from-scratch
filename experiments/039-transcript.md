@@ -6,12 +6,12 @@ Mechanically converted from the Pi event log by [transcript.py](../transcript.py
 | --- | --- |
 | Model | `openai-codex/gpt-6.1-sol` |
 | Start (UTC) | 2026-11-16 10:49:28 |
-| Duration | 0:58:57 |
-| Tool calls | 258 |
-| VM boots | 17 |
-| Observer messages | 1 |
+| Duration | 1:22:37 |
+| Tool calls | 295 |
+| VM boots | 19 |
+| Observer messages | 2 |
 | Compactions | 0 |
-| Tokens (input / cached / output) | 147,625 / 22,727,808 / 83,837 |
+| Tokens (input / cached / output) | 184,585 / 31,017,344 / 117,405 |
 
 **Tools:** `guest_write`, `guest_read`, `notes_write`, `notes_read`, `vm_boot`, `serial_read`, `vm_stop`, `guest_patch`, `serial_send`, `serial_send_text`, `vm_boot_disk`
 
@@ -7325,3 +7325,1516 @@ Implemented and saved:
 - Failed builds preserved runnable code.
 
 Build instructions, ABI, limits, and test results are in the handoff. Disk-failure injection and cat’s write-full path remain untested. VM stopped.
+
+_Tools added: `notes_write`_
+
+## Observer message 2 +1:01:06
+
+> The stage is still incomplete. Continue working. Unmet acceptance condition: Fix the independently observed preprocessor correctness and upstream error-output mismatches, preserving the accepted stage039 functionality and self-hosted reproducibility.
+> Observed result: Independent fresh-disk checks on the saved candidate passed: three 65336-byte compiler generations with exact installed-byte equality and equal successive self-builds; unchanged upstream basename normal/error argument cases; cat terminal stdin, redirected stdin/files, -u, binary NUL and EOT bytes in files; independent C file create/write/read, readonly-write rejection, reboot persistence, and separate stdout/stderr redirection. The active final capacity is 65532; its full-capacity repeat-build/install lifecycle also passed. Earlier 131072 relocation trials are not active final defects.
+>
+> Two acceptance gaps remain:
+> 1. Missing-file stderr differs from the upstream reference. Guest `exec cat missing` prints exactly `open missing: error\n` and exits1; upstream with argv0=cat prints exactly `cat: open missing: No such file or directory\n` and exits1. Redirecting stderr reproduces the same text mismatch. Match the generic error behavior, not a specific filename or test fixture.
+> 2. The ordinary C/preprocessor source below compiles with host cc and returns0, but guest build reports build error. The quoted #endif text is inside an inactive branch and must not act as a directive. This is an independent source, not an upstream-source rewrite.
+>
+> /* Ordinary directives, including an empty include guard and a continued macro. */
+> #define BASE 3
+> #define TOTAL (BASE + \
+> 4)
+>
+> #ifndef GUARD
+> #define GUARD
+> #ifdef NEVER_DEFINED
+> char *not_a_directive = "#endif inside a string";
+> these tokens must be discarded;
+> #else
+> int chosen(void)
+> {
+>     return TOTAL;
+> }
+> #endif
+> #else
+> these tokens must also be discarded;
+> #endif
+>
+> int main(void)
+> {
+>     char *literal = "TOTAL #endif";
+>     if (literal[0] != 'T')
+>         return 1;
+>     return chosen() != 7;
+> }
+>
+> Preserve the accepted compiler bootstrap, exact four upstream inputs, shared library/build workflow, file persistence and standard descriptor routing. Fix these gaps, verify a clean reboot and full compiler generation/install equality, and recheck bounds/large-program lifecycle if kernel or limits change.
+>
+> User steering: this is NOT an RTA. Take the time needed for a coherent, reusable implementation and reproducible results. Do not weaken criteria or skip meaningful tests to finish sooner. Continue implementation/verification while useful progress is possible rather than ending with a repeated baseline-only handoff. The runner now permits16384-character handoff notes for039 onward so exact reproduction details/limits need not be dropped.
+
+#### +1:01:06
+
+**→ `notes_read`**
+
+**← `notes_read`**
+
+`text`
+
+<details><summary>text (7,909 chars, 46 lines)</summary>
+
+```
+STAGE039 implemented; supersedes baseline-only handoff. VM STOPPED after clean boot20261116T113902.785095Z. All work offline/in guest, no host compiler/download/command-specific adapter. Observer acceptance pending.
+
+UPSTREAM NEVER WRITTEN: alpha cat.c824 bytes;beta basename.c549;Abc123xyz789 arg.h1310;extra5 echo.c421. Original observer hashes unchanged. All library IMPLEMENTATIONS GUEST-WRITTEN (libc,concat,libgen basename,putword/fshut,string/error helpers). arg.h is upstream, included intact by utilh as "Abc123xyz789". No macro or command algorithm adapters.
+
+CLEAN BOOT,semicolon=newline:
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install
+Then build catbuild;exec cat ARGS / build basebuild;exec basename ARGS / build Check;exec echo ARGS / build empty;exec filedemo.
+Do NOT install commands as compilers. Inherited one executable slot; exec first word supplies argv0. Failed builds preserve prior program.
+catbuild ordinary LF-separated #include "libc" then #include "alpha"; basebuild libc+beta; Check NOW libc+extra5 echo manifest, NOT comparator. empty unrelated C file/error program. Generic preprocessing/TU combining shares ONE libc source before exact command/header inputs. No manually copied library definitions. Definitions-before-use,no object linking. All exact current sources persistent(cat NAME), exact kernel saved campaign image.
+
+FINAL TWO-GENERATION SELFHOST:
+build FsFix;exec admin snapshot
+build extra2;install
+build FsFix;exec admin compare
+exec admin snapshot
+build extra2;install
+build FsFix;exec admin compare
+Both compare=>Y LF/0 on final clean boot; snapshots S LF/0. Compares ALL65532 bytes40150000 with40940000 snapshot,entire compiler+unchanged tail,not hash. Refresh each transition/boot.
+FsFix C admin: snapshot,compare,decode FILE(@=>LF),remove FILE(clear directory+commit). Never decode upstream. extra4 generic editor NOT normal build path: reads script from FsFix only when intentionally replacing admin source; A..X destination slot0..23 then old`new` pairs. DO NOT run with current FsFix C source! Final bootstrap needs no editor/scripts/admin.
+
+RUNTIME:
+libc open(name,flags),read(fd,char*,n),write(fd,char*,n),close(fd),errno; standard fd0/1/2. stdioh stdin0/stdout1/stderr2 integers. fcntlh O_RDONLY0,O_WRONLY1,O_RDWR2,O_CREAT64,O_TRUNC512(add independent flags). read count/EOF0/-1,write count/-1,close0/-1. errno9 EBADF,2 ENOENT,5 EIO,28 ENOSPC,24 EMFILE,22 EINVAL,36 ENAMETOOLONG. Flat persistent FS24 files,12-char names,32768 bytes/file,fd3..15. Disk FULL24; admin remove frees slot. Never truncate upstream files.
+Generic startup calls reserved ordinary C __start(argc,argv) if defined; returns adjusted argc,modifies argv in-place. libc resets fd table,parses PREFIX redirections < FILE, > FILE, 2> FILE,removes them before upstream main. E.g. exec cat < persist stdioh - libgenh. Other operands unchanged. Reusable ABI,not source translation. Small shell argv/line limits remain.
+Console PL011 RX,Ctrl-D EOF. stdout/stderr same terminal but independently redirectable. Unbuffered,writes synchronously commit disk,close dirty metadata. concat -1 input/-2 output errors;commands exit1;operation/name error text,errno exposed. fmt/eprintf/weprintf fixed-one-string %s subset.
+putchar inherited callback. exit(status) unwinds to startup SP40900000,restores x19/x30,returns status. diskcommit() calls kernel40200a50,w1=1,result w1=>w0,callee/context preserved,x22/x23 kernel FS/device context. Both reusable intrinsics.
+
+COMPILER/MIGRATION:
+extra2 adds static/extern spelling(flat TU),char locals,void params/return spelling,unary minus,declarator lists(initializer assignment precedence),switch/case/default incl negatives,nested break/continue/for/while. Genuine compare dispatch/branch patch lists. Pointer/char**64-bit,indexed postfix,short-circuit,?:,comma,global reset retained. Keyword tests simplified via same().
+PP adds define tabs,backslash-LF continuations,nested ifndef/ifdef/else/endif,recursive object macros. ARGBEGIN/ARGEND genuinely expanded from ORIGINAL header. Strings/comments protected; generic24-name includes omit dots(stdio.h=>stdioh). Unused function-like helpers retained; their invocation expansion NOT supported. No hardcoded macro translation.
+Redundant final/repaired opcode scans removed;narrow negative B/BL bootstrap correction remains. Raw pre-PP/pre-cast bridge;new1/extra1/extra3 unchanged. Raw/native compiler state moved OUT of output arena to409e0000(16542*65536),code bound cap,no2048 reserve. Temporary raw trace removed. Saved sources bootstrap/selfhost directly,no filename/hash recognition.
+
+KERNEL saved18640 bytes. Active core=accepted stage03818576 bytes with ONLY cap constants changed:8048 044c9d52=>84ff9f52;18564 104c9d52=>90ff9f52. Supplied/checked capacity65532,min4,alignment4,rejections retain old code. Installer7916 a702a8d2/build8020 b402a8d2 restored. Compiler40150000 must not cross shell state40160000. Larger capacity/relocations abandoned.
+Unreachable64-byte alias stub appended18576,no active branch into it. Exact tail:
+a902a8d2ea0313aaeb030d2a2c00a0527f010c6b49000054eb030c2a4c0140392c010039297b0bd54a050091290500916b05007141ffff548711a8d289f5ff17
+No other differences vs accepted stage038. Scratch state409e,PP4098/409c,snapshot4094;libc SP40900000,fd40901000,char40902000,copy40903000,demo40904000. Avoid40780000+4096 fetch state.
+
+ACTUAL TESTS,major cases repeated fresh boot:
+cat console text+LF+04=>identical/0;-u then04=>empty/0. <persist(no operands) and persist(one file)=>persistent C file LF/0. stdioh libgenh exact concat/0. <persist stdioh - libgenh=>header,text,header/0. <persist - - consumes once/0. -u,-uu,-u --,-- with persist all text/0. missing persist=>error then text,exit1. -x/-z/-ux=>usage/1. >progBad persist saved text/0,cat verified. 2>progBad missing persist=>only text terminal/1,cat progBad showed error only. >newoutput persist(full FS)=>redirect open error/1.
+basename normal path=>last component/0; /usr/bin/tool.c .c=>tool/0;/a/b///=>b/0;/ and ////=>slash/0; suffix same whole string or mismatched/longer=>unchanged/0;-- -name=>-name/0;single -=>-/0. Noargs,-x,three operands=>usage/1. stdout redirect saved b LF/0.
+echo noargs LF;-n empty;-n words no LF;normal words LF;-- and noninitial -n literal,all0.
+empty: admin remove persist freed slot17; C created persist,wrote18,closed,reopened,read18,wrote stdout,EOF0,closed. Checks read after close(-1,errno9),missing open(-1,2),write readonly(-1,9),invalid close(-1,9). Output persistent C file LF/0. Fresh boot cat persist BEFORE bootstrap proved persistence; empty rerun0.
+Generic negative switch=>K/0;nested for/switch/break/continue/declarators=>ABA/3;static void/char/unary minus=>AB/fffffffe. Malformed C and missing include failures retained echo. Final boot malformed progBad failed twice,prior cat still read persist/0. progBad restored int main(){return ;}.
+NOT TESTED: backing-disk failure injection,cat write-full branch. Seven-file overflow attempt rejected invalid exec(shell argv limit),not executed.
+
+LIMITS:not full ISO C/libc. Source32768,PP30000,include/macro depth16,32 macros/functions,16 globals,32 locals/function,4 C args,56 case labels,int32,unsigned char,addresses<2^32,fixed scratch/nonreentrant,definitions-before-use. No general typedef/struct/prototypes/variadics/sizeof/local arrays/prefix++/division/bitwise/function-macro invocation. Flattened TU linkage,minimal headers(shared libc definitions expose interfaces first). No pipes/concurrency/process tree/C terminal line editor;GUI/network untested.
+Historical slots repurposed(observer backups):empty=>filedemo(old fixture/compiler copy gone),Check=>echo manifest,FsBoot=>fcntlh,FsRecv=>libgenh,bin=>unistdh,src=>libc,kernel0/1=>catbuild/basebuild,longasm=>persist data,FsFix=>admin,extra4=>editor. Preserve new deliverables and four untouched upstream inputs. VM STOPPED.
+```
+
+</details>
+
+#### +1:01:12
+
+> 💭 **Inspecting compiler source**
+> 💭 **Backing up admin source**
+
+> 💭 **Fixing PP line directives**
+> 💭 **Adding bol tracking**
+
+> 💭 **Refining inactive-branch handling**
+> 💭 **Refactoring inactive lexical handling**
+
+> 💭 **Refining directive BOL state**
+
+> 💭 **Optimizing preprocessor code size**
+> 💭 **Removing duplicate exit detection**
+
+> 💭 **Preparing source optimization patch**
+> 💭 **Inspecting bootcat and PPdump**
+
+I’ll fix directive recognition and libc diagnostics generically, leaving the upstream files and kernel limits unchanged. Then I’ll test the supplied preprocessor case, exact stderr bytes, clean-boot builds, and successive compiler generations.
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T115248.506877Z"}
+```
+
+#### +1:03:20
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+cat libc
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":106}
+```
+
+#### +1:03:24
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (8,192 chars, 1 lines)</summary>
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2063686172202a61726776303b696e74206572726e6f3d303b696e7420737464303d303b696e7420737464313d313b696e7420737464323d323b696e7420696e707574656f663d303b696e7420776f726466697273743d313b696e7420737472636d702863686172202a612c63686172202a62297b7768696c65282a6126262a613d3d2a62297b612b2b3b622b2b3b7d72657475726e202a612d2a623b7d696e74207374726c656e2863686172202a73297b696e74206e3d303b7768696c6528735b6e5d296e2b2b3b72657475726e206e3b7d696e74206c6f6f6b75702863686172202a6e616d65297b63686172202a623d2863686172202a292831363434382a3235362a3235362b31303234293b696e74206e3d7374726c656e286e616d65293b696e7420693d303b696e74206a3d303b696e74206f6b3d303b7768696c6528693c3234297b696628625b305d3d3d6e297b6a3d303b6f6b3d313b7768696c65286a3c6e297b696628625b342b6a5d213d6e616d655b6a5d296f6b3d303b6a2b2b3b7d6966286f6b2972657475726e20692b313b7d623d622b3132383b692b2b3b7d72657475726e20303b7d696e74206f70656e2863686172202a6e616d652c696e7420666c616773297b696e74206d6f64653d666c6167733b696e742063723d303b696e742074723d303b696e7420693d303b696e74206b3d303b696e74206e3d7374726c656e286e616d65293b63686172202a626173653d2863686172202a292831363434382a3235362a323536293b63686172202a643d303b696e74202a663d28696e74202a292831363532382a3235362a3235362b34303936293b6966286e3c317c7c6e3e3132297b6572726e6f3d33363b72657475726e202d313b7d6966286d6f64653e353131297b74723d313b6d6f64653d6d6f64652d3531323b7d6966286d6f64653e3633297b63723d313b6d6f64653d6d6f64652d36343b7d6966286d6f64653c307c7c6d6f64653e327c7c747226266d6f64653d3d30297b6572726e6f3d32323b72657475726e202d313b7d6b3d6c6f6f6b7570286e616d65293b696628216b297b696628216372297b6572726e6f3d323b72657475726e202d313b7d693d303b7768696c6528693c32342626216b297b643d626173652b313032342b692a3132383b69662821645b305d296b3d692b313b692b2b3b7d696628216b297b6572726e6f3d32383b72657475726e202d313b7d643d626173652b313032342b286b2d31292a3132383b645b305d3d6e3b645b315d3d303b645b325d3d303b645b335d3d303b645b38305d3d3136353b693d303b7768696c6528693c6e297b645b342b695d3d6e616d655b695d3b692b2b3b7d7d643d626173652b313032342b286b2d31292a3132383b6966287472297b645b325d3d303b645b335d3d303b7d693d333b7768696c6528693c31362626665b692a345d29692b2b3b696628693d3d3136297b6572726e6f3d32343b72657475726e202d313b7d665b692a345d3d6b3b665b692a342b315d3d303b665b692a342b325d3d6d6f64653b665b692a342b335d3d63727c7c74723b72657475726e20693b7d696e7420636c6f736528696e74206664297b696e74202a663d28696e74202a292831363532382a3235362a3235362b34303936293b696e7420723d303b69662866643d3d30297b723d737464303b737464303d302d313b7d656c73652069662866643d3d31297b723d737464313b737464313d302d313b7d656c73652069662866643d3d32297b723d737464323b737464323d302d313b7d656c736520723d66643b696628723c30297b6572726e6f3d393b72657475726e202d313b7d696628723c332972657475726e20303b66643d723b723d303b69662866643e31357c7c21665b66642a345d297b6572726e6f3d393b72657475726e202d313b7d696628665b66642a342b335d297b723d6469736b636f6d6d697428293b69662872297b6572726e6f3d353b72657475726e202d313b7d7d665b66642a345d3d303b72657475726e20303b7d696e74207278656d70747928696e7420666c616773297b7768696c6528666c6167733e333129666c6167733d666c6167732d33323b72657475726e20666c6167733e31353b7d696e74207265616428696e742066642c63686172202a6275662c696e74206e297b696e74202a663d28696e74202a292831363532382a3235362a3235362b34303936293b696e74206b3d303b696e7420703d303b696e74206c656e3d303b696e7420693d303b63686172202a626173653d2863686172202a292831363434382a3235362a323536293b63686172202a643d303b63686172202a733d303b696e74202a753d28696e74202a2928323330342a3235362a323536293b6966286e3c30297b6572726e6f3d32323b72657475726e202d313b7d696628216e2972657475726e20303b69662866643d3d30297b66643d737464303b69662866643d3d30297b696628696e707574656f662972657475726e20303b7768696c65287278656d70747928755b365d29297b7d6b3d755b305d3b6966286b3d3d34297b696e707574656f663d313b72657475726e20303b7d6275665b305d3d6b3b72657475726e20313b7d7d69662866643c337c7c66643e31357c7c21665b66642a345d7c7c665b66642a342b325d3d3d31297b6572726e6f3d393b72657475726e202d313b7d6b3d665b66642a345d2d313b703d665b66642a342b315d3b643d626173652b313032342b6b2a3132383b6c656e3d645b325d2b645b335d2a3235363b733d626173652b353132302b6b2a33323736383b7768696c6528693c6e2626703c6c656e297b6275665b695d3d735b705d3b692b2b3b702b2b3b7d665b66642a342b315d3d703b72657475726e20693b7d696e7420777269746528696e742066642c63686172202a6275662c696e74206e297b696e74202a663d28696e74202a292831363532382a3235362a3235362b34303936293b696e74206b3d303b696e7420703d303b696e74206c656e3d303b696e7420693d303b696e74206c6f3d303b696e742068693d303b63686172202a626173653d2863686172202a292831363434382a3235362a323536293b63686172202a643d303b63686172202a733d303b6966286e3c30297b6572726e6f3d32323b72657475726e202d313b7d69662866643d3d312966643d737464313b656c73652069662866643d3d322966643d737464323b69662866643d3d317c7c66643d3d32297b7768696c6528693c6e297b70757463686172286275665b695d293b692b2b3b7d72657475726e206e3b7d69662866643c337c7c66643e31357c7c21665b66642a345d7c7c21665b66642a342b325d297b6572726e6f3d393b72657475726e202d313b7d703d665b66642a342b315d3b696628702b6e3e3332373638297b6572726e6f3d32383b72657475726e202d313b7d6b3d665b66642a345d2d313b643d626173652b313032342b6b2a3132383b733d626173652b353132302b6b2a33323736383b6c656e3d645b325d2b645b335d2a3235363b7768696c6528693c6e297b735b705d3d6275665b695d3b692b2b3b702b2b3b7d696628703e6c656e296c656e3d703b6c6f3d6c656e3b7768696c65286c6f3e323535297b68692b2b3b6c6f3d6c6f2d3235363b7d645b325d3d6c6f3b645b335d3d68693b665b66642a342b315d3d703b665b66642a342b335d3d313b6966286469736b636f6d6d69742829297b6572726e6f3d353b72657475726e202d313b7d72657475726e206e3b7d696e74206664636828696e742066642c696e742063297b63686172202a623d2863686172202a292831363532382a3235362a3235362b38313932293b625b305d3d633b69662877726974652866642c622c3129213d312972657475726e202d313b72657475726e20303b7d696e74206f757428696e742066642c63686172202a73297b696e74206e3d7374726c656e2873293b69662877726974652866642c732c6e29213d6e2972657475726e202d313b72657475726e20303b7d696e7420707574732863686172202a73297b6966286f757428312c73293c302972657475726e202d313b72657475726e206664636828312c3130293b7d696e7420666d7428696e742066642c63686172202a662c63686172202a617267297b7768696c65282a66297b6966282a663d3d33372626665b315d3d3d313135297b6966286f75742866642c617267293c302972657475726e202d313b663d662b323b7d656c73657b696628666463682866642c2a66293c302972657475726e202d313b662b2b3b7d7d72657475726e20303b7d696e7420657072696e74662863686172202a662c63686172202a617267297b666d7428322c662c617267293b657869742831293b72657475726e20303b7d696e742077657072696e74662863686172202a662c63686172202a617267297b666d7428322c662c617267293b6f757428322c22206572726f725c6e22293b72657475726e20303b7d63686172202a626173656e616d652863686172202a73297b696e74206e3d7374726c656e2873293b696e7420693d303b696628216e2972657475726e20222e223b7768696c65286e3e312626735b6e2d315d3d3d3437296e2d2d3b735b6e5d3d303b6966286e3d3d312626735b305d3d3d34372972657475726e20733b693d6e2d313b7768696c6528693e302626735b692d315d213d343729692d2d3b72657475726e20732b693b7d696e7420707574776f726428696e742066642c63686172202a73297b69662821776f72646669727374297b696628666463682866642c3332293c302972657475726e202d313b7d776f726466697273743d303b72657475726e206f75742866642c73293b7d696e7420667368757428696e742066642c63686172202a6e616d65297b696e7420723d303b69662866643d3d312626737464313e32297b723d636c6f73652873746431293b737464313d313b7d69662866643d3d322626737464323e32297b723d636c6f73652873746432293b737464323d323b7d72657475726e20723c303b7d696e7420636f6e63617428696e742066726f6d2c63686172202a612c696e7420746f2c63686172202a62297b63686172202a6275663d2863686172202a292831363532382a3235362a3235362b3132323838293b696e74206e3d726561642866726f6d2c6275662c323536293b7768696c65286e3e30297b696628777269746528746f2c6275662c6e29213d6e297b77657072696e7466282277726974652025733a222c62293b72657475726e202d323b7d6e3d726561642866726f6d2c6275662c323536293b7d6966286e3c30297b77657072696e74662822726561642025733a222c61293b72657475726e202d313b7d72657475726e20303b7d696e
+```
+
+</details>
+
+`text`
+
+<details><summary>text (4,096 chars, 12 lines)</summary>
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> char *argv0;int errno=0;int std0=0;int std1=1;int std2=2;int inputeof=0;int wordfirst=1;int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;}int strlen(char *s){int n=0;while(s[n])n++;return n;}int lookup(char *name){char *b=(char *)(16448*256*256+1024);int n=strlen(name);int i=0;int j=0;int ok=0;while(i<24){if(b[0]==n){j=0;ok=1;while(j<n){if(b[4+j]!=name[j])ok=0;j++;}if(ok)return i+1;}b=b+128;i++;}return 0;}int open(char *name,int flags){int mode=flags;int cr=0;int tr=0;int i=0;int k=0;int n=strlen(name);char *base=(char *)(16448*256*256);char *d=0;int *f=(int *)(16528*256*256+4096);if(n<1||n>12){errno=36;return -1;}if(mode>511){tr=1;mode=mode-512;}if(mode>63){cr=1;mode=mode-64;}if(mode<0||mode>2||tr&&mode==0){errno=22;return -1;}k=lookup(name);if(!k){if(!cr){errno=2;return -1;}i=0;while(i<24&&!k){d=base+1024+i*128;if(!d[0])k=i+1;i++;}if(!k){errno=28;return -1;}d=base+1024+(k-1)*128;d[0]=n;d[1]=0;d[2]=0;d[3]=0;d[80]=165;i=0;while(i<n){d[4+i]=name[i];i++;}}d=base+1024+(k-1)*128;if(tr){d[2]=0;d[3]=0;}i=3;while(i<16&&f[i*4])i++;if(i==16){errno=24;return -1;}f[i*4]=k;f[i*4+1]=0;f[i*4+2]=mode;f[i*4+3]=cr||tr;return i;}int close(int fd){int *f=(int *)(16528*256*256+4096);int r=0;if(fd==0){r=std0;std0=0-1;}else if(fd==1){r=std1;std1=0-1;}else if(fd==2){r=std2;std2=0-1;}else r=fd;if(r<0){errno=9;return -1;}if(r<3)return 0;fd=r;r=0;if(fd>15||!f[fd*4]){errno=9;return -1;}if(f[fd*4+3]){r=diskcommit();if(r){errno=5;return -1;}}f[fd*4]=0;return 0;}int rxempty(int flags){while(flags>31)flags=flags-32;return flags>15;}int read(int fd,char *buf,int n){int *f=(int *)(16528*256*256+4096);int k=0;int p=0;int len=0;int i=0;char *base=(char *)(16448*256*256);char *d=0;char *s=0;int *u=(int *)(2304*256*256);if(n<0){errno=22;return -1;}if(!n)return 0;if(fd==0){fd=std0;if(fd==0){if(inputeof)return 0;while(rxempty(u[6])){}k=u[0];if(k==4){inputeof=1;return 0;}buf[0]=k;return 1;}}if(fd<3||fd>15||!f[fd*4]||f[fd*4+2]==1){errno=9;return -1;}k=f[fd*4]-1;p=f[fd*4+1];d=base+1024+k*128;len=d[2]+d[3]*256;s=base+5120+k*32768;while(i<n&&p<len){buf[i]=s[p];i++;p++;}f[fd*4+1]=p;return i;}int write(int fd,char *buf,int n){int *f=(int *)(16528*256*256+4096);int k=0;int p=0;int len=0;int i=0;int lo=0;int hi=0;char *base=(char *)(16448*256*256);char *d=0;char *s=0;if(n<0){errno=22;return -1;}if(fd==1)fd=std1;else if(fd==2)fd=std2;if(fd==1||fd==2){while(i<n){putchar(buf[i]);i++;}return n;}if(fd<3||fd>15||!f[fd*4]||!f[fd*4+2]){errno=9;return -1;}p=f[fd*4+1];if(p+n>32768){errno=28;return -1;}k=f[fd*4]-1;d=base+1024+k*128;s=base+5120+k*32768;len=d[2]+d[3]*256;while(i<n){s[p]=buf[i];i++;p++;}if(p>len)len=p;lo=len;while(lo>255){hi++;lo=lo-256;}d[2]=lo;d[3]=hi;f[fd*4+1]=p;f[fd*4+3]=1;if(diskcommit()){errno=5;return -1;}return n;}int fdch(int fd,int c){char *b=(char *)(16528*256*256+8192);b[0]=c;if(write(fd,b,1)!=1)return -1;return 0;}int out(int fd,char *s){int n=strlen(s);if(write(fd,s,n)!=n)return -1;return 0;}int puts(char *s){if(out(1,s)<0)return -1;return fdch(1,10);}int fmt(int fd,char *f,char *arg){while(*f){if(*f==37&&f[1]==115){if(out(fd,arg)<0)return -1;f=f+2;}else{if(fdch(fd,*f)<0)return -1;f++;}}return 0;}int eprintf(char *f,char *arg){fmt(2,f,arg);exit(1);return 0;}int weprintf(char *f,char *arg){fmt(2,f,arg);out(2," error\n");return 0;}char *basename(char *s){int n=strlen(s);int i=0;if(!n)return ".";while(n>1&&s[n-1]==47)n--;s[n]=0;if(n==1&&s[0]==47)return s;i=n-1;while(i>0&&s[i-1]!=47)i--;return s+i;}int putword(int fd,char *s){if(!wordfirst){if(fdch(fd,32)<0)return -1;}wordfirst=0;return out(fd,s);}int fshut(int fd,char *name){int r=0;if(fd==1&&std1>2){r=close(std1);std1=1;}if(fd==2&&std2>2){r=close(std2);std2=2;}return r<0;}int concat(int from,char *a,int to,char *b){char *buf=(char *)(16528*256*256+12288);int n=read(from,buf,256);while(n>0){if(write(to,buf,n)!=n){weprintf("write %s:",b);return -2;}n=read(from,buf,256);}if(n<0){weprintf("read %s:",a);return -1;}return 0;}in
+```
+
+</details>
+
+#### +1:03:27
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+74205f5f737461727428696e742061632c63686172202a2a6176297b696e74202a663d28696e74202a292831363532382a3235362a3235362b34303936293b696e7420693d303b696e74206a3d303b696e74206b3d303b696e742066643d303b7768696c6528693c3634297b665b695d3d303b692b2b3b7d693d313b7768696c6528693c6163297b6b3d303b69662821737472636d702861765b695d2c223c2229296b3d313b656c73652069662821737472636d702861765b695d2c223e2229296b3d323b656c73652069662821737472636d702861765b695d2c22323e2229296b3d333b696628216b29627265616b3b696628692b313d3d616329657072696e7466282272656469726563743a2025735c6e222c61765b695d293b6966286b3d3d312966643d6f70656e2861765b692b315d2c30293b656c73652066643d6f70656e2861765b692b315d2c353737293b69662866643c3029657072696e746628227265646972656374206f70656e2025733a206572726f725c6e222c61765b692b315d293b6966286b3d3d3129737464303d66643b656c7365206966286b3d3d3229737464313d66643b656c736520737464323d66643b693d692b323b7d6a3d313b7768696c6528693c6163297b61765b6a5d3d61765b695d3b6a2b2b3b692b2b3b7d61765b6a5d3d2863686172202a29303b72657475726e206a3b7d200a7368656c6c3e20
+```
+
+`text`
+
+```
+t __start(int ac,char **av){int *f=(int *)(16528*256*256+4096);int i=0;int j=0;int k=0;int fd=0;while(i<64){f[i]=0;i++;}i=1;while(i<ac){k=0;if(!strcmp(av[i],"<"))k=1;else if(!strcmp(av[i],">"))k=2;else if(!strcmp(av[i],"2>"))k=3;if(!k)break;if(i+1==ac)eprintf("redirect: %s\n",av[i]);if(k==1)fd=open(av[i+1],0);else fd=open(av[i+1],577);if(fd<0)eprintf("redirect open %s: error\n",av[i+1]);if(k==1)std0=fd;else if(k==2)std1=fd;else std2=fd;i=i+2;}j=1;while(i<ac){av[j]=av[i];j++;i++;}av[j]=(char *)0;return j;} 
+shell>
+```
+
+#### +1:03:31
+
+> 💭 **Checking error behavior**
+> 💭 **Inferring eprintf behavior**
+
+> 💭 **Reordering eprintf/weprintf definitions**
+> 💭 **Capturing pp source**
+
+**→ `serial_send_text`**
+
+```
+build catbuild
+exec cat > persist FsFix
+save progBad int eq(char *a,char *b,int n){int i=0;while(i<n){if(a[i]!=b[i])return 0;i++;}return 1;}
+append progBad int main(){char *p=(char *)(16448*256*256+5120+20*32768);int i=0;int j=0;
+append progBad while(i<32000){if(eq(p+i,"int pp(",7)){while(j<5100){putchar(p[i+j]);j++;}return 0;}i++;}
+append progBad return 1;}
+build progBad
+exec inspect
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":388}
+```
+
+#### +1:04:10
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (8,192 chars, 1 lines)</summary>
+
+```
+6275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e742070702863686172202a7372632c696e74206e2c63686172202a6f75742c696e74202a73297b696e7420693d303b696e74206b3d303b696e7420613d303b696e7420623d303b696e7420633d303b696e7420643d303b696e74206a3d303b696e74206d3d303b696e74206869743d303b696e742064657074683d303b696e7420736b69703d303b696e74202a636f6e64733d732b3136302b735b315d2a33323b63686172202a703d303b63686172202a6469723d303b735b315d2b2b3b696628735b315d3e31362972657475726e20302d313b7768696c6528693c6e297b633d7372635b695d3b696628633d3d39322626692b313c6e26267372635b692b315d3d3d3130297b693d692b323b7d656c736520696628736b6970262663213d3335297b692b2b3b7d656c736520696628633d3d3335297b692b2b3b7768696c6528693c6e2626287372635b695d3d3d33327c7c7372635b695d3d3d392929692b2b3b613d693b7768696c6528693c6e26267372635b695d3e333229692b2b3b623d692d613b696628623d3d36262673616d65287372632b612c2269666e646566222c36297c7c623d3d35262673616d65287372632b612c226966646566222c3529297b6869743d623b692b2b3b7768696c6528693c6e26267372635b695d3c333326267372635b695d213d313029692b2b3b613d693b7768696c6528693c6e26267372635b695d3e333229692b2b3b623d692d613b6a3d303b6d3d303b7768696c65286a3c735b305d297b643d382b6a2a343b696628623d3d735b642b315d262673616d65287372632b612c2863686172202a29735b645d2c6229296d3d313b6a2b2b3b7d6966286869743d3d36296d3d216d3b69662864657074683e31352972657475726e20302d313b636f6e64735b64657074685d3d736b69703b64657074682b2b3b736b69703d736b69707c7c216d3b7768696c6528693c6e26267372635b695d213d313029692b2b3b7d656c736520696628623d3d35262673616d65287372632b612c22656e646966222c3529297b69662864657074683c312972657475726e20302d313b64657074682d2d3b736b69703d636f6e64735b64657074685d3b7d656c736520696628623d3d34262673616d65287372632b612c22656c7365222c3429297b69662864657074683c312972657475726e20302d313b736b69703d636f6e64735b64657074682d315d7c7c21736b69703b7d656c736520696628736b6970297b7768696c6528693c6e26267372635b695d213d313029692b2b3b7d656c736520696628623d3d37262673616d65287372632b612c22696e636c756465222c3729297b7768696c6528693c6e26267372635b695d3c333329692b2b3b633d7372635b695d3b69662863213d3334262663213d36302972657475726e20302d313b692b2b3b613d693b7768696c6528693c6e26267372635b695d213d333426267372635b695d213d363229692b2b3b696628693d3d6e2972657475726e20302d313b643d686561646572287372632b612c692d61293b69662821642972657475726e20302d313b642d2d3b6469723d2863686172202a292831363434382a3235362a3235362b313032342b642a313238293b703d2863686172202a292831363434382a3235362a3235362b353132302b642a3332373638293b6a3d707028702c6469725b325d2b6469725b335d2a3235362c6f75742b6b2c73293b6966286a3c302972657475726e20302d313b6b3d6b2b6a3b692b2b3b7768696c6528693c6e26267372635b695d213d313029692b2b3b7d656c73657b696628623d3d36262673616d65287372632b612c22646566696e65222c3629297b7768696c6528693c6e2626287372635b695d3d3d33327c7c7372635b695d3d3d392929692b2b3b613d693b7768696c6528693c6e26267372635b695d3e333229692b2b3b623d692d613b7768696c6528693c6e2626287372635b695d3d3d33327c7c7372635b695d3d3d392929692b2b3b633d693b7768696c6528693c6e297b6966287372635b695d3d3d39322626692b313c6e26267372635b692b315d3d3d313029693d692b323b656c7365206966287372635b695d3d3d3130297b6d3d693b693d6e3b7d656c736520692b2b3b7d696628693d3d6e26266d3e632d3129693d6d3b643d382b735b305d2a343b696628735b305d3e33312972657475726e20302d313b735b645d3d28696e7429287372632b61293b735b642b315d3d623b735b642b325d3d28696e7429287372632b63293b735b642b335d3d692d633b735b305d2b2b3b7d656c73652072657475726e20302d313b7d6f75745b6b5d3d31303b6b2b2b3b7d656c73657b696628633d3d33347c7c633d3d3339297b6f75745b6b5d3d633b6b2b2b3b692b2b3b6869743d313b7768696c6528693c6e2626686974297b6a3d7372635b695d3b6f75745b6b5d3d6a3b6b2b2b3b692b2b3b6966286a3d3d3932297b696628693c6e297b6f75745b6b5d3d7372635b695d3b6b2b2b3b692b2b3b7d7d656c7365206966286a3d3d63296869743d303b7d6966286869742972657475726e20302d313b7d656c73657b696628633d3d34372626692b313c6e2626287372635b692b315d3d3d34327c7c7372635b692b315d3d3d343729297b643d7372635b692b315d3b693d692b323b696628643d3d3437297b7768696c6528693c6e26267372635b695d213d313029692b2b3b7d656c73657b6869743d313b7768696c6528692b313c6e2626686974297b6966287372635b695d3d3d343226267372635b692b315d3d3d3437297b693d692b323b6869743d303b7d656c736520692b2b3b7d6966286869742972657475726e20302d313b7d6f75745b6b5d3d33323b6b2b2b3b7d656c73657b6869743d303b696628633e36342626633c39317c7c633e39362626633c3132337c7c633d3d3935296869743d313b696628686974297b613d693b692b2b3b7768696c6528693c6e2626287372635b695d3e363426267372635b695d3c39317c7c7372635b695d3e393626267372635b695d3c3132337c7c7372635b695d3d3d39357c7c7372635b695d3e343726267372635b695d3c35382929692b2b3b623d692d613b6a3d303b6869743d303b7768696c65286a3c735b305d297b643d382b6a2a343b696628623d3d735b642b315d262673616d65287372632b612c2863686172202a29735b645d2c6229296869743d643b6a2b2b3b7d696628686974297b6a3d7070282863686172202a29735b6869742b325d2c735b6869742b335d2c6f75742b6b2c73293b6966286a3c302972657475726e20302d313b6b3d6b2b6a3b7d656c73657b6a3d613b7768696c65286a3c69297b6f75745b6b5d3d7372635b6a5d3b6b2b2b3b6a2b2b3b7d7d7d656c73657b6f75745b6b5d3d633b6b2b2b3b692b2b3b7d7d7d7d6966286b3e33303030302972657475726e20302d313b7d735b315d2d2d3b72657475726e206b3b7d696e74206472697665722863686172202a7372632c696e74206e2c696e74202a6f75742c696e7420636170297b696e74202a733d28696e74202a292831363533362a3235362a323536293b63686172202a746578743d2863686172202a292831363534302a3235362a323536293b696e7420693d303b7768696c6528693c313430297b735b695d3d303b692b2b3b7d6e3d7070287372632c6e2c746578742c73293b6966286e3c302972657475726e20303b72657475726e20726570616972656428746578742c6e2c6f75742c636170293b7d202020202020202020202020202020202020202020206b3e33303030302972657475726e20302d313b7d735b315d2d2d3b72657475726e206b3b7d696e74206472697665722863686172202a7372632c696e74206e2c696e74202a6f75742c696e7420636170297b696e74202a733d28696e74202a292831363533362a3235362a323536293b63686172202a746578743d2863686172202a292831363534302a3235362a323536293b696e7420693d303b7768696c6528693c313430297b735b695d3d303b692b2b3b7d6e3d7070287372632c6e2c746578742c73293b6966286e3c302972657475726e20303b72657475726e20726570616972656428746578742c6e2c6f75742c636170293b7d2020202020202020202020202020202020696e7420636170297b696e74202a733d28696e74202a292831363533362a3235362a323536293b63686172202a746578743d2863686172202a292831363534302a3235362a323536293b696e7420693d303b7768696c6528693c313430297b735b695d3d303b692b2b3b7d6e3d7070287372632c6e2c746578742c73293b6966286e3c302972657475726e20303b72657475726e20726570616972656428746578742c6e2c6f75742c636170293b7d202020202020202020202020202020202b6a3b7d656c73657b6a3d613b7768696c65286a3c69297b6f75745b6b5d3d7372635b6a5d3b6b2b2b3b6a2b2b3b7d7d7d656c73657b6f75745b6b5d3d633b6b2b2b3b692b2b3b7d7d7d7d6966286b3e33303030302972657475726e20302d313b7d735b315d2d2d3b72657475726e206b3b7d696e74206472697665722863686172202a7372632c696e74206e2c696e74202a6f75742c696e7420636170297b696e74202a733d28696e74202a292831363533362a3235362a323536293b63686172202a746578743d2863686172202a292831363534302a3235362a323536293b696e74202a753d28696e74202a2928323330342a3235362a323536293b696e7420693d303b755b305d3d36383b7768696c6528693c313430297b735b695d3d303b692b2b3b7d6e3d7070287372632c6e2c746578742c73293b755b305d3d38303b6966286e3c302972657475726e20303b72657475726e20726570616972656428746578742c6e2c6f75742c636170293b7d2020202020202020202020202020200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+```
+
+</details>
+
+`text`
+
+<details><summary>text (4,096 chars, 8 lines)</summary>
+
+```
+built
+shell> exit 00000000
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> int pp(char *src,int n,char *out,int *s){int i=0;int k=0;int a=0;int b=0;int c=0;int d=0;int j=0;int m=0;int hit=0;int depth=0;int skip=0;int *conds=s+160+s[1]*32;char *p=0;char *dir=0;s[1]++;if(s[1]>16)return 0-1;while(i<n){c=src[i];if(c==92&&i+1<n&&src[i+1]==10){i=i+2;}else if(skip&&c!=35){i++;}else if(c==35){i++;while(i<n&&(src[i]==32||src[i]==9))i++;a=i;while(i<n&&src[i]>32)i++;b=i-a;if(b==6&&same(src+a,"ifndef",6)||b==5&&same(src+a,"ifdef",5)){hit=b;i++;while(i<n&&src[i]<33&&src[i]!=10)i++;a=i;while(i<n&&src[i]>32)i++;b=i-a;j=0;m=0;while(j<s[0]){d=8+j*4;if(b==s[d+1]&&same(src+a,(char *)s[d],b))m=1;j++;}if(hit==6)m=!m;if(depth>15)return 0-1;conds[depth]=skip;depth++;skip=skip||!m;while(i<n&&src[i]!=10)i++;}else if(b==5&&same(src+a,"endif",5)){if(depth<1)return 0-1;depth--;skip=conds[depth];}else if(b==4&&same(src+a,"else",4)){if(depth<1)return 0-1;skip=conds[depth-1]||!skip;}else if(skip){while(i<n&&src[i]!=10)i++;}else if(b==7&&same(src+a,"include",7)){while(i<n&&src[i]<33)i++;c=src[i];if(c!=34&&c!=60)return 0-1;i++;a=i;while(i<n&&src[i]!=34&&src[i]!=62)i++;if(i==n)return 0-1;d=header(src+a,i-a);if(!d)return 0-1;d--;dir=(char *)(16448*256*256+1024+d*128);p=(char *)(16448*256*256+5120+d*32768);j=pp(p,dir[2]+dir[3]*256,out+k,s);if(j<0)return 0-1;k=k+j;i++;while(i<n&&src[i]!=10)i++;}else{if(b==6&&same(src+a,"define",6)){while(i<n&&(src[i]==32||src[i]==9))i++;a=i;while(i<n&&src[i]>32)i++;b=i-a;while(i<n&&(src[i]==32||src[i]==9))i++;c=i;while(i<n){if(src[i]==92&&i+1<n&&src[i+1]==10)i=i+2;else if(src[i]==10){m=i;i=n;}else i++;}if(i==n&&m>c-1)i=m;d=8+s[0]*4;if(s[0]>31)return 0-1;s[d]=(int)(src+a);s[d+1]=b;s[d+2]=(int)(src+c);s[d+3]=i-c;s[0]++;}else return 0-1;}out[k]=10;k++;}else{if(c==34||c==39){out[k]=c;k++;i++;hit=1;while(i<n&&hit){j=src[i];out[k]=j;k++;i++;if(j==92){if(i<n){out[k]=src[i];k++;i++;}}else if(j==c)hit=0;}if(hit)return 0-1;}else{if(c==47&&i+1<n&&(src[i+1]==42||src[i+1]==47)){d=src[i+1];i=i+2;if(d==47){while(i<n&&src[i]!=10)i++;}else{hit=1;while(i+1<n&&hit){if(src[i]==42&&src[i+1]==47){i=i+2;hit=0;}else i++;}if(hit)return 0-1;}out[k]=32;k++;}else{hit=0;if(c>64&&c<91||c>96&&c<123||c==95)hit=1;if(hit){a=i;i++;while(i<n&&(src[i]>64&&src[i]<91||src[i]>96&&src[i]<123||src[i]==95||src[i]>47&&src[i]<58))i++;b=i-a;j=0;hit=0;while(j<s[0]){d=8+j*4;if(b==s[d+1]&&same(src+a,(char *)s[d],b))hit=d;j++;}if(hit){j=pp((char *)s[hit+2],s[hit+3],out+k,s);if(j<0)return 0-1;k=k+j;}else{j=a;while(j<i){out[k]=src[j];k++;j++;}}}else{out[k]=c;k++;i++;}}}}if(k>30000)return 0-1;}s[1]--;return k;}int driver(char *src,int n,int *out,int cap){int *s=(int *)(16536*256*256);char *text=(char *)(16540*256*256);int i=0;while(i<140){s[i]=0;i++;}n=pp(src,n,text,s);if(n<0)return 0;return repaired(text,n,out,cap);}                      k>30000)return 0-1;}s[1]--;return k;}int driver(char *src,int n,int *out,int cap){int *s=(int *)(16536*256*256);char *text=(char *)(16540*256*256);int i=0;while(i<140){s[i]=0;i++;}n=pp(src,n,text,s);if(n<0)return 0;return repaired(text,n,out,cap);}                 int cap){int *s=(int *)(16536*256*256);char *text=(char *)(16540*256*256);int i=0;while(i<140){s[i]=0;i++;}n=pp(src,n,text,s);if(n<0)return 0;return repaired(text,n,out,cap);}                +j;}else{j=a;while(j<i){out[k]=src[j];k++;j++;}}}else{out[k]=c;k++;i++;}}}}if(k>30000)return 0-1;}s[1]--;return k;}int driver(char *src,int n,int *out,int cap){int *s=(int *)(16536*256*256);char *text=(char *)(16540*256*256);int *u=(int *)(2304*256*256);int i=0;u[0]=68;while(i<140){s[i]=0;i++;}n=pp(src,n,text,s);u[0]=80;if(n<0)return 0;return repaired(text,n,out,cap);}               ␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀
+```
+
+</details>
+
+#### +1:04:13
+
+> 💭 **Refining inactive-branch scanning**
+> 💭 **Adjusting BOL state handling**
+
+> 💭 **Implementing line-comment continuations**
+> 💭 **Preparing phase-2 normalizer**
+
+> 💭 **Simplifying macro scanning**
+> 💭 **Testing the optimized build**
+
+> 💭 **Comparing inactive-branch parsing options**
+
+> 💭 **Preparing shared ASCII helper**
+> 💭 **Patching classifier and PP**
+
+> 💭 **Applying classifier cleanup**
+> 💭 **Preparing preprocessor replacement**
+
+**→ `serial_send_text`**
+
+```
+save FsFix Uint final(char *src,int n,int *out,int cap){return bootstrap(src,n,out,cap);}``
+append FsFix int repaired(char *src,int n,int *out,int cap){return final(src,n,out,cap);}``
+append FsFix return repaired(text,n,out,cap);`return bootstrap(text,n,out,cap);`
+append FsFix if(s[8]==4&&same(p,"exit",4))f=0-2;if(f>0)`if(f>0)`
+append FsFix int quoted(`int word(int c){if(c==95)return 1;if(c>64&&c<91)return 1;
+append FsFix return c>96&&c<123;}int quoted(`
+append FsFix if(c>64){if(c<91){n=1;}}if(c>96){if(c<123){n=1;}}if(c-95){}else{n=1;}`n=word(c);`
+append FsFix if(c>64){if(c<91){v=1;}}if(c>96){if(c<123){v=1;}}
+append FsFix if(c>47){if(c<58){v=1;}}if(c-95){}else{v=1;}`v=word(c);if(c>47&&c<58)v=1;`
+append FsFix if(c>64&&c<91||c>96&&c<123||c==95)hit=1;`if(word(c))hit=1;`
+append FsFix src[i]>64&&src[i]<91||src[i]>96&&src[i]<123||src[i]==95`
+append FsFix word(src[i])`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1014}
+```
+
+#### +1:06:18
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (2,946 chars, 1 lines)</summary>
+
+```
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20
+```
+
+</details>
+
+`text`
+
+```
+␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀␀exit 00000000
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell>
+```
+
+#### +1:06:21
+
+> 💭 **Installing new compiler**
+> 💭 **Patching comment newline handling**
+
+> 💭 **Checking preprocessor edge cases**
+> 💭 **Updating directive whitespace checks**
+
+**→ `serial_send_text`**
+
+```
+install
+save FsFix Uint depth=0;int skip=0;`int depth=0;int skip=0;int bol=1;int keep=0;`
+append FsFix while(i<n){c=src[i];if(c==92`while(i<n){keep=k;c=src[i];if(c==92`
+append FsFix else if(skip&&c!=35){i++;}else if(c==35){i++;`
+append FsFix else if(c==35&&bol){bol=0;i++;`
+append FsFix out[k]=10;k++;}else{if(c==34||c==39){`
+append FsFix out[k]=10;k++;}else{if(c==10)bol=1;if(c==34||c==39){bol=0;`
+append FsFix hit=1;while(i+1<n&&hit){if(src[i]==42`
+append FsFix hit=1;while(i+1<n&&hit){if(src[i]==10)bol=1;if(src[i]==42`
+append FsFix out[k]=32;k++;}else{hit=0;`out[k]=32;k++;}else{if(c>32)bol=0;hit=0;`
+append FsFix if(hit){j=pp(`if(hit&&!skip){j=pp(`
+append FsFix if(k>30000)return 0-1;}s[1]--;`if(skip)k=keep;if(k>30000)return 0-1;}
+append FsFix if(depth)return 0-1;s[1]--;`
+append FsFix while(i<n){if(src[i]==92&&i+1<n&&src[i+1]==10)i=i+2;
+append FsFix else if(src[i]==10){m=i;i=n;}else i++;}if(i==n&&m>c-1)i=m;`
+append FsFix while(i<n&&(src[i]!=10||i>c&&src[i-1]==92))i++;`
+append FsFix if(d==47){while(i<n&&src[i]!=10)i++;}`
+append FsFix if(d==47){while(i<n&&(src[i]!=10||i>0&&src[i-1]==92))i++;}`
+append FsFix (src[i]==32||src[i]==9)`(src[i]<33&&src[i]!=10)`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1306}
+```
+
+#### +1:07:04
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20
+```
+
+`text`
+
+```
+installed
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell>
+```
+
+#### +1:07:09
+
+> 💭 **Patching two library functions**
+
+> 💭 **Handling errno preservation**
+> 💭 **Patching redirect errors**
+
+**→ `serial_send_text`**
+
+<details><summary>text (1,526 chars, 40 lines)</summary>
+
+```
+install
+build extra2
+install
+save FsFix Lint eprintf(char *f,char *arg){fmt(2,f,arg);exit(1);return 0;}
+append FsFix int weprintf(char *f,char *arg){fmt(2,f,arg);out(2," error\n");return 0;}`
+append FsFix int strncmp(char *a,char *b,int n){int i=0;while(i<n){
+append FsFix if(a[i]!=b[i])return a[i]-b[i];if(!a[i])return 0;i++;}return 0;}
+append FsFix char *strerror(int e){if(e==0)return "Success";if(e==2)return "No such file or directory";
+append FsFix if(e==5)return "Input/output error";if(e==9)return "Bad file descriptor";
+append FsFix if(e==22)return "Invalid argument";if(e==24)return "Too many open files";
+append FsFix if(e==28)return "No space left on device";if(e==36)return "File name too long";
+append FsFix return "Unknown error";}
+append FsFix int weprintf(char *f,char *arg){int e=errno;if(strncmp(f,"usage",5)){
+append FsFix if(argv0){out(2,argv0);out(2,": ");}}fmt(2,f,arg);
+append FsFix if(f[0]&&f[strlen(f)-1]==58){out(2," ");out(2,strerror(e));fdch(2,10);}
+append FsFix errno=e;return 0;}int eprintf(char *f,char *arg){weprintf(f,arg);exit(1);return 0;}`
+append FsFix int __start(int ac,char **av){`int __start(int ac,char **av){`
+append FsFix int fd=0;while(i<64)`int fd=0;argv0=av[0];while(i<64)`
+append FsFix redirect open %s: error\n`redirect open %s:`
+build extra4
+install
+build libc
+append libc  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build catbuild
+exec cat missing
+exec changed-name absent
+build basebuild
+exec basename
+exec basename -x
+```
+
+</details>
+
+**← `serial_send_text`**
+
+```
+{"sent":1526}
+```
+
+#### +1:07:48
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e206361743a206f70656e206d697373696e673a204e6f20737563682066696c65206f72206469726563746f72790a657869742030303030303030310a7368656c6c3e206368616e6765642d6e616d653a206f70656e20616273656e743a204e6f20737563682066696c65206f72206469726563746f72790a657869742030303030303030310a7368656c6c3e206275696c740a7368656c6c3e2075736167653a20626173656e616d652070617468205b7375666669785d0a657869742030303030303030310a7368656c6c3e2075736167653a20626173656e616d652070617468205b7375666669785d0a657869742030303030303030310a7368656c6c3e20
+```
+
+`text`
+
+```
+installed
+shell> built
+shell> installed
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> cat: open missing: No such file or directory
+exit 00000001
+shell> changed-name: open absent: No such file or directory
+exit 00000001
+shell> built
+shell> usage: basename path [suffix]
+exit 00000001
+shell> usage: basename path [suffix]
+exit 00000001
+shell>
+```
+
+#### +1:07:52
+
+> 💭 **Authoring the test fixture**
+> 💭 **Checking preprocessor guard behavior**
+
+> 💭 **Preparing combined regression fixtures**
+> 💭 **Preserving test fixtures**
+
+> 💭 **Preserving provided source**
+> 💭 **Checking exact stderr bytes**
+
+> 💭 **Restoring fixture for testing**
+
+**→ `serial_send_text`**
+
+```
+build catbuild
+exec cat > FsFix persist
+save progBad /* Ordinary directives, including an empty include guard and a continued macro. */@
+append progBad #define BASE 3@#define TOTAL (BASE + \@4)@@
+append progBad #ifndef GUARD@#define GUARD@#ifdef NEVER_DEFINED@
+append progBad char *not_a_directive = "#endif inside a string";@
+append progBad these tokens must be discarded;@#else@int chosen(void)@{@    return TOTAL;@}@
+append progBad #endif@#else@these tokens must also be discarded;@#endif@@
+append progBad int main(void)@{@    char *literal = "TOTAL #endif";@
+append progBad     if (literal[0] != 'T')@        return 1;@    return chosen() != 7;@}@
+build FsFix
+exec admin decode progBad
+build progBad
+exec pp-regression
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":723}
+```
+
+#### +1:09:11
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+6275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+built
+shell> exit 00000000
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell>
+```
+
+#### +1:09:15
+
+> 💭 **Measuring compiler output size**
+
+> 💭 **Calculating the UBFM encoding**
+> 💭 **Building extra2**
+
+> 💭 **Backing up progBad fixture**
+> 💭 **Evaluating progBad error capture**
+
+> 💭 **Reviewing escaped-LF handling**
+> 💭 **Checking line-comment BOL state**
+
+> 💭 **Testing preprocessor edge cases**
+> 💭 **Testing nested guards**
+
+> 💭 **Checking directive-name lexing**
+> 💭 **Checking directive keyword scanning**
+
+**→ `serial_send_text`**
+
+```
+save progBad #define B 6@   #ifndef H@   #define H@   #ifdef ABSENT@
+append progBad /*@#endif@#else@*/@discard #endif not_a_directive;@
+append progBad char *s="escaped quote \" #else #endif";@// #endif in comment@
+append progBad #else@/* leading comment */ #define N 1@int f(void){return B+N;}@
+append progBad #endif@#else@invalid tokens must be discarded;@#endif@
+append progBad int main(void){char *s="#endif TOTAL";return f()!=7||s[0]!='#';}@
+build FsFix
+exec admin decode progBad
+build progBad
+exec pp-comments
+save progBad #ifdef ABSENT@these words are inactive;@
+build FsFix
+exec admin decode progBad
+build Check
+exec echo retained
+build progBad
+exec echo retained-after-unclosed
+save progBad #else@int main(void){return 0;}@
+build FsFix
+exec admin decode progBad
+build Check
+build progBad
+exec echo retained-after-stray-else
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":832}
+```
+
+#### +1:11:18
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e2072657461696e65640a657869742030303030303030300a7368656c6c3e206275696c64206572726f720a7368656c6c3e2072657461696e65642d61667465722d756e636c6f7365640a657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e206275696c64206572726f720a7368656c6c3e2072657461696e65642d61667465722d73747261792d656c73650a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> retained
+exit 00000000
+shell> build error
+shell> retained-after-unclosed
+exit 00000000
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> build error
+shell> retained-after-stray-else
+exit 00000000
+shell>
+```
+
+#### +1:11:22
+
+> 💭 **Testing macro recursion handling**
+
+> 💭 **Preparing error-byte test program**
+> 💭 **Expanding errno test program**
+
+> 💭 **Recreating source for assertion**
+
+**→ `serial_send_text`**
+
+```
+build catbuild
+exec cat 2> persist missing
+save progBad #include "libc"@int main(void){int fd=open("persist",0);int n=0;
+append progBad char *b=(char *)(16528*256*256+16384);
+append progBad char *e="cat: open missing: No such file or directory\n";
+append progBad if(fd<0)return 1;n=read(fd,b,100);if(n!=strlen(e))return 2;b[n]=0;
+append progBad if(strcmp(b,e))return 3;if(close(fd)<0)return 4;return 0;}@
+build FsFix
+exec admin decode progBad
+build progBad
+exec exact-stderr
+save progBad #include "libc"@int main(void){errno=9;weprintf("probe %s:","path");
+append progBad return errno!=9;}@
+build FsFix
+exec admin decode progBad
+build progBad
+exec diag
+exec alternate 2> persist
+cat persist
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":691}
+```
+
+#### +1:12:20
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+6275696c740a7368656c6c3e20657869742030303030303030310a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20646961673a2070726f626520706174683a204261642066696c652064657363726970746f720a657869742030303030303030300a7368656c6c3e20657869742030303030303030300a7368656c6c3e20616c7465726e6174653a2070726f626520706174683a204261642066696c652064657363726970746f720a0a7368656c6c3e20
+```
+
+`text`
+
+```
+built
+shell> exit 00000001
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> diag: probe path: Bad file descriptor
+exit 00000000
+shell> exit 00000000
+shell> alternate: probe path: Bad file descriptor
+
+shell>
+```
+
+#### +1:12:25
+
+> 💭 **Testing inactive PP recursion**
+
+**→ `serial_send_text`**
+
+```
+save progBad #define BAD BAD@#define TEXT "TOTAL #endif"@#ifdef NEVER_DEFINED@
+append progBad BAD BAD BAD@#endif@int main(void){char *s=TEXT;return s[0]!='T'||s[6]!='#';}@
+build FsFix
+exec admin decode progBad
+build progBad
+exec pp-inactive-recursion
+save progBad int main(void){return 0;}@#define EMPTY
+build FsFix
+exec admin decode progBad
+build progBad
+exec pp-empty-eof
+save progBad /* Ordinary directives, including an empty include guard and a continued macro. */@
+append progBad #define BASE 3@#define TOTAL (BASE + \@4)@@
+append progBad #ifndef GUARD@#define GUARD@#ifdef NEVER_DEFINED@
+append progBad char *not_a_directive = "#endif inside a string";@
+append progBad these tokens must be discarded;@#else@int chosen(void)@{@    return TOTAL;@}@
+append progBad #endif@#else@these tokens must also be discarded;@#endif@@
+append progBad int main(void)@{@    char *literal = "TOTAL #endif";@
+append progBad     if (literal[0] != 'T')@        return 1;@    return chosen() != 7;@}@
+build FsFix
+exec admin decode progBad
+build progBad
+exec pp-regression
+build empty
+exec filedemo
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1083}
+```
+
+#### +1:12:42
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e2070657273697374656e7420432066696c650a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell> built
+shell> persistent C file
+exit 00000000
+shell>
+```
+
+#### +1:12:46
+
+> 💭 **Checking source fixture layout**
+
+> 💭 **Checking assembler output**
+
+> 💭 **Building FsFix for snapshot**
+> 💭 **Performing clean reboot**
+
+The supplied preprocessor case now builds and returns 0. Additional tests passed for inactive comments, escaped quotes, indented directives, and recursive macros in inactive branches; unclosed conditionals are rejected without replacing the runnable program.
+
+Missing-file stderr now matches `cat: open missing: No such file or directory\n`. A guest C check verified the redirected file byte-for-byte. Tests with another argv0 and `EBADF` also passed.
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +1:13:47
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T120320.314634Z"}
+```
+
+#### +1:13:51
+
+**→ `serial_send_text`**
+
+```
+cat persist
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+save persist mov w1,16542;lsl w1,w1,16;ldr w0,[x1,12];lsl w0,w0,2;
+append persist mov w2,2304;lsl w2,w2,16;str w0,[x2];.word 1393064960;str w0,[x2];
+append persist .word 1393064960;str w0,[x2];.word 1393064960;str w0,[x2];ret;
+as persist
+run
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":351}
+```
+
+#### +1:13:57
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e2070657273697374656e7420432066696c650a0a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e2070fc0000657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> persistent C file
+
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> saved
+shell> saved
+shell> saved
+shell> assembled
+shell> p�␀␀exit 00000000
+shell>
+```
+
+#### +1:14:01
+
+> 💭 **Checking gen2/3 build parity**
+
+**→ `serial_send_text`**
+
+```
+build FsFix
+exec admin snapshot
+build extra2
+install
+as persist
+run
+build FsFix
+exec admin compare
+exec admin snapshot
+build extra2
+install
+as persist
+run
+build FsFix
+exec admin compare
+build progBad
+exec pp-regression
+build empty
+exec filedemo
+build catbuild
+exec cat missing
+exec cat absent
+exec custom absent
+exec cat persist
+exec cat < persist stdioh - libgenh
+exec cat -u persist
+build basebuild
+exec basename /usr/bin/tool.c .c
+exec basename ////
+exec basename /a/b///
+exec basename
+exec basename -x
+build Check
+exec echo clean boot
+exec echo -n no-newline
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":563}
+```
+
+#### +1:14:21
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (2,050 chars, 1 lines)</summary>
+
+```
+6275696c740a7368656c6c3e20530a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20617373656d626c65640a7368656c6c3e2070fc0000657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e20530a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20617373656d626c65640a7368656c6c3e2070fc0000657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e2070657273697374656e7420432066696c650a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e206361743a206f70656e206d697373696e673a204e6f20737563682066696c65206f72206469726563746f72790a657869742030303030303030310a7368656c6c3e206361743a206f70656e20616273656e743a204e6f20737563682066696c65206f72206469726563746f72790a657869742030303030303030310a7368656c6c3e20637573746f6d3a206f70656e20616273656e743a204e6f20737563682066696c65206f72206469726563746f72790a657869742030303030303030310a7368656c6c3e2070657273697374656e7420432066696c650a657869742030303030303030300a7368656c6c3e2023646566696e65207374646f757420310a23646566696e652073746465727220320a23646566696e6520737464696e20300a2070657273697374656e7420432066696c650a23646566696e65207373697a655f7420696e740a20657869742030303030303030300a7368656c6c3e2070657273697374656e7420432066696c650a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20746f6f6c0a657869742030303030303030300a7368656c6c3e202f0a657869742030303030303030300a7368656c6c3e20620a657869742030303030303030300a7368656c6c3e2075736167653a20626173656e616d652070617468205b7375666669785d0a657869742030303030303030310a7368656c6c3e2075736167653a20626173656e616d652070617468205b7375666669785d0a657869742030303030303030310a7368656c6c3e206275696c740a7368656c6c3e20636c65616e20626f6f740a657869742030303030303030300a7368656c6c3e206e6f2d6e65776c696e65657869742030303030303030300a7368656c6c3e20
+```
+
+</details>
+
+`text`
+
+```
+built
+shell> S
+exit 00000000
+shell> built
+shell> installed
+shell> assembled
+shell> p�␀␀exit 00000000
+shell> built
+shell> Y
+exit 00000000
+shell> S
+exit 00000000
+shell> built
+shell> installed
+shell> assembled
+shell> p�␀␀exit 00000000
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> exit 00000000
+shell> built
+shell> persistent C file
+exit 00000000
+shell> built
+shell> cat: open missing: No such file or directory
+exit 00000001
+shell> cat: open absent: No such file or directory
+exit 00000001
+shell> custom: open absent: No such file or directory
+exit 00000001
+shell> persistent C file
+exit 00000000
+shell> #define stdout 1
+#define stderr 2
+#define stdin 0
+ persistent C file
+#define ssize_t int
+ exit 00000000
+shell> persistent C file
+exit 00000000
+shell> built
+shell> tool
+exit 00000000
+shell> /
+exit 00000000
+shell> b
+exit 00000000
+shell> usage: basename path [suffix]
+exit 00000001
+shell> usage: basename path [suffix]
+exit 00000001
+shell> built
+shell> clean boot
+exit 00000000
+shell> no-newlineexit 00000000
+shell>
+```
+
+#### +1:14:25
+
+> 💭 **Backing up progBad fixture**
+
+> 💭 **Checking self-host build**
+
+> 💭 **Confirming source persistence**
+
+> 💭 **Checking argv0 path matching**
+> 💭 **Checking startup behavior**
+
+> 💭 **Updating clean build instructions**
+> 💭 **Repeating binary file tests**
+
+> 💭 **Preparing binary writer test**
+> 💭 **Preparing stdio redirection tests**
+
+> 💭 **Preserving accepted bytes**
+
+**→ `serial_send_text`**
+
+```
+save persist #include "libc"@int main(void){char *b=(char *)(16528*256*256+16384);
+append persist int fd=open("persist",577);if(fd<0)return 1;b[0]=65;b[1]=0;b[2]=4;b[3]=66;b[4]=10;
+append persist if(write(fd,b,5)!=5)return 2;return close(fd);}@
+build FsFix
+exec admin decode persist
+build persist
+exec binary-writer
+build catbuild
+exec cat persist
+exec cat 2> persist missing stdioh
+cat persist
+exec cat > persist stdioh
+cat persist
+build empty
+exec filedemo
+build catbuild
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":474}
+```
+
+#### +1:16:44
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20410004420a657869742030303030303030300a7368656c6c3e2023646566696e65207374646f757420310a23646566696e652073746465727220320a23646566696e6520737464696e20300a20657869742030303030303030310a7368656c6c3e206361743a206f70656e206d697373696e673a204e6f20737563682066696c65206f72206469726563746f72790a0a7368656c6c3e20657869742030303030303030300a7368656c6c3e2023646566696e65207374646f757420310a23646566696e652073746465727220320a23646566696e6520737464696e20300a200a7368656c6c3e206275696c740a7368656c6c3e2070657273697374656e7420432066696c650a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell> built
+shell> A␀␄B
+exit 00000000
+shell> #define stdout 1
+#define stderr 2
+#define stdin 0
+ exit 00000001
+shell> cat: open missing: No such file or directory
+
+shell> exit 00000000
+shell> #define stdout 1
+#define stderr 2
+#define stdin 0
+ 
+shell> built
+shell> persistent C file
+exit 00000000
+shell> built
+shell>
+```
+
+#### +1:16:48
+
+> 💭 **Parser startup check passed**
+
+**→ `serial_send_text`**
+
+```
+exec cat
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":9}
+```
+
+#### +1:16:57
+
+**→ `serial_send_text`**
+
+```
+corrected candidate stdin
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":26}
+```
+
+#### +1:17:00
+
+**→ `serial_send`** `{"hex": "04"}`
+
+**← `serial_send`**
+
+```
+{"sent":1}
+```
+
+#### +1:17:05
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+636f727265637465642063616e64696461746520737464696e0a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+corrected candidate stdin
+exit 00000000
+shell>
+```
+
+#### +1:17:08
+
+> 💭 **Recording preprocessor test results**
+
+> 💭 **Preparing larger C program**
+> 💭 **Comparing FsFix snapshots**
+
+> 💭 **Rebuilding assembler seeds**
+
+> 💭 **Checking generic compiler changes**
+> 💭 **Checking error length**
+
+> 💭 **Validating preprocessor edge cases**
+
+> 💭 **Documenting directive limits**
+> 💭 **Documenting preprocessing limits**
+
+> 💭 **Reading kernel bounds**
+
+**→ `guest_read`** `{"offset": 8048, "length": 4}`
+
+**← `guest_read`**
+
+```
+{"hex":"84ff9f52"}
+```
+
+#### +1:19:27
+
+**→ `guest_read`** `{"offset": 18564, "length": 12}`
+
+**← `guest_read`**
+
+```
+{"hex":"90ff9f52bf01106bc4f5ff17"}
+```
+
+#### +1:19:31
+
+> 💭 **Verifying clean-init measurements**
+> 💭 **Checking byte bounds**
+
+> 💭 **Preserving source backups**
+
+> 💭 **Verifying restored fixtures**
+> 💭 **Documenting untested cases**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +1:20:42
+
+**→ `notes_write`**
+
+<details><summary>text (15,278 chars, 126 lines)</summary>
+
+```
+STAGE039 CORRECTION: BOTH observer-reported gaps fixed. VM STOPPED after final fresh boot20261116T120320.314634Z. Offline guest compilers/assembler and handwritten source edits only; no host compiler/downloads/command-specific adapters. New observer acceptance still pending. This supersedes the prior handoff, especially old missing-file output and old progBad contents.
+
+UNCHANGED UPSTREAM INPUTS (NEVER written):
+alpha = pinned sbase0.1 cat.c824 bytes, SHA25677412bfd11435541add6e02208cd19fc357e2988132b874d546647c3f091b7ab
+beta = basename.c549, SHA2569ea4b5b45842ba2ca5c36857147c5f3ad5608e5708cf7b6786afc12c45f3e07e
+Abc123xyz789 = arg.h1310, SHA2565f4ecca1bb057a6d6301aff8f2b403e723af5dc86a5e00e8c7e5c2f56cdb9c79
+extra5 = original inherited echo.c421 bytes.
+All library IMPLEMENTATIONS are GUEST-WRITTEN: libc descriptor/file functions, concat, libgen basename, putword/fshut, string/format/error helpers. Only arg.h is upstream library/header code. utilh includes its exact file as quoted "Abc123xyz789". No rewritten upstream source/macro bytes, filename/hash recognition, or command algorithm adapters.
+
+CLEAN BOOT REBUILD (semicolon=newline):
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install
+Shared ordinary C builds:
+build catbuild;exec cat ARGS
+build basebuild;exec basename ARGS
+build Check;exec echo ARGS
+build empty;exec filedemo
+build progBad;exec pp-regression
+Do NOT install commands as compilers. Inherited single executable slot: exec's first word supplies argv0 for currently built program, not pathname execution. Failed builds retain prior runnable code.
+catbuild contains LF-separated #include "libc" then #include "alpha"; basebuild libc+beta; Check libc+extra5 echo manifest (NOT comparator). empty independent persistent-file/error test. Generic preprocessing/TU combination shares ONE ordinary libc source before original command/header inputs. No manual function copying per command. Definitions-before-use, no separate object linking. Exact current sources persist and can be read with cat NAME. Exact kernel image is saved campaign guest image.
+
+NEW PP FIX:
+Old pp skipped inactive text byte-by-byte but still interpreted ANY '#' as a directive. Thus '#endif' inside an inactive quoted string corrupted nesting. pp now lexes strings, characters, comments and identifiers in inactive groups just as in active groups, but rolls output back to the iteration's saved offset and suppresses recursive macro expansion while inactive. It tracks beginning-of-line eligibility: whitespace/comments preserve eligibility, newline establishes it, real tokens consume it. Directives are recognized only when '#' is the first non-whitespace/comment preprocessing token. Directive parsing consumes eligibility until the actual newline. Block-comment newlines update line state; line comments honor inherited backslash-newline continuation. Quotes/escaped quotes and '#' inside comments/strings cannot act as conditionals. Conditional nesting left open at EOF is rejected. This is generic lexical handling, not a special '#endif' text replacement.
+Also simplified define-body scanning to stop at an uncontinued LF/end-of-input, correctly allowing empty definitions/guards and EOF without final LF. Horizontal whitespace includes chars<33 except LF. The original continued TOTAL macro and empty GUARD now work.
+To stay comfortably within the UNCHANGED65532 code cap, consolidated ordinary identifier-start classification into word(int), shared by C lexer and PP; removed redundant late exit-name test and the remaining no-op final/repaired forwarding wrappers; driver calls bootstrap directly. Actual narrow negative B/BL bootstrap fix remains. Raw bridge and new1/extra1/extra3 seeds UNCHANGED this correction. No kernel or limit changes.
+
+NEW ERROR FIX:
+Guest libc now exposes generic strncmp and strerror for all its errno codes. weprintf snapshots errno, suppresses program-name prefix only for formats starting 'usage', otherwise emits argv0 + ': ', formats the existing message, and if format ends ':' appends space + strerror(saved errno) + LF. Other formats are emitted as supplied (no unconditional extra newline/error suffix). errno restored after printing. eprintf delegates to weprintf then exit(1). __start initializes argv0 from av[0] before any redirection setup can fail. Runtime redirect-open format also ends ':' to use the same generic errno behavior. No 'cat', 'missing', or filename-specific logic in library/compiler.
+strerror mappings:0 Success;2 No such file or directory;5 Input/output error;9 Bad file descriptor;22 Invalid argument;24 Too many open files;28 No space left on device;36 File name too long;fallback Unknown error.
+
+NEW REGRESSION DELIVERABLE:
+progBad is NOW the exact ordinary PP regression supplied by user (LF source), NOT malformed C. build progBad;exec pp-regression =>exit0, including after final clean reboot. Its saved contents:
+/* Ordinary directives, including an empty include guard and a continued macro. */
+#define BASE 3
+#define TOTAL (BASE + \
+4)
+
+#ifndef GUARD
+#define GUARD
+#ifdef NEVER_DEFINED
+char *not_a_directive = "#endif inside a string";
+these tokens must be discarded;
+#else
+int chosen(void)
+{
+    return TOTAL;
+}
+#endif
+#else
+these tokens must also be discarded;
+#endif
+
+int main(void)
+{
+    char *literal = "TOTAL #endif";
+    if (literal[0] != 'T')
+        return 1;
+    return chosen() != 7;
+}
+
+Additional actual PP tests (temporary progBad variants; original regression restored):
+1) Leading whitespace before ifndef/define/ifdef; inactive multiline comment containing column-zero #endif/#else; inactive 'discard #endif not_a_directive;' line; inactive quoted escaped quote followed by '#else #endif'; inactive // #endif; then active '/* leading comment */ #define N 1'. f() returned B+N=7, active string '#endif TOTAL' remained literal; exit0. Repro source:
+#define B 6
+   #ifndef H
+   #define H
+   #ifdef ABSENT
+/*
+#endif
+#else
+*/
+discard #endif not_a_directive;
+char *s="escaped quote \" #else #endif";
+// #endif in comment
+#else
+/* leading comment */ #define N 1
+int f(void){return B+N;}
+#endif
+#else
+invalid tokens must be discarded;
+#endif
+int main(void){char *s="#endif TOTAL";return f()!=7||s[0]!='#';}
+2) #define BAD BAD; #define TEXT "TOTAL #endif"; BAD repeated in #ifdef NEVER_DEFINED inactive group. main checked TEXT[0]=='T' and TEXT[6]=='#'. exit0: inactive self-recursive macro was NOT expanded, active string protected.
+3) int main(void){return 0;} LF #define EMPTY with NO final LF =>built/exit0.
+4) Unclosed #ifdef ABSENT group at EOF =>build error; prior echo printed retained-after-unclosed/0. Stray #else =>build error; prior echo printed retained-after-stray-else/0. No runnable-program replacement on failure.
+
+EXACT DIAGNOSTIC TESTS:
+exec cat missing => exactly45 bytes 'cat: open missing: No such file or directory\n',exit1. exec cat absent =>same generic error with absent; exec changed-name absent / exec custom absent prefix changed-name/custom,exit1. No filename recognition.
+Redirected missing-file error tested with exec cat 2> persist missing: terminal only exit1; a separate ordinary C program opened persist, read bytes, checked read length==strlen(expected45-byte literal), terminated buffer, strcmp==0, close==0, then exited0. This is actual guest byte comparison, not only visual terminal check. Fresh reboot repeated stderr redirection with a valid file following missing: ONLY valid-file content on terminal,exit1; cat persist showed exact prefixed ENOENT text and no stdout content. Separate stdout >persist stdioh also saved exact header text/0.
+Generic errno test: ordinary libc-linked main set errno=9,weprintf("probe %s:","path"),returned errno!=9. exec diag =>'diag: probe path: Bad file descriptor\n'/0. exec alternate 2>persist =>no terminal diagnostic/0; saved exact alternate prefix and EBADF description. Usage diagnostics remain unchanged: basename noargs/-x =>'usage: basename path [suffix]\n'/1, no added basename prefix or double LF.
+
+FINAL SELFHOST/REPRODUCIBILITY:
+Fresh boot20261116T120320.314634Z first cat persist showed persistent C file LF BEFORE bootstrap, proving prior C-written data survived reboot. Then clean bootstrap above. Measured compiler generation1, generation2, generation3 ALL64624 bytes (0xfc70). All three successfully built and installed. Two full installed65532-byte comparisons returned Y LF/0, covering entire code plus unchanged tail, not hash.
+Normal comparison commands (refresh snapshot per transition/boot):
+build FsFix;exec admin snapshot
+build extra2;install
+build FsFix;exec admin compare
+exec admin snapshot
+build extra2;install
+build FsFix;exec admin compare
+Snapshots S LF/0; both compares Y LF/0. Full40150000..+65532 compared with40940000 snapshot.
+Actual size measurement used an ordinary guest assembly diagnostic after each self-build/install, reading compiler scratch s[3]*4 at409e0000+12, not a source/hash recognizer. UART raw bytes70fc0000 each time =>64624. Reproduce by authoring a scratch assembly file (persist temporarily, restore via empty afterward):
+mov w1,16542;lsl w1,w1,16;ldr w0,[x1,12];lsl w0,w0,2;mov w2,2304;lsl w2,w2,16;str w0,[x2];.word 1393064960;str w0,[x2];.word 1393064960;str w0,[x2];.word 1393064960;str w0,[x2];ret;
+After build extra2;install, as SCRATCH;run emits4 little-endian size bytes then exit0. Do NOT install the diagnostic. .word is LSR w0,w0,8. Assembling does not overwrite external C compiler state409e.
+FsFix is unchanged accepted persistent C admin source (backed up in persist while staging editor rules, then restored byte-for-byte via shared cat; persist restored to18-byte test data afterward). Modes: snapshot/compare/decode FILE(@=>LF authoring)/remove FILE(directory clear+commit). Never decode upstream files. extra4 generic editor NOT normal build path: script in FsFix only if intentionally replacing admin source; first A..X byte selects destination slot0..23,old`new` pairs. DO NOT run editor with current FsFix admin source. Final bootstrap requires no editor/scripts/admin.
+
+PRESERVATION RECHECKS on final clean boot:
+- build progBad regression=>built/0.
+- build empty;exec filedemo=>persistent C file LF/0. Creates/truncates persist,writes18,closes,reopens,reads18,writes stdout,checks EOF0,closes. Checks read after close(-1,errno9),missing open(-1,2),write readonly(-1,9),invalid close(-1,9). All passed. Historical initial creation test removed persist first to free slot17 and created it; no new fixture-specific IO adapter.
+- Binary file ordinary C writer wrote bytes41 00 04 42 0a to persist,closed; upstream cat persist emitted EXACT41 00 04 42 0a/exit0. NUL and EOT in files are data, not console EOF. persist subsequently restored by filedemo.
+- cat terminal stdin 'corrected candidate stdin\n' then04=>identical/0. Redirected <persist,one file persist,multiple stdioh/libgenh, <persist stdioh - libgenh, -u persist all correct/0. cat missing/absent corrected text/1; cat custom argv0 dynamic/1. Prior -uu,--,repeated '-' EOF behavior preserved. Invalid options use original usage/1.
+- basename /usr/bin/tool.c .c=>tool/0;////=>slash/0;/a/b///=>b/0;noargs,-x=>unchanged usage/1. Earlier accepted suffix-equal/longer/mismatch,-- -name,single -,three-operand cases remain unchanged.
+- echo via Check 'clean boot'=>LF/0; -n no-newline=>no LF/0. Prior normal/noarg/--/noninitial-n cases unchanged.
+- Missing-file stderr and independent stdout/stderr routing rechecked after fresh boot as above.
+Final files: progBad passing user PP fixture; FsFix accepted admin; persist exactly 'persistent C file\n'18 bytes. Last runnable program cat; installed compiler generation3. VM stopped.
+
+RUNTIME/ABI (unchanged except error helpers):
+libc open(name,flags),read(fd,char*,n),write(fd,char*,n),close(fd),errno; fd0/1/2 standard streams. stdioh stdin0/stdout1/stderr2 integers. fcntlh O_RDONLY0,O_WRONLY1,O_RDWR2,O_CREAT64,O_TRUNC512(add independent flags in this C subset). read count/EOF0/-1;write count/-1;close0/-1. Flat persistent FS24 files,12-char names,32768 bytes/file,fd3..15. Disk FULL24; admin remove frees slot. Never truncate upstream files.
+Reserved ordinary C __start(argc,argv) optional startup hook resets libc fd table,initializes argv0,parses PREFIX < FILE, > FILE, 2> FILE,returns adjusted argc with argv compacted. E.g. exec cat < persist stdioh - libgenh. Non-prefix operands unchanged. Reusable ABI,not command-source rewriting; small inherited shell argv/line limits remain.
+Console PL011 RX,Ctrl-D EOF; stdout/stderr share terminal but independently redirect. Unbuffered,synchronous file commits; close commits dirty metadata. concat -1 input/-2 output,commands exit1. putchar inherited callback. exit(status) unwinds to saved startup SP40900000,restores x19/x30,returns status to exec. diskcommit() invokes kernel40200a50,w1=1,result w1=>w0,callee/context preserved,x22/x23 inherited FS/device context. Generic intrinsics,not command-specific.
+
+KERNEL/LIMITS UNCHANGED THIS CORRECTION. No kernel image patches or capacity changes. Active supplied/checked capacity65532 verified image bytes8048=84ff9f52 and18564..18575=90ff9f52bf01106bc4f5ff17. Thus earlier independently accepted full-capacity return/bounds/repeat-install lifecycle remains applicable; not rerun/claimed as a new boundary test. New large compiler64624 repeat build/install lifecycle DID pass as above.
+Saved image18640 bytes. Versus accepted stage03818576-byte core, only original stage039 active changes8048 044c9d52=>84ff9f52 and18564 104c9d52=>90ff9f52; min4,alignment4,max65532,rejections retain old program. Installer7916 a702a8d2/build8020 b402a8d2 originals. Compiler40150000 must not cross shell state40160000. Earlier131072 relocation trials NOT active defects.
+Unreachable64-byte abandoned alias stub appended18576,no active branch into it:
+a902a8d2ea0313aaeb030d2a2c00a0527f010c6b49000054eb030c2a4c0140392c010039297b0bd54a050091290500916b05007141ffff548711a8d289f5ff17
+No other kernel changes. Scratch state409e0000,PP40980000/409c0000,snapshot40940000;libc SP40900000,fd40901000,char40902000,copy40903000,demo40904000. Avoid40780000+4096 fetch state.
+Not full ISO C/libc: source32768,PP30000,include/macro depth16,32 macros/functions,16 globals,32 locals/function,4 C args,56 switch labels;int32,unsigned char,addresses<2^32,fixed scratch/nonreentrant,definitions-before-use. No general typedef/struct/prototypes/variadics/sizeof/local arrays/prefix++/division/bitwise/function-macro invocation/#if expressions/#elif. Flattened TU linkage,minimal headers with interfaces visible from shared libc definitions. Preprocessing is still a subset,not full ISO phase1/2 implementation. fmt supports fixed one-string %s calls,not full printf. No pipes/concurrency/process tree/C terminal line editor;GUI/network untested. Backing-device fault injection and cat write-full branch not tested. Old seven-file overflow attempt was shell invalid exec,not executed.
+Historical repurposing already archived: empty=>filedemo,Check=>echo manifest,FsBoot=>fcntlh,FsRecv=>libgenh,bin=>unistdh,src=>libc,kernel0/1=>catbuild/basebuild,longasm=>persist data,FsFix=>admin,extra4=>editor. NEW progBad now passing PP fixture instead of malformed C. Preserve all deliverables and four upstream originals. VM STOPPED.
+```
+
+</details>
+
+**← `notes_write`**
+
+```
+{"saved":true}
+```
+
+#### +1:22:04
+
+> 💭 **Verifying fixture metadata**
+> 💭 **Verifying kernel guard**
+
+Fixed both gaps:
+
+- Missing-file stderr now matches upstream exactly, including redirected output.
+- Supplied preprocessor regression builds and returns 0; additional inactive-string/comment tests pass.
+- Clean boot produced three 64624-byte compiler generations with full installed-byte equality.
+- Kernel and 65532-byte capacity unchanged.
+
+Sources, tests, and reproduction notes saved. VM stopped.
