@@ -1,0 +1,1 @@
+int main(int argc,char **argv){char *a=(char *)(16405*256*256);char *b=(char *)(16532*256*256);int i=0;int n=0;if(argc<2){while(i<60000){b[i]=a[i];i++;}return 0;}while(i<60000){if(a[i]-b[i])n++;i++;}putchar(n?78:89);putchar(10);return n;}

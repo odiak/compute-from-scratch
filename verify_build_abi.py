@@ -8,9 +8,13 @@ from guest_tool import Guest
 from verify_shell import command, read_prompt
 
 COMPILER = (
-    "ldrb w6,[x1];cmp w6,33;b.eq reject;lsl w6,w6,10;adr x5,template;ldr w5,[x5];orr w5,w5,w6;"
+    "ldrb w6,[x1];cmp w6,33;b.eq reject;cmp w6,63;b.eq over;"
+    "cmp w6,64;b.eq odd;cmp w6,35;b.eq short;"
+    "lsl w6,w6,10;adr x5,template;ldr w5,[x5];orr w5,w5,w6;"
     "str w5,[x3];adr x5,tail;ldr w5,[x5];str w5,[x3,4];mov w0,8;ret;"
-    "reject:;mov w0,0;ret;template:;.word 285212704;tail:;.word 3596551104"
+    "reject:;mov w0,0;ret;over:;mov w5,0;str w5,[x3];add w0,w4,4;ret;"
+    "odd:;mov w0,7;ret;short:;mov w0,2;ret;"
+    "template:;.word 285212704;tail:;.word 3596551104"
 ).encode()
 
 
@@ -36,9 +40,10 @@ def main():
         command(guest, b"save src Z", b"saved\n")
         command(guest, b"build src", b"built\n")
         command(guest, b"run 17", b"exit 0000006b\n")
-        command(guest, b"save src !", b"saved\n")
-        command(guest, b"build src", b"build error\n")
-        command(guest, b"run 17", b"exit 0000006b\n")
+        for invalid in (b"!", b"?", b"@", b"#"):
+            command(guest, b"save src " + invalid, b"saved\n")
+            command(guest, b"build src", b"build error\n")
+            command(guest, b"run 17", b"exit 0000006b\n")
     finally:
         guest.stop()
     print(f"Build ABI verified: {workspace}")

@@ -1,0 +1,1 @@
+#define stdout 0 

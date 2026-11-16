@@ -13,27 +13,27 @@ An experiment to see how far GPT-6.1 Sol can build a software stack from machine
 | Boot and serial I/O | Boot from raw machine code and verify character input and output. Complete (001–002). |
 | Ethernet, TCP, and HTTP | Implement ARP and TCP, then retrieve the body of an HTTP response from the host. Complete (003–005). |
 | Serial shell | Enter and run multiple commands in the same VM and receive their results and a prompt. Complete (006). |
-| Small OS | Handle the console, memory, and program loading and exit. Start with a single task and define a calling convention between programs and the kernel. Complete (007). Verified assembled, installed, and generated executables up to 8 KiB (026) and then 32 KiB (033). |
+| Small OS | Handle the console, memory, and program loading and exit. Start with a single task and define a calling convention between programs and the kernel. Complete (007). Verified assembled, installed, and generated executables up to 8 KiB (026) and then 32 KiB (033). Verified a 53,772-byte self-hosted compiler with a 60,000-byte build limit (038). |
 | Persistent disk and filesystem | Read and write a virtual block device, and save and reload source files and programs across reboots. Complete (008 and 010). Verified raw UART imports up to 8 KiB and byte-for-byte persistence across reboot (022). Verified guest-side migration to 24 files of up to 32 KiB, including assembly and C sources larger than 8 KiB (031). |
 | Assembler | Translate AArch64 instructions and labels into machine code inside the guest, then run the result. Verified the instruction coverage and capacity needed to assemble a compiler in the guest (009–014). |
 | Compiler | Build a compiler with the guest assembler. Verified a single-function C subset with runtime arguments, integer expressions, local variables, branches, and loops (014–015). Verified helper function definitions and calls (021), and compilation of imported multiline C source with whitespace and comments (023). Verified taking the address of a local integer and reading and writing through a pointer (024). |
 | GUI and browser | Framebuffer and keyboard input are complete (016). Verified rendering simple HTML fetched from the host (017). Verified navigation to keyboard-entered paths within one boot (027). Verified keyboard navigation through links extracted from received HTML (028). |
 | Self-hosting assembler | Use the kernel assembler to build a seed, then assemble its own source as a guest application. Compare generated code across generations. Complete (019). |
 | Processes and system calls | Give each program its own stack and execution state. Support cooperative scheduling, process exit and waiting, and file and console I/O. Cooperative processes and basic file I/O are complete (018 and 020). Verified passing argc and argv to a loaded executable (029), and C command-line programs with string literals, putchar, puts, and strcmp (035). |
-| C compiler and minimal libc | Gradually add multiple functions, types, pointers, arrays, strings, and preprocessing. Test the features of the target C standard and provide library routines for I/O and string operations. Verified runtime indexing and byte loads and stores for a local char array (025), and verified up to four named integer locals and independently named function parameters (030). Used a guest-assembled seed with named functions and typed pointers to build and run a compiler written in C (032). |
-| Self-hosting C compiler | Have a seed compiler running in the guest build its own C source. Use the resulting compiler to rebuild itself and run regression tests. Verified byte-identical self-builds over two successive C-built generations and execution of a separate test program (034). |
-| Open-source CLI | Have the observer supply the source of a small CLI with a pinned version and hash. Build it in the guest, verify its inputs and outputs, and record any porting changes. Verified sbase 0.1 echo with a guest-side portability adapter and an upstream host reference (036). |
+| C compiler and minimal libc | Gradually add multiple functions, types, pointers, arrays, strings, and preprocessing. Test the features of the target C standard and provide library routines for I/O and string operations. Verified runtime indexing and byte loads and stores for a local char array (025), and verified up to four named integer locals and independently named function parameters (030). Used a guest-assembled seed with named functions and typed pointers to build and run a compiler written in C (032). Added C pointer arithmetic, short circuit, globals, loops, casts, include processing, and object macros to compile unmodified upstream echo (038). |
+| Self-hosting C compiler | Have a seed compiler running in the guest build its own C source. Use the resulting compiler to rebuild itself and run regression tests. Verified byte-identical self-builds over two successive C-built generations and execution of a separate test program (034). Verified byte-identical 53,772-byte generations after the native-C extensions (038). |
+| Open-source CLI | Have the observer supply the source of a small CLI with a pinned version and hash. Build it in the guest, verify its inputs and outputs, and record any porting changes. Verified sbase 0.1 echo with a guest-side portability adapter and an upstream host reference (036). Then compiled the exact upstream echo.c without an adapter and matched the reference (038). |
 | External network | Establish offline reproducibility first, then verify the workflow from source retrieval to build with a restricted set of sources. Verified live retrieval of the pinned sbase echo.c through a single-source host relay and a subsequent offline guest build matching the upstream reference (037). |
 
 The later campaign built a self-hosted C compiler and a small CLI runtime, built an existing open-source command offline, then verified restricted external retrieval and a guest build. Browser navigation was implemented in stages 027–028 and verified again on the final kernel.
 
 ### Next milestones
 
-Each stage below delivers a working development workflow, including the language and OS changes it needs. These are planned acceptance criteria, not completed results.
+Each stage below delivers a working development workflow, including the language and OS changes it needs. Completion is recorded only after independent verification.
 
 | Experiment | Goal and acceptance criteria |
 | --- | --- |
-| 038 — Unmodified upstream echo | Compile the exact pinned upstream `echo.c` in the guest with guest headers, libc, and startup code. No source-specific adapter or compiler special cases. Compare output and exit status with the upstream reference, and verify compiler self-rebuilds and byte-identical successive generations. |
+| 038 — Unmodified upstream echo (complete) | Verified in [038](experiments/038-campaign.md). Compile the exact pinned upstream `echo.c` in the guest with guest headers, libc, and startup code. No source-specific adapter or compiler special cases. Compare output and exit status with the upstream reference, and verify compiler self-rebuilds and byte-identical successive generations. |
 | 039 — Multiple upstream commands | Build several unmodified commands covering string processing, standard input, and file I/O. Share headers and libc across commands and provide a repeatable build path for multiple source files. Compare normal and error cases with upstream references. |
 | 040 — Develop inside the guest | Edit source, build, run, fix, save, reboot, and rebuild inside the guest. Provide a usable editor, redirection, and pipes; demonstrate commands processing each other's output and persistent files. |
 | 041 — Rebuild the environment from source | Starting with a documented minimal boot environment and compiler seed, automatically rebuild the compiler, libc, and command set from exact saved sources. Boot or load the rebuilt environment, repeat the workflow tests, and compare successive compiler generations. |
@@ -141,27 +141,27 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 | 起動・シリアル | 生の機械語から起動し、文字の出力と入力を確認する。完了（001–002） |
 | Ethernet・TCP・HTTP | ARPとTCPを実装し、ホストのHTTP応答本文を取得する。完了（003–005） |
 | シリアルシェル | 同じVMで複数のコマンドを入力・実行し、結果とプロンプトを返す。完了（006） |
-| 小さなOS | コンソール、メモリ、プログラムのロードと終了を扱う。最初は単一タスクで、プログラムとカーネルの呼び出し規約を定める。完了（007）。アセンブル・インストール・ビルドで8 KiB（026）、続いて最大32 KiB（033）の実行コードを扱えることを確認済み |
+| 小さなOS | コンソール、メモリ、プログラムのロードと終了を扱う。最初は単一タスクで、プログラムとカーネルの呼び出し規約を定める。完了（007）。アセンブル・インストール・ビルドで8 KiB（026）、続いて最大32 KiB（033）の実行コードを扱えることを確認済み。ビルド上限60,000バイトで53,772バイトの自己ホストしたコンパイラも確認済み（038） |
 | 永続ディスクとファイルシステム | 仮想ブロックデバイスを読み書きし、再起動をまたいでソースとプログラムを保存・再読込する。完了（008・010）。UARTから最大8 KiBのファイルを取り込み、再起動後もバイト単位で一致することを確認済み（022）。ゲスト内で24ファイル・各32 KiBの形式に移行し、8 KiBを超えるアセンブリとCソースを処理できることを確認済み（031） |
 | アセンブラ | ゲスト内でAArch64の命令とラベルを機械語に変換し、生成物を実行する。コンパイラをゲスト内で組み立てられる命令と容量を確認済み（009–014） |
 | コンパイラ | ゲスト内アセンブラでコンパイラを組む。実行時引数・整数式・局所変数・分岐・ループを含むCサブセットを確認済み（014–015）。補助関数の定義と呼び出し（021）、空白やコメントを含む複数行のCソースを取り込んでコンパイルする処理（023）、ローカル整数のアドレス取得とポインタ経由の読み書き（024）を確認済み |
 | GUIとブラウザ | フレームバッファとキー入力は完了（016）。ホストから取得したシンプルなHTMLの描画を確認済み（017）。キーボードで入力したパスで、同じ起動中にページを遷移できることを確認済み（027）。受信したHTMLから抽出したリンクをキー操作でたどれることを確認済み（028） |
 | アセンブラの自己ホスト | カーネル内のアセンブラで種を作り、ゲストアプリとして自分のソースを組み立て直す。世代間で生成コードを照合する。完了（019） |
 | プロセスとシステムコール | 複数のプログラムに独立したスタックと実行状態を持たせ、協調スケジューリング、終了・待機、ファイルやコンソールの入出力を扱う。協調プロセスと基本ファイル入出力は完了（018・020）。ロード済みプログラムへの argc と argv の引き渡し（029）、文字列リテラルと putchar・puts・strcmp を使うCコマンドの実行（035）を確認済み |
-| Cコンパイラと最小libc | 複数関数、型、ポインタ、配列、文字列、前処理などを段階的に追加する。対象とするC規格の機能をテストし、入出力・文字列操作などのライブラリを用意する。ローカルの文字配列を実行時の添字で読み書きできること（025）と、最大4個の名前付き整数ローカル変数および関数ごとの引数名（030）を確認済み。名前付き関数と型付きポインタを扱う種コンパイラで、C製コンパイラのビルドと動作を確認済み（032） |
-| Cコンパイラの自己ホスト | ゲストで動く種コンパイラがコンパイラ自身のCソースをビルドできるようにし、生成したコンパイラで再ビルドと回帰テストを行う。C製コンパイラによる2世代の自己ビルドがバイト単位で一致し、別のCプログラムも実行できることを確認済み（034） |
-| オープンソースCLI | 観測側が版とハッシュを固定した小さなCLIのソースを投入し、ゲスト内でビルドして入出力を照合する。必要な移植差分を記録する。sbase 0.1のechoをゲスト内で移植・ビルドし、ホストでビルドした原本と入出力を照合済み（036） |
+| Cコンパイラと最小libc | 複数関数、型、ポインタ、配列、文字列、前処理などを段階的に追加する。対象とするC規格の機能をテストし、入出力・文字列操作などのライブラリを用意する。ローカルの文字配列を実行時の添字で読み書きできること（025）と、最大4個の名前付き整数ローカル変数および関数ごとの引数名（030）を確認済み。名前付き関数と型付きポインタを扱う種コンパイラで、C製コンパイラのビルドと動作を確認済み（032）。Cのポインタ演算・短絡評価・グローバル変数・ループ・キャスト・include処理・オブジェクト形式マクロを追加し、原本のechoを無改変でビルドできることを確認済み（038） |
+| Cコンパイラの自己ホスト | ゲストで動く種コンパイラがコンパイラ自身のCソースをビルドできるようにし、生成したコンパイラで再ビルドと回帰テストを行う。C製コンパイラによる2世代の自己ビルドがバイト単位で一致し、別のCプログラムも実行できることを確認済み（034）。言語機能の拡張後も53,772バイトの連続世代のバイト一致を確認済み（038） |
+| オープンソースCLI | 観測側が版とハッシュを固定した小さなCLIのソースを投入し、ゲスト内でビルドして入出力を照合する。必要な移植差分を記録する。sbase 0.1のechoをゲスト内で移植・ビルドし、ホストでビルドした原本と入出力を照合済み（036）。続いて原本のecho.cを変換器なしでビルドし、上流版と照合済み（038） |
 | 外部ネットワーク | オフラインでの再現を確立した後、まず取得先を限定してソース取得からビルドまで検証する。取得先を1件に固定したホストの中継を経由してsbaseのecho.cを取得し、オフラインでビルドして上流版と照合済み（037） |
 
 後半はCコンパイラの自己ホスト、OSと最小libcによるCコマンドの実行、既存OSSコマンドのオフラインビルドを経て、取得先を限定した外部通信とゲストでのビルドまで確認した。段階027・028で作ったブラウザのページ遷移も最終カーネルで再検証した。
 
 ### 今後のマイルストーン
 
-今後は、必要な言語機能やOS機能をまとめて実装し、一通り使える開発手順を1段階とする。以下は今後の合格条件であり、完了した結果ではない。
+今後は、必要な言語機能やOS機能をまとめて実装し、一通り使える開発手順を1段階とする。合格条件を示し、観測側の独立検証を通った段階だけ完了と記す。
 
 | 実験 | 目標と合格条件 |
 | --- | --- |
-| 038 — 上流のechoを無改変でビルド | 版を固定した原本の`echo.c`を、ゲストのヘッダ・libc・起動処理とともにゲスト内でコンパイルする。ソース固有の変換器やコンパイラの特別扱いは使わない。出力・終了コードを上流版と照合し、コンパイラの自己ビルドと連続世代のバイト一致も確認する。 |
+| 038 — 上流のechoを無改変でビルド（完了） | [038](experiments/038-campaign.md)で確認済み。版を固定した原本の`echo.c`を、ゲストのヘッダ・libc・起動処理とともにゲスト内でコンパイルする。ソース固有の変換器やコンパイラの特別扱いは使わない。出力・終了コードを上流版と照合し、コンパイラの自己ビルドと連続世代のバイト一致も確認する。 |
 | 039 — 複数のOSSコマンドを動かす | 文字列処理・標準入力・ファイルI/Oを使う複数のコマンドを無改変でビルドする。ヘッダとlibcを共有し、複数ソースを再現可能な手順でビルドする。正常系・異常系を上流版と照合する。 |
 | 040 — ゲスト内で日常的に開発する | ゲスト内でソースの編集・ビルド・実行・修正・保存・再起動後の再ビルドを完結する。使えるエディタ、リダイレクト、パイプを用意し、コマンド同士の出力と永続ファイルを処理する。 |
 | 041 — ソース一式から環境を再構築する | 明記した最小起動環境と種コンパイラから、保存した正確なソースを使ってコンパイラ・libc・コマンド群を自動ビルドする。再構築した環境を起動またはロードして一連の検証を繰り返し、コンパイラの連続世代も照合する。 |

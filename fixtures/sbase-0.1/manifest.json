@@ -41,6 +41,10 @@
     "libutil/writeall.c": {
       "bytes": 318,
       "sha256": "afca00ac3c52ab6350e143e6d9a27e52e1622a056bacbc88cc475dc6184a2cef"
+    },
+    "compat.h": {
+      "bytes": 151,
+      "sha256": "00fc3129294c2ddf3d39dee3b6a2f581d98b565f66250796deabf82d2fe78e07"
     }
   }
 }

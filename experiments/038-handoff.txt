@@ -1,0 +1,39 @@
+STAGE038 FINAL ABI CORRECTION supersedes previous notes. Native echo/self-host features retained; capacity mismatch FIXED. Saved guest.hex18576 bytes. Final reboot20261116T104610.601434Z passed native bootstrap/self-comparison/echo/malformed/changed-input/C tests. VM STOPPED. All offline/in guest, no host compiler/downloads.
+
+BUILD ABI: supplied w4=60000 BYTES; inclusive return-size bound60000; minimum4;4-byte aligned. Returned0/1/2/3,6,59999,60001,60004,65536,0xffffffff now rejected, retaining prior program.8,59996,60000 accepted. Compiler reserve2048=>maxcode57952. No accepted compiler/header changes this correction. Observer independently measured exact self-built compiler53772 bytes; our60000-byte comparisons still pass.
+CAUSE: previous kernel supplied60000 but checked65536. Replace compare8088 with branch to appended guard: reload60000 in scratch w16,cmp w13,w16,branch back8092. Existing unsigned B.HI,min/alignment checks retained. Cannot trust compiler-clobbered w4 after return. Supply and guard both60000.
+
+EXACT KERNEL MANIFEST vs stage03718564 bytes:8048 old04009052=>044c9d52(mov w4,60000);8088 oldbf214071=>3b0a0014(B18564).8092 original48010054. Append at18564 exactly12 bytes:
+104c9d52bf01106bc4f5ff17
+mov w16,60000;cmp w13,w16;B8092. Final18576 bytes saved guest.hex. Previous stage0388088 wasbf414071(wrong65536 bound), now3b0a0014. Branch offsets2619/-2620 words manually relocated: hand patches. MOV/CMP guest-assembled, independently verified opcodes529d4c10/6b1001bf. Guard source saved after guard: in empty; .word402650564 last branch valid when relocated18564. No other kernel edits. Boot/shell/assembler/argv/GUI/network otherwise identical; GUI/network not retested.
+
+ABI FIXTURE: empty NOW guest assembly compiler(replaces obsolete trim utility). as empty;install. Input first byte via progBad chooses size:
+8=>8,0=>0,1=>1,2=>2,3=>3,6=>6,7=>w4-1,9/default=>w4+4,a=>w4,b=>w4+1,c=>65536,d=>0xffffffff,f=>w4-4.
+Clears exactly supplied capacity; emits candidate returning100(exit00000064), except selector8 emits sentinel99(exit00000063). Actual test: save progBad 8;build progBad=>built;exec sentinel=>63. For EACH0,1,2,3,6,7,9,b,c,d: save progBad SELECTOR;build progBad=>build error;exec sentinel=>63,NOT candidate64. Positive f/a=>built;exec candidate=>64 (59996/exact60000 accepted). All run corrected kernel. Restored progBad malformed C and native compiler afterward. Fixture is ONLY ABI test, not native source recognition. Exact source via cat empty. Other disk sources unchanged this correction.
+
+NATIVE REBUILD (semicolon means NEWLINE):
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS
+new1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw16-function preprocessor-free C COMPILER BRIDGE,NOT former stage036 adapter;copied from extended compiler before pp. extra3 builds raw;raw builds exact final extra2;extra2 self-builds. Final19 functions,driver entry. Compiler receives bytes,not input filename;no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: original421 bytes/comment/includes/tabs/LFs preserved. Alpha separate alternative input.
+
+SELFHOST after native bootstrap/install: build Check;exec compare snapshots installed60000 bytes to40940000. build extra2;install;build Check;exec compare test=>Y\n exit0. Repeat=>Y/0. FULL40150000..+60000 byte comparison incl unchanged trailing bytes,not hash. Regenerate snapshot each boot. Two generations passed after correction,another final fresh boot. Accepted compiler sources unchanged.
+
+NATIVE ECHO: build extra5=>built; all exit0,rerun final boot:
+exec echo=>LF only
+exec echo Alpha 123 z-9=>Alpha 123 z-9\n
+exec echo -n Alpha 123=>Alpha 123,no LF
+exec echo -n=>zero bytes
+exec echo Alpha -n=>Alpha -n\n
+exec echo -- Alpha=>-- Alpha\n
+Previously -n -n=>-n no LF;-nn=>-nn\n;-- -n=>-- -n\n. Same executable repeatedly. Generic startup resets ALL globals from compiled initial values each exec.
+
+CONSUMPTION alpha near-identical original,only '\n' literal changed to '!',plus persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. First rerun final boot. beta guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> creates input;restore native bootstrap. Not part of extra5 compilation.
+MALFORMED progBad restored int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 unchanged. Rerun final boot.
+
+UNRELATED longasm C: build longasm;exec regress Apple Banana=>K2AAA11110CD\n,exit0,rerun final boot. Includes<stdio.h>,object macro N67,globals/functions,int* indexing/scaled addition/integer+pointer/difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||.0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A;ticks1 proves skipped side effects;logical results normalized1. Earlier1||0&&0=>1 passed. Abc123xyz789 author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates source incl directive newlines.
+
+LIBRARY: stdioh/stringh/utilh ALL GUEST-WRITTEN;NO original upstream library sources imported. Exact sources via cat. Header path encoding omits dots(stdio.h=>stdioh etc);generic lookup scans24 complete names;quoted/angle includes. stdioh defines stdout0;stringh ordinary strcmp;utilh argv0,wordfirst,putword,fshut. Valid C header definitions inserted normally,not rewritten echo. putchar inherited generic console intrinsic:immediate/unbuffered/infallible serial.stdout0 sole stream;fshut nothing buffered,returns0. Small reusable console libc,not complete FILE/disk stdio. Generic startup/TU init in extra2 compile(). No hard-encoded echo.
+
+C subset unchanged: int/char*/int*/char**,void* casts,comments/literals,zero/literal globals,unsized array PARAMETER adjustment,scaled postfix++/--,pointer arithmetic/difference,char**64-bit loads/stores,!,+ - *,comparisons/equality,short circuit,conditional,assignment,sequenced comma,expression statements,if/else/while/for. Own source explicitly migrated to int address=(int)out;int *s=(int *)(address+cap-2048);explicit pointer/int casts,typed lexer end pointer. Raw pre-cast bridge separate. Backend B/BL fix narrowed high16>5118,<5120 and>37886,<37888 to avoid ASR/ADD corruption. Lvalue x2 stack-preserved across RHS;postfix returns old value;real branch-based logical effects.
+LIMITS(not full ISO C/pp/libc): source32768,pp output30000,32 funcs,16 globals,32 locals/function,4 args;int32 wrap,addresses<2^32,unsigned char,kernel argv64-bit,fixed scratch/non-reentrant. Definitions before use. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise/local arrays/for-declaration initializer. PP includes/comments/recursive OBJECT macros(max32,depth16),strings protected;no function macros/conditional directives/undef/pasting. Guest headers need only supported directives.
+
+DISK: seeds unchanged;raw bridge;extra2 final compiler;extra4 own-source replacement editor;empty NOW ABI fixture+guard;beta alternative-input generator;alpha alternative input;Abc123xyz789 author;longasm C test;Check60000-byte comparator;progBad malformed. Previous stage renamed progFwd/progMath/prog8=>utilh/stdioh/stringh. All other files unchanged,24 slots. Extra4 reads backtick rules from beta WHEN beta holds rules;beta now generator,do NOT run editor without rules. Native bootstrap needs none of extra4/empty/beta/author. Scratch40840000/40880000;pp40980000/409c0000;Check40940000. Avoid40780000+4096 inherited fetch state. All executable generation in guest. VM stopped.

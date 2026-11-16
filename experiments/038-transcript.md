@@ -6,12 +6,12 @@ Mechanically converted from the Pi event log by [transcript.py](../transcript.py
 | --- | --- |
 | Model | `openai-codex/gpt-6.1-sol` |
 | Start (UTC) | 2026-11-16 09:49:13 |
-| Duration | 0:14:51 |
-| Tool calls | 67 |
-| VM boots | 5 |
-| Observer messages | 0 |
+| Duration | 0:59:45 |
+| Tool calls | 209 |
+| VM boots | 18 |
+| Observer messages | 2 |
 | Compactions | 0 |
-| Tokens (input / cached / output) | 72,424 / 3,333,888 / 20,086 |
+| Tokens (input / cached / output) | 148,285 / 23,298,560 / 80,866 |
 
 **Tools:** `guest_write`, `guest_read`, `notes_write`, `notes_read`, `vm_boot`, `serial_read`, `vm_stop`, `guest_patch`, `serial_send`, `serial_send_text`, `vm_boot_disk`
 
@@ -30,13 +30,13 @@ _Tools added: `guest_write`, `guest_read`, `notes_write`, `notes_read`, `vm_boot
 ## Stage prompt +0:00:00
 
 > Continue the bare-metal campaign from stage037. Deliver a complete, larger milestone: compile the UNMODIFIED pinned sbase 0.1 echo.c in the guest, without the stage036 adapter. This includes extending the C compiler, ordinary preprocessing/headers, reusable libc and startup code as necessary. All compilation and executable generation must run inside the guest using the supplied tools. No host compiler, downloaded compiler, source-specific rewriting, filename/hash recognition, or hand-encoded echo implementation. The observer will independently inspect artifacts and test varied source and runtime inputs.
-> 
+>
 > The exact upstream source is currently extra5 (421 bytes). Preserve it byte-for-byte. Its includes are stdio.h, string.h, util.h. You may supply guest-specific headers and a reusable libc implementing the called interfaces; record exactly which library sources are original versus guest-written. A normal preprocessor handling includes/macros and ordinary translation-unit combination are allowed. Do not translate unsupported C constructs into a custom dialect. Implement real C semantics needed by the upstream source (including scaled pointer arithmetic and char ** loads), and regression-test those features on unrelated snippets. Preserve short-circuit and side-effect behavior.
-> 
+>
 > Start from saved guest.hex, persistent disk, and notes_read. Bootstrap: as new1; install; build extra1; install; build extra3; install. new1 is the stage032 assembly seed, extra1 the stage034 self-hosted C compiler, extra3 the stage035 CLI extension. See the actual files with cat. Existing compiler dialect: int-returning functions before use, int/char*/int*/char**, max4 args, max32 locals, no globals/prototypes/preprocessor/comments/structs/casts/for/++/logical operators, byte-based pointer addition. It handles if/else/while, arithmetic + - *, &lt; &gt;, literals, strings, read indexing, assignment, calls, putchar under main. Use it as a bootstrap, and implement the missing ordinary C features. Self-hosting must be retained: the extended compiler's exact C source must build in the guest and rebuild itself, with byte-identical successive self-built generations. If pointer semantics change, migrate your own compiler source explicitly; do not silently keep non-C arithmetic for the compiler.
-> 
+>
 > You may evolve the kernel, disk layout/capacity, program limits and build ABI if needed. Save exact kernel bytes and all sources, migration procedure and reproducible bootstrapping instructions. Inherited artifacts are backed up by the observer; you may repurpose storage-test slots except extra5 and active toolchain sources until replacements are persisted. Preserve existing boot/shell, persistent files, assembler bootstrap, argv, and existing GUI/network behavior. Keep all work offline. Use guest assembly for new machine code when possible; identify any hand patches separately. Do not waste work preserving arbitrary historical test slots if a documented migration is required.
-> 
+>
 > Acceptance: fresh boot, exact upstream input, repeatable guest build without adapter, outputs and exit statuses matching upstream for no args, mixed args, -n, -n alone, noninitial -n and --. Also prove actual source consumption by compiling a separately named near-identical input with a changed output literal, and test ordinary snippets for operators, pointer scaling and short circuit. Compiler self-build generation equality and malformed-source rejection preserving the prior executable are required. Save complete exact sources, sources-to-binaries build commands, actual limits, tests, and handoff; stop VM. If unfinished, preserve work and record remaining observed failures honestly rather than claim completion.
 
 #### +0:00:00
@@ -2085,3 +2085,4727 @@ Saved partial progress:
 - Malformed-source rejection preserving the prior executable.
 
 `extra5` and kernel bytes remain unchanged. Exact sources, commands, limits, failures, and remaining work are recorded in handoff notes. VM stopped.
+
+## Observer message 1 +0:15:07
+
+> The stage is still incomplete. Continue working. Unmet acceptance condition: Stage038 is incomplete: compile the unchanged upstream echo.c with reusable headers/libc and real C semantics, demonstrate upstream-equivalent behavior and ordinary short circuit, and preserve self-hosting.
+> Observed result: The saved handoff reports build extra5 =&gt; build error. It reports no delivered headers/libc/startup, no upstream echo executable, no changed-literal test and no short-circuit implementation; beta with &amp;&amp; is rejected. Pointer extension is partial progress, not milestone acceptance. Continue implementing the remaining original acceptance criteria and save all work.
+
+#### +0:15:07
+
+**→ `notes_read`**
+
+**← `notes_read`**
+
+`text`
+
+<details><summary>text (7,821 chars, 22 lines)</summary>
+
+```
+stage038 PARTIAL / UNFINISHED. Do NOT claim upstream milestone. VM stopped after final fresh-boot regression. Exact saved guest.hex kernel remains stage037 18564 bytes, UNCHANGED this campaign (no guest_patch/write). Disk persistent. extra5 exact original421-byte pinned upstream echo.c NEVER written or adapted. cat after fresh boot confirmed original includes/comment/tabs. build extra5 => build error. No headers/libc/startup for upstream delivered; no echo executable or changed-literal acceptance test. Existing kernel boot/shell/argv/GUI/network code untouched; GUI/network not retested this stage.
+
+CANONICAL TOOLCHAIN: new1 unchanged stage032 assembly seed; extra1 unchanged stage034 C compiler; extra3 unchanged stage035 CLI compiler. extra2 NOW complete extended compiler C source (replaces obsolete stage037 fetch-helper assembler source; exact helper machine bytes still in unchanged kernel). extra4 NOW complete guest-written compiler-source migration/editor C utility, NOT echo adapter. raw remains inherited stage036 adapter source, NOT used to build/translate echo in this campaign. No original library sources imported, no new libc implemented. All new source/compiler binaries generated/built IN GUEST. No host compilation, downloads or filename/hash recognition. No upstream-specific transformations. All transformations described below apply ONLY to our own compiler.
+
+REPRODUCIBLE fresh boot: as new1; install; build extra1; install; build extra3; install; build extra2; install; build extra2; install. Each semicolon here means shell newline (not literal shell semicolon). Builds report built. Last extra2 function repaired is compiler ABI entry. Exact extra2 self-builds repeatedly. Installed code base40150000, output buffer41000000, build cap32768 bytes. These addresses verified via kernel inspection; empty program returns first installed instruction 140017d7 (not zero). Check performs full32768-byte comparison of installed regions across generations, including unchanged trailing bytes beyond executable, not just hashes.
+
+SELFBUILD EQUALITY procedure after bootstrap above: build Check; exec compare (snapshot installed32768 bytes to407a0000); build extra2; install; build Check; exec compare test => Y\n exit00000000. Repeated earlier and after final fresh boot. Snapshot is runtime RAM, regenerate each boot. Check is exact saved comparison C source. It does not alter installed compiler. Building Check overwrites output, not installed compiler.
+
+FEATURES ADDED in extra2: scaled pointer +/- integer for int* (4) and char** (8), also integer+pointer; pointer-pointer subtraction scales back to element counts; char** indexed assignment scales and stores64-bit pointer; unary ! normalizes to0/1. Existing stage035 char** dereference/index load retained. Explicit compiler source migration: original int *s=out+cap-1024 changed to int address=out;int *s=address+cap-1024; hence buffer placement remains byte-address arithmetic explicitly through INTEGER, not secretly non-C pointer arithmetic. CAVEAT inherited dialect still permits implicit pointer/int conversions and uses32-bit int state to hold guest addresses. It is not yet an ordinary conforming C compiler; casts/strict typing migration still needed. No division operator; pointer difference backend emits ASR.
+
+IMPORTANT backend repair: inherited bootstrap pass treated any opcode in high16(4864..5120) as malformed negative branch and added1024 to high16. This corrupts new ASR instructions into branches and initially hung pointer-subtraction test. Final appended repaired() calls final(), then restores exact corrupted5890:31744 and5891:31744 to4866:31744 and4867:31744. This repair is in canonical C source and self-compiles. No machine-byte hand patches. New numeric AArch64 emitter constants were manually derived (LSL W0/1#2/#3, ASR W0#2/#3, STR X0,[X1], CMP W0#0,CSET EQ), not separately guest-assembled; identify these as hand-encoded codegen constants. Printer-generation opcodes in extra4 follow inherited raw helper format (not an echo implementation).
+
+CURRENT LIMITS: inherited int-returning functions before use, max16 functions total (extra2 uses16), max4 parameters, max32 locals, int/char*/int*/char**, strings/chars, if/else/while/calls/read indexing/assignment, + - * < > and now !. Source bound32768; build output buffer32768; compiler reserves1024 state at end so output cap31744 bytes. Generic pointer types incomplete: no int**, no char scalar declarations/arrays, casts, prototypes/globals, comments, preprocessor, for, ++/--, comma/conditional/assignment expressions, &&/||, ==/!=. Some invalid pointer expressions still accepted; no full type checking. 32-bit guest-address arithmetic is sufficient for this kernel map, char** cells64-bit. No short circuit implementation yet. beta intentionally demonstrates && rejected. Do not report short-circuit acceptance.
+
+SAVED TEST SOURCES (repurposed storage/test slots only):
+progMath: int* scratch40780000, p+3, loads/stores, q-p,2+p,!0,!7. build progMath; exec ptr => ')9 3 2 10\n',exit0. prog8: argv+1 then +1, *p[0],**p,p-argv. build prog8;exec ptr Apple Banana => 'A B 2\n',exit0. progFwd: char** p=argv+1;p[1]=p[0];*argv[2]. build progFwd;exec ptr Apple Banana => 'A\n',exit0. alpha: int* q=3+p;*q=75;prints p[3],return q-p. => K\n,exit3. empty: first installed instruction diagnostic =>140017d7. Check generation comparison described above. progBad exact malformed int main(){return ;}: build error, exec still runs prior executable unchanged. Final fresh-boot test built progFwd (A,exit0), build progBad =>build error, exec ptr Apple Banana =>A,exit0. Also build extra5 rejected and preserved prior executable during earlier test. beta: int main(){return 0 && putchar(88);} =>build error (expected missing feature, NOT passing C test).
+
+COMPILER MIGRATION UTILITY extra4: guest-written exact saved source, uses reusable string replacement for six own-source edits. Functions len,eq,edit,final,bytecode,make,chunk. LAST chunk is working entry; earlier final directly prints during build and hangs (putchar only valid under exec); earlier make assumes excess cap and fails. They are retained as exact observed work, not entry. chunk uses scratch40780000 and+20000, counter+50000; transforms extra3 with6 rules, emits EXECUTABLE PRINTER for2160 source bytes per build, shell commands save/append extra2 in90-character bodies. Fresh boot counter zero. Bootstrap to extra3 compiler, build extra4/install. Then five times build extra3;exec edit; relay the emitted save/append lines unchanged. This reconstructs extra2 BEFORE appended repaired function. Final canonical extra2 includes repaired function (cat it for exact text). Source length about9KiB, printer chunk fits32768; original monolithic unrolled printer exceeded cap. All printed source relay performed via supplied serial tool. Save/append kernel body limit is about128 bytes; keep bodies<=100. Arbitrary token boundaries append directly (no separator added).
+
+CHANGED DISK SLOTS: extra2,extra4,progMath,prog8,progFwd,Check,progBad,alpha,beta,empty. Everything else incl extra5,new1,extra1,extra3,raw retained. extra4 replaced old generated adapted echo output. No new file slots required; disk remains full24 slots.
+
+REMAINING WORK: ordinary tokenizer/comments/operators with precedence and lvalues; short-circuit preserving side effects; comma/?:/cast/for/postfix; global/prototype/type support; preprocessing include/object/function macros; reusable guest libc and startup/TU combination; eliminate nonstandard compiler pointer/integer conversions via real casts/typed state. Then actual UNMODIFIED extra5 build, varied CLI/status and separately named changed-literal consumption tests. Preserve extra5. Stage037 kernel fetch behavior remains inherited, not modified here. Stop VM at handoff.
+```
+
+</details>
+
+#### +0:15:10
+
+> 💭 **Inspecting source save code**
+> 💭 **Examining kernel save routine**
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T100442.724230Z"}
+```
+
+#### +0:15:29
+
+**→ `guest_read`** `{"offset": 4700, "length": 900}`
+
+**← `guest_read`**
+
+<details><summary>result (1,810 chars, 1 lines)</summary>
+
+```
+{"hex":"011940393f80007161daff541100805252008052ea0080522bfeff171f2003d51f2003d5ff24007163d9ff54010140b982ed8d52228cac723f00026bc1d8ff54010540b9c22c8d5282adac723f00026b21d8ff54012140393f800071c1d7ff5451008052120080522a01805216feff175f06007121d2ff5458feff17c1021091620101cb42fc47d325044091a53c028b64054079c0035fd6f9ffff975f0a0071400000540400805290001c0b1f22407108d1ff54a600048be5031baae4031c2ac4000034a1144038c114003884040071a1ffff541f2003d570050079a1148052614101397a010039e50319aa66110091e4031a2aa1144038c114003884040071a1ffff5421008052bbfdff97e1ceff35d20c0014daffff97cdfcff9764feff176e000014c1000054d5ffff97f40305aab500048b9bfeff171f2003d5d0ffff979f20007163a4ff549f04407128a4ff5481080012e1a3ff358d7c0153ec030d2a6b064091a11440383efdff973f40007100a3ff542a6c1c53a114403839fdff973f40007160a2ff544101012a611500388c05007181feff54030000940afdff171f2003d53b080014e60313aae4030d2aa1144038c114003884040071a1ffff54e50313aa66020d8b257b0bd5a5000191bf0006eba3ffff549f3f03d51f7508d59f3f03d5df3f03d521008052a0020014c0035fd6c1afff35d90210911a0180521b0080522103403921020034214341393f940271c0010054eb0319aa98ffff97240740392407007926430091a4000034c1144038a114003884040071a1ffff54a1148052214301393b008052390302915a07007181fdff549b88ff342100805265fdff9741acff3540fcff1768656c70206563686f206c6f61642072756e207361766520617070656e6420636174206c732061736d206c6f616466696c650a008999ff35ff0c007163e9ff5401014079226c8e523f00026be1e8ff54010940393f80007181e8ff5471008052120080526a0080527cfdff178402001400f3ff5492ffff176f264091010080523f0e0071a1000054210080520200845203108052030000140201805203018052e10100b9e20500b9e30900b91924a8d21a26a8d26e0a001404c08052bf8400f884040071c1ffff541b0080521c00805222feff176f264091e10940b99f03016b41feff176f264091e10540b97f03016b4ffeff176f264091e10140b961000035210140394cfeff170e0100142e010a8b0b0080520c008052"}
+```
+
+</details>
+
+#### +0:15:32
+
+> 💭 **Tracing file-length handling**
+> 💭 **Preparing guest writer wrapper**
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+cat extra2
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":90}
+```
+
+#### +0:16:01
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (8,192 chars, 1 lines)</summary>
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20696e7420656d697428696e74202a732c696e742068692c696e74206c6f297b696e74202a6f3d735b325d3b696e74206b3d735b335d3b6966286b3c735b345d297b6f5b6b5d3d68692a3235362a3235362b6c6f3b735b335d3d6b2b313b7d656c73657b735b355d3d313b7d72657475726e206b3b7d696e7420706174636828696e74202a732c696e742061742c696e742064657374297b696e74202a6f3d735b325d3b6f5b61745d3d353132302a3235362a3235362b646573742d61743b72657475726e20303b7d696e742073616d652863686172202a612c63686172202a622c696e74206e297b696e7420693d303b7768696c6528693c6e297b696628615b695d2d625b695d297b72657475726e20303b7d693d692b313b7d72657475726e20313b7d696e742071756f74656428696e74202a73297b63686172202a703d735b305d3b696e7420633d303b696628703c735b315d297b633d2a703b703d702b313b696628632d3932297b7d656c73657b696628703c735b315d297b633d2a703b703d702b313b696628632d313130297b7d656c73657b633d31303b7d696628632d313136297b7d656c73657b633d393b7d696628632d3438297b7d656c73657b633d303b7d7d656c73657b735b355d3d313b7d7d7d656c73657b735b355d3d313b7d735b305d3d703b72657475726e20633b7d696e74206c657828696e74202a73297b63686172202a703d735b305d3b696e7420653d735b315d3b696e7420633d303b696e74206e3d303b696e7420763d303b7768696c6528703c65297b6966282a703e3332297b633d2a703b703d702b313b735b375d3d702d313b696628632d3339297b7d656c73657b735b305d3d703b763d71756f7465642873293b703d735b305d3b696628703c65297b6966282a702d3339297b735b355d3d313b7d703d702b313b7d656c73657b735b355d3d313b7d735b305d3d703b735b365d3d3235363b735b395d3d763b72657475726e203235363b7d696628632d3334297b7d656c73657b735b375d3d703b6e3d303b7768696c6528703c65297b633d2a703b696628632d3334297b7d656c73657b735b305d3d702b313b735b385d3d6e3b735b365d3d3236343b72657475726e203236343b7d696628632d3932297b7d656c73657b703d702b313b6e3d6e2b313b7d703d702b313b6e3d6e2b313b7d735b355d3d313b735b365d3d303b72657475726e20303b7d696628633e3437297b696628633c3538297b763d632d34383b7768696c6528703c65297b633d2a703b696628633c3438297b633d303b7d656c73657b696628633e3537297b633d303b7d7d696628633c31297b735b305d3d703b735b365d3d3235363b735b395d3d763b72657475726e203235363b7d763d762a31302b632d34383b696628763e3635353334297b735b355d3d313b7d703d702b313b7d735b305d3d703b735b365d3d3235363b735b395d3d763b72657475726e203235363b7d7d696628633e3634297b696628633c3931297b6e3d313b7d7d696628633e3936297b696628633c313233297b6e3d313b7d7d696628632d3935297b7d656c73657b6e3d313b7d6966286e297b6e3d313b7768696c6528703c65297b633d2a703b763d303b696628633e3634297b696628633c3931297b763d313b7d7d696628633e3936297b696628633c313233297b763d313b7d7d696628633e3437297b696628633c3538297b763d313b7d7d696628632d3935297b7d656c73657b763d313b7d696628763c31297b653d703b7d656c73657b703d702b313b6e3d6e2b313b7d7d735b385d3d6e3b735b305d3d703b735b365d3d3235373b703d735b375d3b6966286e2d33297b7d656c73657b696628705b305d2d313035297b7d656c73657b696628705b315d2d313130297b7d656c73657b696628705b325d2d313136297b7d656c73657b735b365d3d3235383b7d7d7d7d6966286e2d34297b7d656c73657b696628705b305d2d3939297b7d656c73657b696628705b315d2d313034297b7d656c73657b696628705b325d2d3937297b7d656c73657b696628705b335d2d313134297b7d656c73657b735b365d3d3235393b7d7d7d7d696628705b305d2d313031297b7d656c73657b696628705b315d2d313038297b7d656c73657b696628705b325d2d313135297b7d656c73657b696628705b335d2d313031297b7d656c73657b735b365d3d3236333b7d7d7d7d7d6966286e2d32297b7d656c73657b696628705b305d2d313035297b7d656c73657b696628705b315d2d313032297b7d656c73657b735b365d3d3236313b7d7d7d6966286e2d35297b7d656c73657b696628705b305d2d313139297b7d656c73657b696628705b315d2d313034297b7d656c73657b696628705b325d2d313035297b7d656c73657b696628705b335d2d313038297b7d656c73657b696628705b345d2d313031297b7d656c73657b735b365d3d3236323b7d7d7d7d7d7d6966286e2d36297b7d656c73657b696628705b305d2d313134297b7d656c73657b696628705b315d2d313031297b7d656c73657b696628705b325d2d313136297b7d656c73657b696628705b335d2d313137297b7d656c73657b696628705b345d2d313134297b7d656c73657b696628705b355d2d313130297b7d656c73657b735b365d3d3236303b7d7d7d7d7d7d7d72657475726e20735b365d3b7d735b305d3d703b735b365d3d633b72657475726e20633b7d703d702b313b7d735b305d3d703b735b365d3d303b72657475726e20303b7d696e74206e65656428696e74202a732c696e742074297b696e74207a3d303b696628735b365d2d74297b735b355d3d313b72657475726e20303b7d7a3d6c65782873293b72657475726e20303b7d696e742074797028696e74202a73297b696e7420743d735b365d3b696e74207a3d303b696e7420723d303b696628742d323538297b696628742d323539297b735b355d3d313b72657475726e20303b7d723d313b7d7a3d6c65782873293b696628735b365d2d3432297b69662872297b735b355d3d313b7d72657475726e20303b7d7a3d6c65782873293b69662872297b696628735b365d2d3432297b7d656c73657b7a3d6c65782873293b72657475726e20333b7d72657475726e20313b7d72657475726e20323b7d696e742066696e6428696e74202a732c696e74207461622c696e7420636f756e742c696e7420737472696465297b696e7420693d303b696e74206b3d303b7768696c6528693c636f756e74297b6b3d7461622b692a7374726964653b696628735b6b2b315d2d735b385d297b7d656c73657b69662873616d6528735b6b5d2c735b375d2c735b385d29297b72657475726e20692b313b7d7d693d692b313b7d72657475726e20303b7d696e74206578707228696e74202a732c696e74206c6576297b696e7420743d303b696e7420723d303b696e74206f703d303b696e74207a3d303b696e74206b3d303b696e7420613d303b696e7420663d303b696e7420623d303b696e7420633d303b696e7420643d303b63686172202a703d303b6966286c65763c33297b743d6578707228732c6c65762b31293b6f703d735b365d3b6b3d303b6966286c65763c31297b6966286f702d3630297b7d656c73657b6b3d313b7d6966286f702d3632297b7d656c73657b6b3d313b7d7d6966286c65762d31297b7d656c73657b6966286f702d3433297b7d656c73657b6b3d313b7d6966286f702d3435297b7d656c73657b6b3d313b7d7d6966286c65762d32297b7d656c73657b6966286f702d3432297b7d656c73657b6b3d313b7d7d7768696c65286b297b7a3d6c65782873293b7a3d656d697428732c36333531392c34303634293b723d6578707228732c6c65762b31293b6966286c65762d31297b7d656c73657b696628743e31297b696628723c31297b696628742d32297b7a3d656d697428732c32313237372c3238363732293b7d656c73657b7a3d656d697428732c32313237382c3239363936293b7d7d7d7d7a3d656d697428732c36333535332c32303137293b6966286c65762d31297b7d656c73657b696628743c31297b696628723e30297b6966286f702d3433297b735b355d3d313b7d656c73657b696628722d32297b696628722d33297b7d656c73657b7a3d656d697428732c32313237372c3238373035293b7d7d656c73657b7a3d656d697428732c32313237382c3239373239293b7d743d723b7d7d7d7d6966286f702d3433297b7d656c73657b7a3d656d697428732c323831362c3332293b7d6966286f702d3435297b7d656c73657b7a3d656d697428732c31393230302c3332293b69662872297b696628742d72297b735b355d3d313b7d656c73657b696628742d32297b696628742d33297b7d656c73657b7a3d656d697428732c343836372c3331373434293b7d7d656c73657b7a3d656d697428732c343836362c3331373434293b7d743d303b7d7d7d6966286f702d3432297b7d656c73657b7a3d656d697428732c363931322c3331373736293b743d303b7d6966286f702d3630297b7d656c73657b7a3d656d697428732c32373339322c3633293b7a3d656d697428732c363831352c3432393736293b743d303b7d6966286f702d3632297b7d656c73657b7a3d656d697428732c32373339322c3633293b7a3d656d697428732c363831352c3535323634293b743d303b7d6f703d735b365d3b6b3d303b6966286c65763c31297b6966286f702d3630297b7d656c73657b6b3d313b7d6966286f702d3632297b7d656c73657b6b3d313b7d7d6966286c65762d31297b7d656c73657b6966286f702d3433297b7d656c73657b6b3d313b7d6966286f702d3435297b7d656c73657b6b3d313b7d7d6966286c65762d32297b7d656c73657b6966286f702d3432297b7d656c73657b6b3d313b7d7d696628735b355d297b72657475726e20303b7d7d72657475726e20743b7d6f703d735b365d3b6966286f702d3333297b7d656c73657b7a3d6c65782873293b743d6578707228732c33293b7a3d656d697428732c32383932382c3331293b7a3d656d697428732c363831352c36313132293b72657475726e20303b7d6966286f702d3432297b7d656c73657b7a3d6c65782873293b743d6578707228732c33293b696628743c31297b735b355d3d313b7d696628742d33297b696628742d31297b7a3d656d697428732c34373432342c30293b7d656c73657b7a3d656d697428732c31343635362c30293b7d743d303b7d656c73657b7a3d656d697428732c36333830382c30293b743d313b7d72657475726e20743b7d6966286f702d3430297b7d656c73657b7a3d6c65782873293b743d6578707228732c30293b7a3d6e65656428732c3431293b6b3d313b7d6966286f702d323634297b7d656c73657b723d735b305d3b735b305d3d735b375d3b613d656d697428732c353132302c30293b663d735b33
+```
+
+</details>
+
+`text`
+
+<details><summary>text (4,096 chars, 10 lines)</summary>
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> int emit(int *s,int hi,int lo){int *o=s[2];int k=s[3];if(k<s[4]){o[k]=hi*256*256+lo;s[3]=k+1;}else{s[5]=1;}return k;}int patch(int *s,int at,int dest){int *o=s[2];o[at]=5120*256*256+dest-at;return 0;}int same(char *a,char *b,int n){int i=0;while(i<n){if(a[i]-b[i]){return 0;}i=i+1;}return 1;}int quoted(int *s){char *p=s[0];int c=0;if(p<s[1]){c=*p;p=p+1;if(c-92){}else{if(p<s[1]){c=*p;p=p+1;if(c-110){}else{c=10;}if(c-116){}else{c=9;}if(c-48){}else{c=0;}}else{s[5]=1;}}}else{s[5]=1;}s[0]=p;return c;}int lex(int *s){char *p=s[0];int e=s[1];int c=0;int n=0;int v=0;while(p<e){if(*p>32){c=*p;p=p+1;s[7]=p-1;if(c-39){}else{s[0]=p;v=quoted(s);p=s[0];if(p<e){if(*p-39){s[5]=1;}p=p+1;}else{s[5]=1;}s[0]=p;s[6]=256;s[9]=v;return 256;}if(c-34){}else{s[7]=p;n=0;while(p<e){c=*p;if(c-34){}else{s[0]=p+1;s[8]=n;s[6]=264;return 264;}if(c-92){}else{p=p+1;n=n+1;}p=p+1;n=n+1;}s[5]=1;s[6]=0;return 0;}if(c>47){if(c<58){v=c-48;while(p<e){c=*p;if(c<48){c=0;}else{if(c>57){c=0;}}if(c<1){s[0]=p;s[6]=256;s[9]=v;return 256;}v=v*10+c-48;if(v>65534){s[5]=1;}p=p+1;}s[0]=p;s[6]=256;s[9]=v;return 256;}}if(c>64){if(c<91){n=1;}}if(c>96){if(c<123){n=1;}}if(c-95){}else{n=1;}if(n){n=1;while(p<e){c=*p;v=0;if(c>64){if(c<91){v=1;}}if(c>96){if(c<123){v=1;}}if(c>47){if(c<58){v=1;}}if(c-95){}else{v=1;}if(v<1){e=p;}else{p=p+1;n=n+1;}}s[8]=n;s[0]=p;s[6]=257;p=s[7];if(n-3){}else{if(p[0]-105){}else{if(p[1]-110){}else{if(p[2]-116){}else{s[6]=258;}}}}if(n-4){}else{if(p[0]-99){}else{if(p[1]-104){}else{if(p[2]-97){}else{if(p[3]-114){}else{s[6]=259;}}}}if(p[0]-101){}else{if(p[1]-108){}else{if(p[2]-115){}else{if(p[3]-101){}else{s[6]=263;}}}}}if(n-2){}else{if(p[0]-105){}else{if(p[1]-102){}else{s[6]=261;}}}if(n-5){}else{if(p[0]-119){}else{if(p[1]-104){}else{if(p[2]-105){}else{if(p[3]-108){}else{if(p[4]-101){}else{s[6]=262;}}}}}}if(n-6){}else{if(p[0]-114){}else{if(p[1]-101){}else{if(p[2]-116){}else{if(p[3]-117){}else{if(p[4]-114){}else{if(p[5]-110){}else{s[6]=260;}}}}}}}return s[6];}s[0]=p;s[6]=c;return c;}p=p+1;}s[0]=p;s[6]=0;return 0;}int need(int *s,int t){int z=0;if(s[6]-t){s[5]=1;return 0;}z=lex(s);return 0;}int typ(int *s){int t=s[6];int z=0;int r=0;if(t-258){if(t-259){s[5]=1;return 0;}r=1;}z=lex(s);if(s[6]-42){if(r){s[5]=1;}return 0;}z=lex(s);if(r){if(s[6]-42){}else{z=lex(s);return 3;}return 1;}return 2;}int find(int *s,int tab,int count,int stride){int i=0;int k=0;while(i<count){k=tab+i*stride;if(s[k+1]-s[8]){}else{if(same(s[k],s[7],s[8])){return i+1;}}i=i+1;}return 0;}int expr(int *s,int lev){int t=0;int r=0;int op=0;int z=0;int k=0;int a=0;int f=0;int b=0;int c=0;int d=0;char *p=0;if(lev<3){t=expr(s,lev+1);op=s[6];k=0;if(lev<1){if(op-60){}else{k=1;}if(op-62){}else{k=1;}}if(lev-1){}else{if(op-43){}else{k=1;}if(op-45){}else{k=1;}}if(lev-2){}else{if(op-42){}else{k=1;}}while(k){z=lex(s);z=emit(s,63519,4064);r=expr(s,lev+1);if(lev-1){}else{if(t>1){if(r<1){if(t-2){z=emit(s,21277,28672);}else{z=emit(s,21278,29696);}}}}z=emit(s,63553,2017);if(lev-1){}else{if(t<1){if(r>0){if(op-43){s[5]=1;}else{if(r-2){if(r-3){}else{z=emit(s,21277,28705);}}else{z=emit(s,21278,29729);}t=r;}}}}if(op-43){}else{z=emit(s,2816,32);}if(op-45){}else{z=emit(s,19200,32);if(r){if(t-r){s[5]=1;}else{if(t-2){if(t-3){}else{z=emit(s,4867,31744);}}else{z=emit(s,4866,31744);}t=0;}}}if(op-42){}else{z=emit(s,6912,31776);t=0;}if(op-60){}else{z=emit(s,27392,63);z=emit(s,6815,42976);t=0;}if(op-62){}else{z=emit(s,27392,63);z=emit(s,6815,55264);t=0;}op=s[6];k=0;if(lev<1){if(op-60){}else{k=1;}if(op-62){}else{k=1;}}if(lev-1){}else{if(op-43){}else{k=1;}if(op-45){}else{k=1;}}if(lev-2){}else{if(op-42){}else{k=1;}}if(s[5]){return 0;}}return t;}op=s[6];if(op-33){}else{z=lex(s);t=expr(s,3);z=emit(s,28928,31);z=emit(s,6815,6112);return 0;}if(op-42){}else{z=lex(s);t=expr(s,3);if(t<1){s[5]=1;}if(t-3){if(t-1){z=emit(s,47424,0);}else{z=emit(s,14656,0);}t=0;}else{z=emit(s,63808,0);t=1;}return t;}if(op-40){}else{z=lex(s);t=expr(s,0);z=need(s,41);k=1;}if(op-264){}else{r=s[0];s[0]=s[7];a=emit(s,5120,0);f=s[3
+```
+
+</details>
+
+#### +0:16:05
+
+> 💭 **Preparing assembly template**
+> 💭 **Checking shell return path**
+
+**→ `serial_read`** `{"wait_ms": 100}`
+
+**← `serial_read`**
+
+<details><summary>result (12,308 chars, 1 lines)</summary>
+
+```
+{"hex":"5d3b623d303b633d313b643d303b7768696c6528735b305d3c735b375d2b735b385d297b7a3d71756f7465642873293b623d622b7a2a633b643d642b313b696628642d34297b633d632a3235363b7d656c73657b7a3d656d697428732c302c62293b623d303b633d313b643d303b7d7d7a3d656d697428732c302c62293b7a3d706174636828732c612c735b335d293b7a3d656d697428732c343039362c2833323736382a31362d735b335d2b66292a3332293b735b305d3d723b7a3d6c65782873293b743d313b6b3d313b7d6966286f702d323536297b7d656c73657b7a3d656d697428732c32313132302c735b395d2a3332293b7a3d6c65782873293b6b3d313b7d6966286f702d323537297b7d656c73657b663d66696e6428732c3132382c735b31315d2c34293b613d66696e6428732c33322c735b31305d2c33293b703d735b375d3b696628735b385d2d37297b7d656c73657b696628705b305d2d313132297b7d656c73657b696628705b315d2d313137297b7d656c73657b696628705b325d2d313136297b7d656c73657b696628705b335d2d3939297b7d656c73657b696628705b345d2d313034297b7d656c73657b696628705b355d2d3937297b7d656c73657b696628705b365d2d313134297b7d656c73657b663d302d313b7d7d7d7d7d7d7d7d7a3d6c65782873293b696628735b365d2d3430297b696628613c31297b735b355d3d313b72657475726e20303b7d613d612d313b743d735b33342b612a335d3b7a3d656d697428732c34373432342c3932382b28612b34292a31303234293b7d656c73657b69662866297b7d656c73657b735b355d3d313b72657475726e20303b7d696628663e30297b663d3132382b28662d31292a343b7d7a3d6c65782873293b613d303b696628735b365d2d3431297b723d313b7d656c73657b723d303b7d7768696c652872297b743d6578707228732c30293b7a3d656d697428732c36333531392c34303634293b613d612b313b696628613e34297b735b355d3d313b72657475726e20303b7d696628735b365d2d3434297b723d303b7d656c73657b7a3d6c65782873293b7d7d7a3d6e65656428732c3431293b696628663c30297b696628612d31297b735b355d3d313b7d7d656c73657b696628612d735b662b335d297b735b355d3d313b7d7d7768696c6528613e30297b7a3d656d697428732c36333535332c323031362b61293b613d612d313b7d696628663c30297b7a3d656d697428732c36333531392c34303635293b7a3d656d697428732c31303735332c393932293b7a3d656d697428732c35343834372c363038293b7a3d656d697428732c36333535332c32303136293b7d656c73657b7a3d656d697428732c33373838382c735b662b325d2d735b335d293b7d743d303b7d6b3d313b7d6966286b3c31297b735b355d3d313b72657475726e20303b7d7768696c6528735b365d2d39313c31297b696628735b365d2d3931297b72657475726e20743b7d696628743c31297b735b355d3d313b72657475726e20303b7d7a3d6c65782873293b7a3d656d697428732c36333531392c34303634293b723d6578707228732c30293b7a3d6e65656428732c3933293b696628742d32297b7d656c73657b7a3d656d697428732c32313234382c33303732293b7d696628742d33297b7d656c73657b7a3d656d697428732c32313237372c3238363732293b7d7a3d656d697428732c36333535332c32303137293b7a3d656d697428732c323831362c3332293b696628742d33297b696628742d31297b7a3d656d697428732c34373432342c30293b7d656c73657b7a3d656d697428732c31343635362c30293b7d743d303b7d656c73657b7a3d656d697428732c36333830382c30293b743d313b7d7d72657475726e20743b7d696e74206465636c28696e74202a732c696e742074297b696e74206b3d735b31305d3b696e74207a3d303b6966286b3e3331297b735b355d3d313b72657475726e20303b7d696628735b365d2d323537297b735b355d3d313b72657475726e20303b7d69662866696e6428732c33322c6b2c3329297b735b355d3d313b72657475726e20303b7d735b33322b6b2a335d3d735b375d3b735b33332b6b2a335d3d735b385d3b735b33342b6b2a335d3d743b735b31305d3d6b2b313b7a3d6c65782873293b72657475726e206b3b7d696e7420726574636f646528696e74202a73297b696e74207a3d656d697428732c33373132302c31303233293b7a3d656d697428732c34333231372c3331373431293b7a3d656d697428732c35343837392c393630293b72657475726e20303b7d696e742073746d7428696e74202a73297b696e74207a3d303b696e7420743d303b696e74206b3d303b696e7420613d303b696e7420623d303b696e7420633d303b696e7420643d303b696628735b355d297b72657475726e20303b7d743d735b365d3b696628742d313233297b7d656c73657b7a3d6c65782873293b7768696c6528735b365d2d313235297b696628735b365d3c31297b735b355d3d313b7d696628735b355d297b72657475726e20303b7d7a3d73746d742873293b7d7a3d6c65782873293b72657475726e20303b7d696628742d323630297b7d656c73657b7a3d6c65782873293b7a3d6578707228732c30293b7a3d6e65656428732c3539293b7a3d726574636f64652873293b72657475726e20303b7d696628742d323631297b696628742d323632297b6b3d303b7d656c73657b6b3d313b7d7d656c73657b6b3d313b7d6966286b297b613d735b335d3b7a3d6c65782873293b7a3d6e65656428732c3430293b7a3d6578707228732c30293b7a3d6e65656428732c3431293b7a3d656d697428732c31333536382c3634293b623d656d697428732c353132302c30293b7a3d73746d742873293b696628742d323632297b696628735b365d2d323633297b7a3d706174636828732c622c735b335d293b7d656c73657b633d656d697428732c353132302c30293b7a3d706174636828732c622c735b335d293b7a3d6c65782873293b7a3d73746d742873293b7a3d706174636828732c632c735b335d293b7d7d656c73657b633d656d697428732c353132302c612d735b335d293b7a3d706174636828732c622c735b335d293b7d72657475726e20303b7d696628742d323538297b696628742d323539297b6b3d303b7d656c73657b6b3d313b7d7d656c73657b6b3d313b7d6966286b297b743d7479702873293b613d6465636c28732c74293b696628735b365d2d3631297b7a3d656d697428732c32313132302c30293b7d656c73657b7a3d6c65782873293b7a3d6578707228732c30293b7d7a3d6e65656428732c3539293b7a3d656d697428732c34373336302c3932382b28612b34292a31303234293b72657475726e20303b7d696628742d3432297b696628742d323537297b735b355d3d313b72657475726e20303b7d613d66696e6428732c33322c735b31305d2c33292d313b623d735b305d3b633d735b375d3b6b3d735b385d3b7a3d6c65782873293b696628735b365d2d3430297b7d656c73657b735b305d3d623b735b375d3d633b735b385d3d6b3b735b365d3d3235373b7a3d6578707228732c30293b7a3d6e65656428732c3539293b72657475726e20303b7d696628613c30297b735b355d3d313b72657475726e20303b7d743d735b33342b612a335d3b696628735b365d2d3931297b643d303b7d656c73657b643d313b7a3d656d697428732c34373432342c3932382b28612b34292a31303234293b7a3d656d697428732c36333531392c34303634293b7a3d6c65782873293b7a3d6578707228732c30293b7a3d6e65656428732c3933293b696628742d32297b7d656c73657b7a3d656d697428732c32313234382c33303732293b7d696628742d33297b7d656c73657b7a3d656d697428732c32313237372c3238363732293b7d7a3d656d697428732c36333535332c32303137293b7a3d656d697428732c323831362c3332293b7a3d656d697428732c36333531392c34303634293b7d7d656c73657b643d313b7a3d6c65782873293b696628735b365d2d323537297b735b355d3d313b72657475726e20303b7d613d66696e6428732c33322c735b31305d2c33292d313b696628613c30297b735b355d3d313b72657475726e20303b7d743d735b33342b612a335d3b7a3d6c65782873293b7a3d656d697428732c34373432342c3932382b28612b34292a31303234293b7a3d656d697428732c36333531392c34303634293b7d7a3d6e65656428732c3631293b7a3d6578707228732c30293b7a3d6e65656428732c3539293b69662864297b696628743c31297b735b355d3d313b7d7a3d656d697428732c36333535332c32303137293b696628742d33297b696628742d31297b7a3d656d697428732c34373336302c3332293b7d656c73657b7a3d656d697428732c31343539322c3332293b7d7d656c73657b7a3d656d697428732c36333734342c3332293b7d7d656c73657b7a3d656d697428732c34373336302c3932382b28612b34292a31303234293b7d72657475726e20303b7d696e7420636f6d70696c652863686172202a7372632c696e74206e2c696e74202a6f75742c696e7420636170297b696e7420616464726573733d6f75743b696e74202a733d616464726573732b6361702d313032343b696e7420693d303b696e74207a3d303b696e7420743d303b696e7420663d303b696e7420613d303b696e74206c6173743d303b696e74206d61696e61743d303b63686172202a703d303b6966286361703c32303438297b72657475726e20303b7d6966286e3c31297b72657475726e20303b7d6966286e3e3332373638297b72657475726e20303b7d7768696c6528693c323536297b735b695d3d303b693d692b313b7d735b305d3d7372633b735b315d3d7372632b6e3b735b325d3d6f75743b735b335d3d313b735b345d3d303b693d6361702d313032343b7768696c6528693e33297b735b345d3d735b345d2b313b693d692d343b7d7a3d6c65782873293b7768696c6528735b365d297b696628735b355d297b72657475726e20303b7d696628735b31315d3e3135297b72657475726e20303b7d7a3d6e65656428732c323538293b696628735b365d2d323537297b72657475726e20303b7d69662866696e6428732c3132382c735b31315d2c3429297b72657475726e20303b7d663d3132382b735b31315d2a343b735b665d3d735b375d3b735b662b315d3d735b385d3b735b662b325d3d735b335d3b6c6173743d735b335d3b703d735b375d3b696628735b385d2d34297b7d656c73657b696628705b305d2d313039297b7d656c73657b696628705b315d2d3937297b7d656c73657b696628705b325d2d313035297b7d656c73657b696628705b335d2d313130297b7d656c73657b6d61696e61743d6c6173743b7d7d7d7d7d735b31315d3d735b31315d2b313b735b31305d3d303b7a3d6c65782873293b7a3d6e65656428732c3430293b7a3d656d697428732c34333433392c3331373431293b7a3d656d697428732c33373132302c31303231293b613d303b696628735b365d2d3431297b693d313b7d656c73657b693d303b7d7768696c65286929","text":"];b=0;c=1;d=0;while(s[0]<s[7]+s[8]){z=quoted(s);b=b+z*c;d=d+1;if(d-4){c=c*256;}else{z=emit(s,0,b);b=0;c=1;d=0;}}z=emit(s,0,b);z=patch(s,a,s[3]);z=emit(s,4096,(32768*16-s[3]+f)*32);s[0]=r;z=lex(s);t=1;k=1;}if(op-256){}else{z=emit(s,21120,s[9]*32);z=lex(s);k=1;}if(op-257){}else{f=find(s,128,s[11],4);a=find(s,32,s[10],3);p=s[7];if(s[8]-7){}else{if(p[0]-112){}else{if(p[1]-117){}else{if(p[2]-116){}else{if(p[3]-99){}else{if(p[4]-104){}else{if(p[5]-97){}else{if(p[6]-114){}else{f=0-1;}}}}}}}}z=lex(s);if(s[6]-40){if(a<1){s[5]=1;return 0;}a=a-1;t=s[34+a*3];z=emit(s,47424,928+(a+4)*1024);}else{if(f){}else{s[5]=1;return 0;}if(f>0){f=128+(f-1)*4;}z=lex(s);a=0;if(s[6]-41){r=1;}else{r=0;}while(r){t=expr(s,0);z=emit(s,63519,4064);a=a+1;if(a>4){s[5]=1;return 0;}if(s[6]-44){r=0;}else{z=lex(s);}}z=need(s,41);if(f<0){if(a-1){s[5]=1;}}else{if(a-s[f+3]){s[5]=1;}}while(a>0){z=emit(s,63553,2016+a);a=a-1;}if(f<0){z=emit(s,63519,4065);z=emit(s,10753,992);z=emit(s,54847,608);z=emit(s,63553,2016);}else{z=emit(s,37888,s[f+2]-s[3]);}t=0;}k=1;}if(k<1){s[5]=1;return 0;}while(s[6]-91<1){if(s[6]-91){return t;}if(t<1){s[5]=1;return 0;}z=lex(s);z=emit(s,63519,4064);r=expr(s,0);z=need(s,93);if(t-2){}else{z=emit(s,21248,3072);}if(t-3){}else{z=emit(s,21277,28672);}z=emit(s,63553,2017);z=emit(s,2816,32);if(t-3){if(t-1){z=emit(s,47424,0);}else{z=emit(s,14656,0);}t=0;}else{z=emit(s,63808,0);t=1;}}return t;}int decl(int *s,int t){int k=s[10];int z=0;if(k>31){s[5]=1;return 0;}if(s[6]-257){s[5]=1;return 0;}if(find(s,32,k,3)){s[5]=1;return 0;}s[32+k*3]=s[7];s[33+k*3]=s[8];s[34+k*3]=t;s[10]=k+1;z=lex(s);return k;}int retcode(int *s){int z=emit(s,37120,1023);z=emit(s,43217,31741);z=emit(s,54879,960);return 0;}int stmt(int *s){int z=0;int t=0;int k=0;int a=0;int b=0;int c=0;int d=0;if(s[5]){return 0;}t=s[6];if(t-123){}else{z=lex(s);while(s[6]-125){if(s[6]<1){s[5]=1;}if(s[5]){return 0;}z=stmt(s);}z=lex(s);return 0;}if(t-260){}else{z=lex(s);z=expr(s,0);z=need(s,59);z=retcode(s);return 0;}if(t-261){if(t-262){k=0;}else{k=1;}}else{k=1;}if(k){a=s[3];z=lex(s);z=need(s,40);z=expr(s,0);z=need(s,41);z=emit(s,13568,64);b=emit(s,5120,0);z=stmt(s);if(t-262){if(s[6]-263){z=patch(s,b,s[3]);}else{c=emit(s,5120,0);z=patch(s,b,s[3]);z=lex(s);z=stmt(s);z=patch(s,c,s[3]);}}else{c=emit(s,5120,a-s[3]);z=patch(s,b,s[3]);}return 0;}if(t-258){if(t-259){k=0;}else{k=1;}}else{k=1;}if(k){t=typ(s);a=decl(s,t);if(s[6]-61){z=emit(s,21120,0);}else{z=lex(s);z=expr(s,0);}z=need(s,59);z=emit(s,47360,928+(a+4)*1024);return 0;}if(t-42){if(t-257){s[5]=1;return 0;}a=find(s,32,s[10],3)-1;b=s[0];c=s[7];k=s[8];z=lex(s);if(s[6]-40){}else{s[0]=b;s[7]=c;s[8]=k;s[6]=257;z=expr(s,0);z=need(s,59);return 0;}if(a<0){s[5]=1;return 0;}t=s[34+a*3];if(s[6]-91){d=0;}else{d=1;z=emit(s,47424,928+(a+4)*1024);z=emit(s,63519,4064);z=lex(s);z=expr(s,0);z=need(s,93);if(t-2){}else{z=emit(s,21248,3072);}if(t-3){}else{z=emit(s,21277,28672);}z=emit(s,63553,2017);z=emit(s,2816,32);z=emit(s,63519,4064);}}else{d=1;z=lex(s);if(s[6]-257){s[5]=1;return 0;}a=find(s,32,s[10],3)-1;if(a<0){s[5]=1;return 0;}t=s[34+a*3];z=lex(s);z=emit(s,47424,928+(a+4)*1024);z=emit(s,63519,4064);}z=need(s,61);z=expr(s,0);z=need(s,59);if(d){if(t<1){s[5]=1;}z=emit(s,63553,2017);if(t-3){if(t-1){z=emit(s,47360,32);}else{z=emit(s,14592,32);}}else{z=emit(s,63744,32);}}else{z=emit(s,47360,928+(a+4)*1024);}return 0;}int compile(char *src,int n,int *out,int cap){int address=out;int *s=address+cap-1024;int i=0;int z=0;int t=0;int f=0;int a=0;int last=0;int mainat=0;char *p=0;if(cap<2048){return 0;}if(n<1){return 0;}if(n>32768){return 0;}while(i<256){s[i]=0;i=i+1;}s[0]=src;s[1]=src+n;s[2]=out;s[3]=1;s[4]=0;i=cap-1024;while(i>3){s[4]=s[4]+1;i=i-4;}z=lex(s);while(s[6]){if(s[5]){return 0;}if(s[11]>15){return 0;}z=need(s,258);if(s[6]-257){return 0;}if(find(s,128,s[11],4)){return 0;}f=128+s[11]*4;s[f]=s[7];s[f+1]=s[8];s[f+2]=s[3];last=s[3];p=s[7];if(s[8]-4){}else{if(p[0]-109){}else{if(p[1]-97){}else{if(p[2]-105){}else{if(p[3]-110){}else{mainat=last;}}}}}s[11]=s[11]+1;s[10]=0;z=lex(s);z=need(s,40);z=emit(s,43439,31741);z=emit(s,37120,1021);a=0;if(s[6]-41){i=1;}else{i=0;}while(i)"}
+```
+
+</details>
+
+#### +0:16:24
+
+> 💭 **Assembling writer template**
+> 💭 **Implementing template cache**
+
+**→ `serial_send_text`**
+
+```
+save longasm mov w0,16640;lsl w0,w0,16;mov w1,16512;lsl w1,w1,16;mov w2,256;
+append longasm copy:;ldrb w3,[x0];strb w3,[x1];add w0,w0,1;add w1,w1,1;sub w2,w2,1;
+append longasm cmp w2,0;b.ne copy;mov w16,16505;lsl w16,w16,16;ldr w28,[x16];
+append longasm cmp w28,0;b.eq done;ldr w11,[x16,4];lsl w11,w11,7;mov w22,16448;
+append longasm lsl w22,w22,16;add w11,w22,w11;add w11,w11,1024;add w25,w11,4;
+append longasm ldrb w26,[x11];mov w27,16504;lsl w27,w27,16;mov w18,1;mov w17,4852;
+append longasm mov w16,16416;lsl w16,w16,16;add w17,w17,w16;br x17;done:;ret;
+as longasm
+exec cache
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":580}
+```
+
+#### +0:16:43
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (2,806 chars, 1 lines)</summary>
+
+```
+7b743d7479702873293b7a3d6465636c28732c74293b7a3d656d697428732c34373336302c3932382b28612b34292a313032342b612b31293b613d612b313b696628613e34297b72657475726e20303b7d696628735b365d2d3434297b693d303b7d656c73657b7a3d6c65782873293b7d7d735b662b335d3d613b7a3d6e65656428732c3431293b696628735b365d2d313233297b72657475726e20303b7d7a3d73746d742873293b7a3d656d697428732c32313132302c30293b7a3d726574636f64652873293b7d696628735b355d297b72657475726e20303b7d696628735b31315d3c31297b72657475726e20303b7d6966286d61696e6174297b6c6173743d735b335d3b7a3d656d697428732c34333435352c3331373331293b7a3d656d697428732c34333532302c31303131293b7a3d656d697428732c33373838382c6d61696e61742d735b335d293b7a3d656d697428732c34333230312c3331373331293b7a3d656d697428732c35343837392c393630293b7d7a3d706174636828732c302c6c617374293b693d303b7768696c6528693c735b335d297b6966286f75745b695d2d32313234382a3235362a3235362d33303732297b7d656c73657b6f75745b695d3d32313237382a3235362a3235362b32393639363b7d693d692b313b7d72657475726e20735b335d2a343b7d696e7420626f6f7473747261702863686172202a7372632c696e74206e2c696e74202a6f75742c696e7420636170297b696e742073697a653d636f6d70696c65287372632c6e2c6f75742c636170293b696e7420693d303b696e7420763d303b7768696c6528692a343c73697a65297b763d6f75745b695d3b696628763e343836342a3235362a323536297b696628763c353132302a3235362a323536297b6f75745b695d3d762b313032342a3235362a3235363b7d7d696628763e33363836342a3235362a323536297b696628763c33373838382a3235362a323536297b6f75745b695d3d762b313032342a3235362a3235363b7d7d693d692b313b7d72657475726e2073697a653b7d696e742066696e616c2863686172202a7372632c696e74206e2c696e74202a6f75742c696e7420636170297b696e742073697a653d626f6f747374726170287372632c6e2c6f75742c636170293b696e7420693d303b7768696c6528692a343c73697a65297b6966286f75745b695d2d33383134342a3235362a3235362d31303231297b7d656c73657b6f75745b695d3d33373132302a3235362a3235362b313032313b7d6966286f75745b695d2d33383134342a3235362a3235362d31303233297b7d656c73657b6f75745b695d3d33373132302a3235362a3235362b313032333b7d693d692b313b7d72657475726e2073697a653b7d696e742072657061697265642863686172202a7372632c696e74206e2c696e74202a6f75742c696e7420636170297b696e742073697a653d66696e616c287372632c6e2c6f75742c636170293b696e7420693d303b7768696c6528692a343c73697a65297b6966286f75745b695d2d353839302a3235362a3235362d3331373434297b7d656c73657b6f75745b695d3d343836362a3235362a3235362b33313734343b7d6966286f75745b695d2d353839312a3235362a3235362d3331373434297b7d656c73657b6f75745b695d3d343836372a3235362a3235362b33313734343b7d693d692b313b7d72657475726e2073697a653b7d0a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c79206572726f720a7368656c6c3e20657869742030303030303030300a7368656c6c3e20
+```
+
+</details>
+
+`text`
+
+```
+{t=typ(s);z=decl(s,t);z=emit(s,47360,928+(a+4)*1024+a+1);a=a+1;if(a>4){return 0;}if(s[6]-44){i=0;}else{z=lex(s);}}s[f+3]=a;z=need(s,41);if(s[6]-123){return 0;}z=stmt(s);z=emit(s,21120,0);z=retcode(s);}if(s[5]){return 0;}if(s[11]<1){return 0;}if(mainat){last=s[3];z=emit(s,43455,31731);z=emit(s,43520,1011);z=emit(s,37888,mainat-s[3]);z=emit(s,43201,31731);z=emit(s,54879,960);}z=patch(s,0,last);i=0;while(i<s[3]){if(out[i]-21248*256*256-3072){}else{out[i]=21278*256*256+29696;}i=i+1;}return s[3]*4;}int bootstrap(char *src,int n,int *out,int cap){int size=compile(src,n,out,cap);int i=0;int v=0;while(i*4<size){v=out[i];if(v>4864*256*256){if(v<5120*256*256){out[i]=v+1024*256*256;}}if(v>36864*256*256){if(v<37888*256*256){out[i]=v+1024*256*256;}}i=i+1;}return size;}int final(char *src,int n,int *out,int cap){int size=bootstrap(src,n,out,cap);int i=0;while(i*4<size){if(out[i]-38144*256*256-1021){}else{out[i]=37120*256*256+1021;}if(out[i]-38144*256*256-1023){}else{out[i]=37120*256*256+1023;}i=i+1;}return size;}int repaired(char *src,int n,int *out,int cap){int size=final(src,n,out,cap);int i=0;while(i*4<size){if(out[i]-5890*256*256-31744){}else{out[i]=4866*256*256+31744;}if(out[i]-5891*256*256-31744){}else{out[i]=4867*256*256+31744;}i=i+1;}return size;}
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> assembly error
+shell> exit 00000000
+shell>
+```
+
+#### +0:16:46
+
+> 💭 **Recreating longasm without br**
+
+**→ `serial_send_text`**
+
+```
+save longasm mov w0,16640;lsl w0,w0,16;mov w1,16512;lsl w1,w1,16;mov w2,256;
+append longasm copy:;ldrb w3,[x0];strb w3,[x1];add w0,w0,1;add w1,w1,1;sub w2,w2,1;
+append longasm cmp w2,0;b.ne copy;mov w16,16505;lsl w16,w16,16;ldr w28,[x16];
+append longasm cmp w28,0;b.eq done;ldr w11,[x16,4];lsl w11,w11,7;mov w22,16448;
+append longasm lsl w22,w22,16;add w11,w22,w11;add w11,w11,1024;add w25,w11,4;
+append longasm ldrb w26,[x11];mov w27,16504;lsl w27,w27,16;mov w18,1;mov w17,4852;
+append longasm mov w16,16416;lsl w16,w16,16;add w17,w17,w16;.word 3592356384;done:;ret;
+as longasm
+exec cache
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":590}
+```
+
+#### +0:16:56
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742034313030303130300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> assembled
+shell> exit 41000100
+shell>
+```
+
+#### +0:16:59
+
+> 💭 **Checking separate rule file**
+> 💭 **Planning beta rule parsing**
+> 💭 **Checking pointer-copy bounds**
+
+**→ `serial_send_text`**
+
+```
+save extra4 int equal(char *a,char *b,int n){int i=0;while(i<n){if(a[i]-b[i]){return 0;}
+append extra4 i=i+1;}return 1;}int migrate(char *src,int n,int *out,int cap){
+append extra4 char *rules=16448*256*256+5120+32768;char *a=16504*256*256;
+append extra4 char *b=16508*256*256;char *t=0;char *v=16512*256*256;char *o=out;
+append extra4 int *meta=16505*256*256;int i=0;int j=0;int k=0;int q=0;int x=0;int y=0;
+append extra4 while(i<n){a[i]=src[i];i=i+1;}while(rules[q]){x=q;
+append extra4 while(rules[q]-96){q=q+1;}y=q+1;q=y;while(rules[q]-96){q=q+1;}
+append extra4 i=0;k=0;while(i<n){j=0;if(i+y-x-1<n+1){j=equal(a+i,rules+x,y-x-1);}
+append extra4 if(j){j=y;while(j<q){b[k]=rules[j];k=k+1;j=j+1;}i=i+y-x-1;}
+append extra4 else{b[k]=a[i];k=k+1;i=i+1;}}n=k;t=a;a=b;b=t;q=q+1;}
+append extra4 b=16504*256*256;i=0;while(i<n){b[i]=a[i];i=i+1;}meta[0]=n;meta[1]=20;
+append extra4 i=0;while(i<256){o[i]=v[i];i=i+1;}return 256;}
+build extra4
+install
+save beta int address=out;`int address=out;`
+build extra2
+exec save
+cat extra2
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1019}
+```
+
+#### +0:17:31
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> saved
+shell> built
+shell>
+```
+
+#### +0:17:34
+
+> 💭 **Checking assembler address mapping**
+> 💭 **Fixing position-independent assembly**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:17:55
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T100712.233134Z"}
+```
+
+#### +0:17:59
+
+**→ `serial_send_text`**
+
+```
+save longasm start:;adr x0,start;mov w1,16512;lsl w1,w1,16;mov w2,256;
+append longasm copy:;ldrb w3,[x0];strb w3,[x1];add w0,w0,1;add w1,w1,1;sub w2,w2,1;
+append longasm cmp w2,0;b.ne copy;mov w16,16505;lsl w16,w16,16;ldr w28,[x16];
+append longasm cmp w28,0;b.eq done;ldr w11,[x16,4];lsl w11,w11,7;mov w22,16448;
+append longasm lsl w22,w22,16;add w11,w22,w11;add w11,w11,1024;add w25,w11,4;
+append longasm ldrb w26,[x11];mov w27,16504;lsl w27,w27,16;mov w18,1;mov w17,4852;
+append longasm mov w16,16416;lsl w16,w16,16;add w17,w17,w16;.word 3592356384;done:;ret;
+as longasm
+exec cache
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra4
+install
+build extra2
+exec save
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":707}
+```
+
+#### +0:18:09
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742034303134303130300a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> assembled
+shell> exit 40140100
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell>
+```
+
+#### +0:18:13
+
+> 💭 **Checking writer register use**
+> 💭 **Selecting unused scratch space**
+> 💭 **Relocating runtime buffers**
+
+> 💭 **Preparing cache build**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:18:52
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T100808.842130Z"}
+```
+
+#### +0:18:55
+
+**→ `serial_send_text`**
+
+<details><summary>text (1,626 chars, 34 lines)</summary>
+
+```
+save longasm start:;adr x0,start;mov w1,16528;lsl w1,w1,16;mov w2,256;
+append longasm copy:;ldrb w3,[x0];strb w3,[x1];add w0,w0,1;add w1,w1,1;sub w2,w2,1;
+append longasm cmp w2,0;b.ne copy;mov w16,16524;lsl w16,w16,16;ldr w28,[x16];
+append longasm cmp w28,0;b.eq done;ldr w11,[x16,4];lsl w11,w11,7;mov w22,16448;
+append longasm lsl w22,w22,16;add w11,w22,w11;add w11,w11,1024;add w25,w11,4;
+append longasm ldrb w26,[x11];mov w27,16516;lsl w27,w27,16;mov w18,1;mov w17,4852;
+append longasm mov w16,16416;lsl w16,w16,16;add w17,w17,w16;.word 3592356384;done:;ret;
+as longasm
+exec cache
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+save extra4 int equal(char *a,char *b,int n){int i=0;while(i<n){if(a[i]-b[i]){return 0;}
+append extra4 i=i+1;}return 1;}int migrate(char *src,int n,int *out,int cap){
+append extra4 char *rules=16448*256*256+5120+32768;char *a=16516*256*256;
+append extra4 char *b=16520*256*256;char *t=0;char *v=16528*256*256;char *o=out;
+append extra4 int *meta=16524*256*256;int i=0;int j=0;int k=0;int q=0;int x=0;int y=0;
+append extra4 while(i<n){a[i]=src[i];i=i+1;}while(rules[q]){x=q;
+append extra4 while(rules[q]-96){q=q+1;}y=q+1;q=y;while(rules[q]-96){q=q+1;}
+append extra4 i=0;k=0;while(i<n){j=0;if(i+y-x-1<n+1){j=equal(a+i,rules+x,y-x-1);}
+append extra4 if(j){j=y;while(j<q){b[k]=rules[j];k=k+1;j=j+1;}i=i+y-x-1;}
+append extra4 else{b[k]=a[i];k=k+1;i=i+1;}}n=k;t=a;a=b;b=t;q=q+1;}
+append extra4 b=16516*256*256;i=0;while(i<n){b[i]=a[i];i=i+1;}meta[0]=n;meta[1]=20;
+append extra4 i=0;while(i<256){o[i]=v[i];i=i+1;}return 256;}
+build extra4
+install
+build extra2
+exec save
+```
+
+</details>
+
+**← `serial_send_text`**
+
+```
+{"sent":1626}
+```
+
+#### +0:19:13
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742034303134303130300a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> assembled
+shell> exit 40140100
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell>
+```
+
+#### +0:19:16
+
+> 💭 **Comparing helper memory addressing**
+> 💭 **Checking persist routine**
+> 💭 **Awaiting VM RAM access**
+
+> 💭 **Preparing diagnostic writer**
+> 💭 **Adding writer marker**
+
+> 💭 **Verifying writer offsets**
+> 💭 **Building cache-word diagnostic**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:20:16
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T100936.757243Z"}
+```
+
+#### +0:20:23
+
+**→ `serial_send_text`**
+
+```
+as longasm
+exec cache
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra4
+install
+build extra2
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+save empty int main(){int *p=16524*256*256;return p[0];}
+build empty
+exec meta
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":293}
+```
+
+#### +0:20:29
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742034303134303130300a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030323436350a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> exit 40140100
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> saved
+shell> built
+shell> exit 00002465
+shell>
+```
+
+#### +0:20:40
+
+> 💭 **Preparing alpha save source**
+
+**→ `serial_send_text`**
+
+```
+save alpha mov x19,x0;mov w0,65;.word 3594453600;
+append alpha mov w16,16524;lsl w16,w16,16;ldr w28,[x16];ldr w11,[x16,4];
+append alpha lsl w11,w11,7;mov w22,16448;lsl w22,w22,16;add w11,w22,w11;
+append alpha add w11,w11,1024;add w25,w11,4;ldrb w26,[x11];mov w27,16516;
+append alpha lsl w27,w27,16;mov w18,1;mov w17,4852;mov w16,16416;
+append alpha lsl w16,w16,16;add w17,w17,w16;.word 3592356384;
+as alpha
+exec save
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":417}
+```
+
+#### +0:20:54
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e2041
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> assembled
+shell> A
+```
+
+#### +0:20:58
+
+**→ `guest_read`** `{"offset": 4824, "length": 200}`
+
+**← `guest_read`**
+
+```
+{"hex":"c1021091620101cb42fc47d325044091a53c028b64054079c0035fd6f9ffff975f0a0071400000540400805290001c0b1f22407108d1ff54a600048be5031baae4031c2ac4000034a1144038c114003884040071a1ffff541f2003d570050079a1148052614101397a010039e50319aa66110091e4031a2aa1144038c114003884040071a1ffff5421008052bbfdff97e1ceff35d20c0014daffff97cdfcff9764feff176e000014c1000054d5ffff97f40305aab500048b9bfeff171f2003d5d0ffff979f200071"}
+```
+
+#### +0:21:02
+
+> 💭 **Preparing disk helper read**
+
+**→ `guest_read`** `{"offset": 2600, "length": 500}`
+
+**← `guest_read`**
+
+```
+{"hex":"41008052c12e00b918008052e1018052e17200b901008052040000948f090014170080d2defeff17c10203b922781f53630080526200024bc23a0079e21f8052c2420c3902070012c6120491c604028bdf00007918070011bf3f03d5d8060279bf3f03d5ff5200b9c10644793f00186bc1ffff54bf3f03d5c1424c39c0035fd6c1000014ff080071c100005401014079826d8e523f00026ba1e2ff547f000014ff10007143e2ff54010140b9622c8c52820ea4723f00026b81000054120080528a0080520d000014ff14007103e1ff54622e8c52c2aeac723f00026b81e0ff54011140393f80007121e0ff5432008052aa0080521f2003d5171000b419010a8be50319aa1a0080525f01076b40020054a11440384a0500113f8000712002005421c000513f240071e9000054214400513f64007189000054218000513f640071280e00545a0700115f330071e9fdff546d000014920d00351c00805207000014320d0034fb0305aafc000a4b9f030271a80c00541f2003d57a0c00347c010034e5031baae4031c2aa1144038218000513f780171880b00548404007161ffff541f2003d51f2003d5cb0210910c0080d20d03805261014039810000356c0000b5ec030baa1f2003d53f001a6b81010054e50319aa66110091e4031a2aa1144038c21440383f00026ba10000548404007161ffff54"}
+```
+
+#### +0:21:19
+
+> 💭 **Checking register restoration**
+> 💭 **Checking disk helper registers**
+> 💭 **Skipping stalled disk helper**
+
+> 💭 **Preparing state restoration**
+> 💭 **Preparing file-update utility**
+> 💭 **Preparing final file update**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:22:08
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T101125.224510Z"}
+```
+
+#### +0:22:11
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+save extra4 int equal(char *a,char *b,int n){int i=0;while(i<n){if(a[i]-b[i]){return 0;}
+append extra4 i=i+1;}return 1;}int migrate(char *src,int n,int *out,int cap){
+append extra4 char *rules=16448*256*256+5120+32768;char *a=16516*256*256;
+append extra4 char *b=16520*256*256;char *t=0;char *d=16448*256*256+3584;
+append extra4 int i=0;int j=0;int k=0;int q=0;int x=0;int y=0;int h=0;
+append extra4 while(i<n){a[i]=src[i];i=i+1;}while(rules[q]){x=q;
+append extra4 while(rules[q]-96){q=q+1;}y=q+1;q=y;while(rules[q]-96){q=q+1;}
+append extra4 i=0;k=0;while(i<n){j=0;if(i+y-x-1<n+1){j=equal(a+i,rules+x,y-x-1);}
+append extra4 if(j){j=y;while(j<q){b[k]=rules[j];k=k+1;j=j+1;}i=i+y-x-1;}
+append extra4 else{b[k]=a[i];k=k+1;i=i+1;}}n=k;t=a;a=b;b=t;q=q+1;}
+append extra4 b=16448*256*256+5120+20*32768;i=0;while(i<n){b[i]=a[i];i=i+1;}
+append extra4 k=n;while(k>255){h=h+1;k=k-256;}d[2]=k;d[3]=h;
+append extra4 out[0]=21120*256*256;out[1]=54879*256*256+960;return 8;}
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1168}
+```
+
+#### +0:22:27
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell>
+```
+
+#### +0:22:30
+
+> 💭 **Preparing beta length bounds**
+> 💭 **Updating expression levels**
+
+> 💭 **Emitting branch placeholders**
+> 💭 **Integrating equality precedence**
+
+**→ `serial_send_text`**
+
+```
+save beta expr(s,0)`expr(s,0-3)`s[0]=p;s[6]=c;return c;`
+append beta if(p<e){v=*p;if(c-v){}else{if(c-38){if(c-124){}else{c=266;p=p+1;}}
+append beta else{c=265;p=p+1;}}if(v-61){}else{if(c-61){if(c-33){}else{c=268;p=p+1;}}
+append beta else{c=267;p=p+1;}}}s[0]=p;s[6]=c;return c;`
+append beta char *p=0;if(lev<3)`char *p=0;if(lev<0){t=expr(s,lev+1);if(lev+1){
+append beta op=265;if(lev+3){}else{op=266;}while(s[6]-op<1){if(s[6]-op){return t;}
+append beta z=lex(s);z=emit(s,28928,31);z=emit(s,6815,2016);if(op-265){
+append beta z=emit(s,13312,64);}else{z=emit(s,13568,64);}b=emit(s,5120,0);
+append beta r=expr(s,lev+1);z=emit(s,28928,31);z=emit(s,6815,2016);z=patch(s,b,s[3]);t=0;}
+append beta }else{op=s[6];while(op>266){if(op>268){return t;}z=lex(s);
+append beta z=emit(s,63519,4064);r=expr(s,0);z=emit(s,63553,2017);z=emit(s,27392,63);
+append beta if(op-267){z=emit(s,6815,2016);}else{z=emit(s,6815,6112);}t=0;op=s[6];}}
+append beta return t;}if(lev<3)`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1103}
+```
+
+#### +0:23:14
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell>
+```
+
+#### +0:23:17
+
+> 💭 **Checking equality-wrapper logic**
+
+**→ `serial_send_text`**
+
+```
+save prog8 int hit(int c){putchar(c);return c;}int main(){int z=0;
+append prog8 z=0&&hit(88);z=7||hit(89);z=1&&hit(65);z=0||hit(66);
+append prog8 putchar(48+(3==3));putchar(48+(3!=3));putchar(48+(1||0&&0));
+append prog8 putchar(10);return 0;}
+build prog8
+exec sc
+build Check
+exec compare
+build extra2
+install
+build Check
+exec compare test
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":339}
+```
+
+#### +0:23:26
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e2041423130310a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> AB101
+exit 00000000
+shell> built
+shell> exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell>
+```
+
+#### +0:23:30
+
+> 💭 **Redesigning expression parsing**
+> 💭 **Planning global storage support**
+
+> 💭 **Assembling cmp#16lsl12 encoding**
+> 💭 **Locating kernel limit checks**
+
+**→ `guest_read`** `{"offset": 7800, "length": 400}`
+
+**← `guest_read`**
+
+```
+{"hex":"bf010eeba10a0054040000141f2003d51f2003d51f2003d5010800144250ff340004a8d200a0229160023fd669faff17fe07001400080014a102a8d23f0008b913faff17ff0700140108001457faff1702080014040800145ffdff171f2003d51f2003d51f2003d502080014c14dff3403080014a702a8d2e50313aae60307aae4030d2aa1144038c114003884040071a1ffff54e50307aae6000d8b257b0bd5a5000191bf0006eba3ffff549f3f03d51f7508d59f3f03d5df3f03d5f30700142505001044018052d8f9ff173f120071600000543f0a00717afdff17b402a8d2ed070014e1020034defcff97e10305aae203042a0320a8d2040090520004a8d200a0229144050094ed03002a0020a1d20802a8d208154091bf11007183010054bf21407148010054a1050012010100352f050094c5010050c4008052bbf9ff17a501001084018052b8f9ff17a501001084018052b5f9ff17a501001024028052b2f9ff17696e7374616c6c65640a6275696c740a6e6f20636f6d70696c65720a6275696c64206572726f720a696e7661"}
+```
+
+#### +0:24:23
+
+> 💭 **Reading a smaller chunk**
+
+**→ `guest_read`** `{"offset": 8040, "length": 128}`
+
+**← `guest_read`**
+
+```
+{"hex":"e203042a0320a8d2040090520004a8d200a0229144050094ed03002a0020a1d20802a8d208154091bf11007183010054bf21407148010054a1050012010100352f050094c5010050c4008052bbf9ff17a501001084018052b8f9ff17a501001084018052b5f9ff17a501001024028052b2f9ff17696e7374616c6c65640a6275"}
+```
+
+#### +0:24:33
+
+> 💭 **Preparing build-cap patch**
+> 💭 **Preparing runtime image patch**
+> 💭 **Preparing header lookup map**
+
+> 💭 **Implementing general lvalues**
+> 💭 **Adding lvalue address emission**
+
+> 💭 **Preparing parser tail replacement**
+> 💭 **Inserting generic statement parsing**
+
+> 💭 **Adjusting array parameter handling**
+> 💭 **Adding for-loop statement handling**
+
+**→ `guest_patch`** `{"offset": 8048, "hex": "04 4c 9d 52"}`
+
+**← `guest_patch`**
+
+```
+{"bytes":18564}
+```
+
+#### +0:26:08
+
+**→ `guest_patch`** `{"offset": 8092, "hex": "bf 41 40 71"}`
+
+**← `guest_patch`**
+
+```
+{"bytes":18564}
+```
+
+#### +0:26:12
+
+> 💭 **Rewriting the beta utility**
+
+**→ `serial_send_text`**
+
+```
+save extra4 int equal(char *a,char *b,int n){int i=0;while(i<n){if(a[i]-b[i]){return 0;}
+append extra4 i=i+1;}return 1;}int migrate(char *src,int n,int *out,int cap){
+append extra4 char *rules=16448*256*256+5120+32768;char *a=16516*256*256;
+append extra4 char *b=16520*256*256;char *t=0;char *d=16448*256*256+3584;
+append extra4 char *rd=16448*256*256+1152;int rn=rd[2]+rd[3]*256;
+append extra4 int i=0;int j=0;int k=0;int q=0;int x=0;int y=0;int h=0;
+append extra4 while(i<n){a[i]=src[i];i=i+1;}while(q<rn){x=q;
+append extra4 while(rules[q]-96){q=q+1;}y=q+1;q=y;while(rules[q]-96){q=q+1;}
+append extra4 i=0;k=0;while(i<n){j=0;if(i+y-x-1<n+1){j=equal(a+i,rules+x,y-x-1);}
+append extra4 if(j){j=y;while(j<q){b[k]=rules[j];k=k+1;j=j+1;}i=i+y-x-1;}
+append extra4 else{b[k]=a[i];k=k+1;i=i+1;}}n=k;t=a;a=b;b=t;q=q+1;}
+append extra4 b=16448*256*256+5120+20*32768;i=0;while(i<n){b[i]=a[i];i=i+1;}
+append extra4 k=n;while(k>255){h=h+1;k=k-256;}d[2]=k;d[3]=h;
+append extra4 out[0]=21120*256*256;out[1]=54879*256*256+960;return 8;}
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1022}
+```
+
+#### +0:26:25
+
+> 💭 **Rebooting patched kernel**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:26:38
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T101555.785735Z"}
+```
+
+#### +0:26:42
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+build extra4
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":113}
+```
+
+#### +0:26:50
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell>
+```
+
+#### +0:26:57
+
+> 💭 **Extending expression parsing**
+> 💭 **Adding lvalue width tracking**
+
+**→ `serial_send_text`**
+
+<details><summary>text (1,681 chars, 36 lines)</summary>
+
+```
+save beta s[7]=p-1;if(c-39)`s[7]=p-1;if(c-47){}else{if(p<e){if(*p-47){}else{
+append beta while(p<e){if(*p-10){p=p+1;}else{s[0]=p;return lex(s);}}s[0]=p;return lex(s);}
+append beta if(*p-42){}else{p=p+1;while(p<e){if(*p-42){p=p+1;}else{p=p+1;if(p<e){
+append beta if(*p-47){}else{s[0]=p+1;return lex(s);}}}}s[5]=1;s[6]=0;return 0;}}}
+append beta if(c-39)`if(c-38){if(c-124)`if(c-43){if(c-45){}else{c=272;p=p+1;}}
+append beta else{c=271;p=p+1;}if(c-38){if(c-124)`op=s[6];if(op-33)`
+append beta op=s[6];s[16]=0;if(op-33)`z=emit(s,6815,6112);return 0;}`
+append beta z=emit(s,6815,6112);s[16]=0;return 0;}`
+append beta z=emit(s,47424,928+(a+4)*1024);`
+append beta z=emit(s,37120,930+(a+4)*4096);s[16]=t+1;s[17]=4;
+append beta z=emit(s,47424,928+(a+4)*1024);`
+append beta if(t<1){s[5]=1;}if(t-3)`if(t<1){s[5]=1;}
+append beta z=emit(s,43520,994);s[16]=1;s[17]=4;if(t-1){}else{s[17]=1;}
+append beta if(t-3){}else{s[16]=2;s[17]=8;}if(t-3)`
+append beta z=emit(s,2816,32);if(t-3)`z=emit(s,2816,32);z=emit(s,43520,994);
+append beta s[16]=1;s[17]=4;if(t-1){}else{s[17]=1;}if(t-3){}else{s[16]=2;s[17]=8;}
+append beta if(t-3)`t=1;}}return t;}`t=1;}}while(s[6]>270){op=s[6];if(op>272){return t;}
+append beta if(s[16]<1){s[5]=1;return 0;}z=lex(s);a=1;if(t-2){}else{a=4;}
+append beta if(t-3){}else{a=8;}z=emit(s,63519,4064);if(op-271){z=emit(s,20736,a*1024);}
+append beta else{z=emit(s,4352,a*1024);}if(s[17]-8){if(s[17]-1){z=emit(s,47360,64);}
+append beta else{z=emit(s,14592,64);}}else{z=emit(s,63744,64);}z=emit(s,63553,2016);
+append beta s[16]=0;}return t;}`
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+```
+
+</details>
+
+**← `serial_send_text`**
+
+```
+{"sent":1681}
+```
+
+#### +0:27:31
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell>
+```
+
+#### +0:27:35
+
+> 💭 **Testing postfix parsing**
+
+**→ `serial_send_text`**
+
+```
+save progMath /* unrelated */ int main(int argc,char **argv){int i=3;int j=i++;
+append progMath int k=i--;putchar(48+j);putchar(48+k);putchar(48+i);return i;}
+build progMath
+exec post
+build prog8
+exec sc
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":204}
+```
+
+#### +0:27:51
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell>
+```
+
+#### +0:27:54
+
+> 💭 **Checking comment-lexer hang**
+> 💭 **Repairing bootstrap opcode range**
+> 💭 **Verifying addx2 encoding**
+
+> 💭 **Preparing first-generation compiler**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:28:35
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T101751.620949Z"}
+```
+
+#### +0:28:38
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+save beta v>4864*256*256`v>5118*256*256`v>36864*256*256`v>37886*256*256`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+build progMath
+exec post
+build prog8
+exec sc
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":347}
+```
+
+#### +0:28:43
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> saved
+shell> built
+shell> installed
+shell>
+```
+
+#### +0:28:47
+
+> 💭 **Bootstrapping extra3 for editor**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:28:59
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T101817.290986Z"}
+```
+
+#### +0:29:04
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+build progMath
+exec post
+build prog8
+exec sc
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":253}
+```
+
+#### +0:29:09
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20333433657869742030303030303030330a7368656c6c3e206275696c740a7368656c6c3e2041423130310a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> 343exit 00000003
+shell> built
+shell> AB101
+exit 00000000
+shell>
+```
+
+#### +0:29:13
+
+> 💭 **Implementing low-precedence levels**
+> 💭 **Fixing expression state resets**
+
+> 💭 **Evaluating range removal syntax**
+
+**→ `serial_send_text`**
+
+```
+save beta expr(s,0-3)`expr(s,0-6)`t=expr(s,0-6);z=emit(s,63519,4064);a=a+1;`
+append beta t=expr(s,0-5);z=emit(s,63519,4064);a=a+1;`
+append beta char *p=0;if(lev<0)`char *p=0;if(lev<0-3){t=expr(s,lev+1);
+append beta if(lev+6){if(lev+5){if(s[6]-63){}else{z=lex(s);z=emit(s,13568,64);
+append beta b=emit(s,5120,0);r=expr(s,0-6);z=need(s,58);c=emit(s,5120,0);
+append beta z=patch(s,b,s[3]);t=expr(s,0-4);z=patch(s,c,s[3]);s[16]=0;}}
+append beta else{if(s[6]-61){}else{if(s[16]<1){s[5]=1;return 0;}d=s[17];
+append beta z=emit(s,63519,4066);z=lex(s);r=expr(s,0-5);z=emit(s,63553,2017);
+append beta if(d-8){if(d-1){z=emit(s,47360,32);}else{z=emit(s,14592,32);}}
+append beta else{z=emit(s,63744,32);}s[16]=0;}}}else{while(s[6]-44<1){
+append beta if(s[6]-44){return t;}z=lex(s);t=expr(s,0-5);s[16]=0;}}return t;}
+append beta if(lev<0)`t=0;}op=s[6];k=0;`t=0;}s[16]=0;op=s[6];k=0;`
+append beta if(t-42){if(t-257){s[5]=1;return 0;}`
+append beta z=expr(s,0-6);z=need(s,59);return 0;if(t-42){if(t-257){s[5]=1;return 0;}`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+build progMath
+exec post
+build prog8
+exec sc
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1202}
+```
+
+#### +0:29:47
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20333433657869742030303030303030330a7368656c6c3e206275696c740a7368656c6c3e2041423130310a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> 343exit 00000003
+shell> built
+shell> AB101
+exit 00000000
+shell>
+```
+
+#### +0:29:51
+
+> 💭 **Implementing array/global casts**
+> 💭 **Handling global declarations**
+
+> 💭 **Updating parser declaration handling**
+> 💭 **Inserting for-statement rule**
+
+**→ `serial_send_text`**
+
+<details><summary>text (2,408 chars, 49 lines)</summary>
+
+```
+save beta if(n-3){}else{`if(n-3){}else{if(same(p,"for",3)){s[6]=274;}`
+append beta if(n-4){}else{`if(n-4){}else{if(same(p,"void",4)){s[6]=273;}`
+append beta if(t-258){if(t-259){s[5]=1;return 0;}r=1;}`
+append beta if(t-258){if(t-259){if(t-273){s[5]=1;return 0;}r=2;}else{r=1;}}`
+append beta z=lex(s);if(r){if(s[6]-42)`z=lex(s);if(r-2){}else{return 4;}
+append beta if(r){if(s[6]-42)`
+append beta z=lex(s);return k;}int retcode`z=lex(s);if(s[6]-91){}else{z=lex(s);
+append beta z=need(s,93);if(t-1){if(t){s[5]=1;}t=2;}else{t=3;}s[34+k*3]=t;}
+append beta return k;}int retcode`
+append beta if(op-40){}else{z=lex(s);t=expr(s,0-6);z=need(s,41);k=1;}`
+append beta if(op-40){}else{z=lex(s);a=0;if(s[6]-258){}else{a=1;}
+append beta if(s[6]-259){}else{a=1;}if(s[6]-273){}else{a=1;}if(a){a=typ(s);
+append beta z=need(s,41);t=expr(s,3);t=a;s[16]=0;}else{t=expr(s,0-6);
+append beta z=need(s,41);}k=1;}`
+append beta if(t-260){}else{`if(t-274){}else{z=lex(s);z=need(s,40);if(s[6]-59){
+append beta z=expr(s,0-6);}z=need(s,59);a=s[3];if(s[6]-59){z=expr(s,0-6);}
+append beta else{z=emit(s,21120,32);}z=need(s,59);z=emit(s,13568,64);b=emit(s,5120,0);
+append beta c=emit(s,5120,0);d=s[3];if(s[6]-41){z=expr(s,0-6);}z=need(s,41);
+append beta z=emit(s,5120,a-s[3]);z=patch(s,c,s[3]);z=stmt(s);z=emit(s,5120,d-s[3]);
+append beta z=patch(s,b,s[3]);return 0;}if(t-260){}else{`
+append beta z=need(s,258);if(s[6]-257)`t=typ(s);if(s[6]-257)`
+append beta z=need(s,40);z=emit(s,43439,31741);`
+append beta if(s[6]-40){s[11]=s[11]-1;a=192+s[18]*4;if(s[18]>15){return 0;}
+append beta s[a]=s[f];s[a+1]=s[f+1];s[a+2]=t;z=emit(s,5120,2);s[a+3]=s[3];
+append beta i=0;if(s[6]-61){}else{z=lex(s);if(s[6]-256){return 0;}i=s[9];z=lex(s);}
+append beta z=emit(s,0,i);z=need(s,59);s[18]=s[18]+1;}else{
+append beta z=need(s,40);z=emit(s,43439,31741);`
+append beta z=retcode(s);}if(s[5])`z=retcode(s);}}if(s[5])`
+append beta if(a<1){s[5]=1;return 0;}a=a-1;t=s[34+a*3];`
+append beta if(a<1){a=find(s,192,s[18],4);if(a<1){s[5]=1;return 0;}a=192+(a-1)*4;
+append beta t=s[a+2];z=emit(s,4096,(32768*16-s[3]+s[a+3])*32+2);
+append beta z=emit(s,47424,64);s[16]=t+1;s[17]=4;}else{a=a-1;t=s[34+a*3];`
+append beta z=emit(s,47424,928+(a+4)*1024);}else{if(f)`
+append beta z=emit(s,47424,928+(a+4)*1024);}}else{if(f)`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+```
+
+</details>
+
+**← `serial_send_text`**
+
+```
+{"sent":2408}
+```
+
+#### +0:30:47
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell>
+```
+
+#### +0:30:52
+
+> 💭 **Checking compiler self-build**
+
+**→ `serial_send_text`**
+
+```
+save progFwd char *label;int counter=0;int tick(){counter++;return counter;}
+append progFwd int main(int argc,char *argv[]){int i=0;label=*argv;
+append progFwd label?(counter++,argv++):(void *)0;for(;*argv;argc--,argv++)putchar(**argv);
+append progFwd i=0&&tick();i=1||tick();putchar(48+counter);putchar(10);return 0;}
+build progFwd
+exec test Apple Banana
+build Check
+exec compare
+build extra2
+install
+build Check
+exec compare test
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":432}
+```
+
+#### +0:31:00
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> build error
+shell> exit 00000000
+shell> built
+shell> exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell>
+```
+
+#### +0:31:03
+
+**→ `serial_send_text`**
+
+```
+save alpha int counter=0;int main(){counter++;return counter;}
+build alpha
+exec g
+save alpha int main(int argc,char *argv[]){return argc;}
+build alpha
+exec a hi
+save alpha int main(){int i=0;for(;i<3;i++)putchar(65+i);return i;}
+build alpha
+exec f
+save alpha int main(){int i=0;i?(i++,i++):(void *)0;return i;}
+build alpha
+exec t
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":330}
+```
+
+#### +0:31:10
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030320a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20414243657869742030303030303030330a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> build error
+shell> exit 00000000
+shell> saved
+shell> built
+shell> exit 00000002
+shell> saved
+shell> built
+shell> ABCexit 00000003
+shell> saved
+shell> built
+shell> exit 00000000
+shell>
+```
+
+#### +0:31:14
+
+> 💭 **Checking compiler section**
+> 💭 **Checking compiler error state**
+
+> 💭 **Could capture source token**
+
+**→ `serial_send_text`**
+
+```
+save alpha int counter=0;int main(){counter++;return counter;}
+build alpha
+save empty mov w0,16640;lsl w0,w0,16;mov w1,59000;add w1,w0,w1;ldr w0,[x1];ret;
+as empty
+exec tok
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":173}
+```
+
+#### +0:31:52
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742030303030303130660a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> build error
+shell> saved
+shell> assembled
+shell> exit 0000010f
+shell>
+```
+
+#### +0:31:57
+
+> 💭 **Checking primary-global rule match**
+
+**→ `serial_send_text`**
+
+```
+save empty mov w0,16640;lsl w0,w0,16;mov w1,59048;add w1,w0,w1;ldr w0,[x1];ret;
+as empty
+exec ng
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":97}
+```
+
+#### +0:32:10
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742030303030303030310a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> assembled
+shell> exit 00000001
+shell>
+```
+
+#### +0:32:14
+
+> 💭 **Checking lval error**
+
+**→ `serial_send_text`**
+
+```
+save empty mov w0,16640;lsl w0,w0,16;mov w1,59040;add w1,w0,w1;ldr w0,[x1];ret;
+as empty
+exec lv
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":97}
+```
+
+#### +0:32:25
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> assembled
+shell> exit 00000000
+shell>
+```
+
+#### +0:32:30
+
+> 💭 **Inspecting the source expression**
+
+**→ `serial_send_text`**
+
+```
+save empty int main(){char *p=16448*256*256+5120+20*32768;int i=0;int j=0;
+append empty while(i<20000){if(p[i]-105){}else{if(p[i+1]-102){}else{if(p[i+3]-97){}else{
+append empty j=0;while(j<600){putchar(p[i+j]);j=j+1;}return 0;}}}i=i+1;}return 0;}
+build empty
+exec src
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":268}
+```
+
+#### +0:32:39
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696628615b695d2d625b695d297b72657475726e20303b7d693d692b313b7d72657475726e20313b7d696e742071756f74656428696e74202a73297b63686172202a703d735b305d3b696e7420633d303b696628703c735b315d297b633d2a703b703d702b313b696628632d3932297b7d656c73657b696628703c735b315d297b633d2a703b703d702b313b696628632d313130297b7d656c73657b633d31303b7d696628632d313136297b7d656c73657b633d393b7d696628632d3438297b7d656c73657b633d303b7d7d656c73657b735b355d3d313b7d7d7d656c73657b735b355d3d313b7d735b305d3d703b72657475726e20633b7d696e74206c657828696e74202a73297b63686172202a703d735b305d3b696e7420653d735b315d3b696e7420633d303b696e74206e3d303b696e7420763d303b7768696c6528703c65297b6966282a703e3332297b633d2a703b703d702b313b735b375d3d702d313b696628632d3437297b7d656c73657b696628703c65297b6966282a702d3437297b7d656c73657b7768696c6528703c65297b6966282a702d3130297b703d702b313b7d656c73657b735b305d3d703b72657475726e206c65782873293b7d7d735b305d3d703b72657475726e206c65782873293b7d6966282a702d3432297b7d656c73657b703d702b313b7768696c6528703c65297b6966282a702d3432297b703d702b313b7d656c73657b703d702b313b696628703c65297b6966282a702d3437297b7d656c73657b735b305d3d702b313b72657475726e206c65782873293b7d7d7d7d735b355d3d313b735b365d3d303b726574657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> built
+shell> if(a[i]-b[i]){return 0;}i=i+1;}return 1;}int quoted(int *s){char *p=s[0];int c=0;if(p<s[1]){c=*p;p=p+1;if(c-92){}else{if(p<s[1]){c=*p;p=p+1;if(c-110){}else{c=10;}if(c-116){}else{c=9;}if(c-48){}else{c=0;}}else{s[5]=1;}}}else{s[5]=1;}s[0]=p;return c;}int lex(int *s){char *p=s[0];int e=s[1];int c=0;int n=0;int v=0;while(p<e){if(*p>32){c=*p;p=p+1;s[7]=p-1;if(c-47){}else{if(p<e){if(*p-47){}else{while(p<e){if(*p-10){p=p+1;}else{s[0]=p;return lex(s);}}s[0]=p;return lex(s);}if(*p-42){}else{p=p+1;while(p<e){if(*p-42){p=p+1;}else{p=p+1;if(p<e){if(*p-47){}else{s[0]=p+1;return lex(s);}}}}s[5]=1;s[6]=0;retexit 00000000
+shell>
+```
+
+#### +0:32:42
+
+> 💭 **Defining the equality prefix**
+
+**→ `serial_send_text`**
+
+```
+save empty int eq(char *a,char *b,int n){int i=0;while(i<n){if(a[i]-b[i])return 0;i++;}return 1;}
+append empty int main(){char *p=16448*256*256+5120+20*32768;int i=0;int j=0;
+append empty while(i<20000){if(eq(p+i,"if(a<1)",7)){while(j<900){putchar(p[i+j]);j++;}return 0;}
+append empty i++;}return 0;}
+build empty
+exec src
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":322}
+```
+
+#### +0:32:51
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (1,972 chars, 1 lines)</summary>
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696628613c31297b613d66696e6428732c3139322c735b31385d2c34293b696628613c31297b735b355d3d313b72657475726e20303b7d613d3139322b28612d31292a343b743d735b612b325d3b7a3d656d697428732c343039362c2833323736382a31362d735b335d2b735b612b335d292a33322b32293b7a3d656d697428732c34373432342c3634293b735b31365d3d742b313b735b31375d3d343b7d656c73657b613d612d313b743d735b33342b612a335d3b7a3d656d697428732c33373132302c3933302b28612b34292a34303936293b735b31365d3d742b313b735b31375d3d343b7a3d656d697428732c34373432342c3932382b28612b34292a31303234293b7d7d656c73657b69662866297b7d656c73657b735b355d3d313b72657475726e20303b7d696628663e30297b663d3132382b28662d31292a343b7d7a3d6c65782873293b613d303b696628735b365d2d3431297b723d313b7d656c73657b723d303b7d7768696c652872297b743d6578707228732c302d35293b7a3d656d697428732c36333531392c34303634293b613d612b313b696628613e34297b735b355d3d313b72657475726e20303b7d696628735b365d2d3434297b723d303b7d656c73657b7a3d6c65782873293b7d7d7a3d6e65656428732c3431293b696628663c30297b696628612d31297b735b355d3d313b7d7d656c73657b696628612d735b662b335d297b735b355d3d313b7d7d7768696c6528613e30297b7a3d656d697428732c36333535332c323031362b61293b613d612d313b7d696628663c30297b7a3d656d697428732c36333531392c34303635293b7a3d656d697428732c31303735332c393932293b7a3d656d697428732c35343834372c363038293b7a3d656d697428732c36333535332c32303136293b7d656c73657b7a3d656d697428732c33373838382c735b662b325d2d735b335d293b7d743d303b7d6b3d313b7d6966286b3c31297b735b355d3d313b72657475726e20303b7d7768696c6528735b365d2d39313c31297b696628735b365d2d3931297b72657475726e20743b7d696628743c31297b735b355d3d313b72657475726e20303b7d7a3d6c65782873293b7a3d656d697428732c36333531392c34303634293b723d6578707228732c302d36293b7a3d6e65656428732c3933293b696628742d32297b7d656c73657b7a3d656d697428732c32313234382c33303732293b7d696628742d33297b657869742030303030303030300a7368656c6c3e20
+```
+
+</details>
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> if(a<1){a=find(s,192,s[18],4);if(a<1){s[5]=1;return 0;}a=192+(a-1)*4;t=s[a+2];z=emit(s,4096,(32768*16-s[3]+s[a+3])*32+2);z=emit(s,47424,64);s[16]=t+1;s[17]=4;}else{a=a-1;t=s[34+a*3];z=emit(s,37120,930+(a+4)*4096);s[16]=t+1;s[17]=4;z=emit(s,47424,928+(a+4)*1024);}}else{if(f){}else{s[5]=1;return 0;}if(f>0){f=128+(f-1)*4;}z=lex(s);a=0;if(s[6]-41){r=1;}else{r=0;}while(r){t=expr(s,0-5);z=emit(s,63519,4064);a=a+1;if(a>4){s[5]=1;return 0;}if(s[6]-44){r=0;}else{z=lex(s);}}z=need(s,41);if(f<0){if(a-1){s[5]=1;}}else{if(a-s[f+3]){s[5]=1;}}while(a>0){z=emit(s,63553,2016+a);a=a-1;}if(f<0){z=emit(s,63519,4065);z=emit(s,10753,992);z=emit(s,54847,608);z=emit(s,63553,2016);}else{z=emit(s,37888,s[f+2]-s[3]);}t=0;}k=1;}if(k<1){s[5]=1;return 0;}while(s[6]-91<1){if(s[6]-91){return t;}if(t<1){s[5]=1;return 0;}z=lex(s);z=emit(s,63519,4064);r=expr(s,0-6);z=need(s,93);if(t-2){}else{z=emit(s,21248,3072);}if(t-3){exit 00000000
+shell>
+```
+
+#### +0:32:54
+
+> 💭 **Fixing global lookup timing**
+
+**→ `serial_send_text`**
+
+```
+save beta a=find(s,32,s[10],3);p=s[7];`a=find(s,32,s[10],3);b=find(s,192,s[18],4);p=s[7];`
+append beta if(a<1){a=find(s,192,s[18],4);`if(a<1){a=b;`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+build alpha
+exec g
+build progFwd
+exec test Apple Banana
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":354}
+```
+
+#### +0:33:07
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030310a7368656c6c3e206275696c740a7368656c6c3e204142310a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> exit 00000001
+shell> built
+shell> AB1
+exit 00000000
+shell>
+```
+
+#### +0:33:12
+
+> 💭 **Compiling upstream after preprocessing**
+> 💭 **Migrating compiler limits**
+
+**→ `serial_send_text`**
+
+```
+save beta find(s,192,`find(s,256,`a=192+`a=256+`cap-1024`cap-2048`
+append beta i<256`i<512`s[11]>15`s[11]>31`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build extra2
+install
+build extra2
+install
+save alpha int copy(char *src,int n,int *out,int cap){char *d=16448*256*256+1024+18*128;
+append alpha char *b=16448*256*256+5120+18*32768;int i=0;int k=n;int h=0;
+append alpha while(i<n){b[i]=src[i];i++;}while(k>255){k=k-256;h++;}d[2]=k;d[3]=h;
+append alpha out[0]=21120*256*256;out[1]=54879*256*256+960;return 8;}
+build alpha
+install
+build extra2
+append raw  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":718}
+```
+
+#### +0:33:44
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell>
+```
+
+#### +0:33:48
+
+> 💭 **Fixing primaryglobal base**
+> 💭 **Designing header lookup**
+> 💭 **Creating header aliases**
+
+> 💭 **Adding reusable rename utility**
+> 💭 **Designing recursive preprocessor**
+
+> 💭 **Parsing object macros**
+> 💭 **Checking putword semantics**
+
+> 💭 **Appending preprocessor source**
+
+**→ `serial_send_text`**
+
+<details><summary>text (2,709 chars, 40 lines)</summary>
+
+```
+append extra2 int header(char *name,int n){char *dir=16448*256*256+1024;int i=0;
+append extra2 int j=0;int k=0;int ok=0;while(i<24){j=0;k=0;ok=1;while(j<n){
+append extra2 if(name[j]-46){if(k<dir[0]){if(name[j]-dir[4+k])ok=0;}else ok=0;k++;}j++;}
+append extra2 if(ok){if(k==dir[0])return i+1;}dir=dir+128;i++;}return 0;}
+append extra2 int pp(char *src,int n,char *out,int *s){int i=0;int k=0;int a=0;int b=0;
+append extra2 int c=0;int d=0;int j=0;int m=0;int hit=0;char *p=0;char *dir=0;
+append extra2 s[1]++;if(s[1]>16)return 0-1;while(i<n){c=src[i];if(c==35){i++;
+append extra2 while(i<n&&src[i]==32)i++;a=i;while(i<n&&src[i]>32)i++;b=i-a;
+append extra2 if(b==7&&same(src+a,"include",7)){while(i<n&&src[i]<33)i++;
+append extra2 c=src[i];if(c!=34&&c!=60)return 0-1;i++;a=i;
+append extra2 while(i<n&&src[i]!=34&&src[i]!=62)i++;if(i==n)return 0-1;
+append extra2 d=header(src+a,i-a);if(!d)return 0-1;d--;dir=16448*256*256+1024+d*128;
+append extra2 p=16448*256*256+5120+d*32768;j=pp(p,dir[2]+dir[3]*256,out+k,s);
+append extra2 if(j<0)return 0-1;k=k+j;i++;while(i<n&&src[i]!=10)i++;}
+append extra2 else{if(b==6&&same(src+a,"define",6)){while(i<n&&src[i]==32)i++;
+append extra2 a=i;while(i<n&&src[i]>32)i++;b=i-a;while(i<n&&src[i]==32)i++;
+append extra2 c=i;while(i<n&&src[i]!=10)i++;d=8+s[0]*4;if(s[0]>31)return 0-1;
+append extra2 s[d]=src+a;s[d+1]=b;s[d+2]=src+c;s[d+3]=i-c;s[0]++;}
+append extra2 else return 0-1;}out[k]=10;k++;}else{if(c==34||c==39){
+append extra2 out[k]=c;k++;i++;hit=1;while(i<n&&hit){j=src[i];out[k]=j;k++;i++;
+append extra2 if(j==92){if(i<n){out[k]=src[i];k++;i++;}}else if(j==c)hit=0;}
+append extra2 if(hit)return 0-1;}else{if(c==47&&i+1<n&&(src[i+1]==42||src[i+1]==47)){
+append extra2 d=src[i+1];i=i+2;if(d==47){while(i<n&&src[i]!=10)i++;}
+append extra2 else{hit=1;while(i+1<n&&hit){if(src[i]==42&&src[i+1]==47){i=i+2;hit=0;}
+append extra2 else i++;}if(hit)return 0-1;}out[k]=32;k++;}else{
+append extra2 hit=0;if(c>64&&c<91||c>96&&c<123||c==95)hit=1;if(hit){a=i;i++;
+append extra2 while(i<n&&(src[i]>64&&src[i]<91||src[i]>96&&src[i]<123||src[i]==95||
+append extra2 src[i]>47&&src[i]<58))i++;b=i-a;j=0;hit=0;while(j<s[0]){d=8+j*4;
+append extra2 if(b==s[d+1]&&same(src+a,s[d],b))hit=d;j++;}if(hit){
+append extra2 j=pp(s[hit+2],s[hit+3],out+k,s);if(j<0)return 0-1;k=k+j;}
+append extra2 else{j=a;while(j<i){out[k]=src[j];k++;j++;}}}else{out[k]=c;k++;i++;}}}}
+append extra2 if(k>30000)return 0-1;}s[1]--;return k;}
+append extra2 int driver(char *src,int n,int *out,int cap){int *s=16536*256*256;
+append extra2 char *text=16540*256*256;int i=0;while(i<140){s[i]=0;i++;}
+append extra2 n=pp(src,n,text,s);if(n<0)return 0;return repaired(text,n,out,cap);}
+build extra2
+install
+build extra2
+install
+```
+
+</details>
+
+**← `serial_send_text`**
+
+```
+{"sent":2709}
+```
+
+#### +0:35:18
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell>
+```
+
+#### +0:35:21
+
+> 💭 **Testing self-build preprocessing**
+> 💭 **Preparing guest headers**
+
+**→ `serial_send_text`**
+
+```
+save progMath #define stdout 0
+save prog8 int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;}
+save progFwd char *argv0;int wordfirst=1;int putword(int stream,char *word){
+append progFwd if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}
+append progFwd int fshut(int stream,char *name){return 0;}
+save empty int rename(int slot,char *name){char *d=16448*256*256+1024+slot*128;
+append empty int i=0;while(name[i]){d[4+i]=name[i];i++;}d[0]=i;return 0;}
+append empty int main(){rename(5,"stdioh");rename(7,"stringh");rename(4,"utilh");return 0;}
+build empty
+exec rename
+append stdioh  
+append stringh  
+append utilh  
+cat stdioh
+cat stringh
+cat utilh
+build extra5
+exec echo one two
+exec echo -n one two
+exec echo
+exec echo -n
+exec echo one -n
+exec echo -- one
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":801}
+```
+
+#### +0:35:41
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2023646566696e65207374646f75742030200a7368656c6c3e20696e7420737472636d702863686172202a612c63686172202a62297b7768696c65282a6126262a613d3d2a62297b612b2b3b622b2b3b7d72657475726e202a612d2a623b7d200a7368656c6c3e2063686172202a61726776303b696e7420776f726466697273743d313b696e7420707574776f726428696e742073747265616d2c63686172202a776f7264297b69662821776f726466697273742970757463686172283332293b776f726466697273743d303b7768696c65282a776f72642970757463686172282a776f72642b2b293b72657475726e20303b7d696e7420667368757428696e742073747265616d2c63686172202a6e616d65297b72657475726e20303b7d200a7368656c6c3e206275696c740a7368656c6c3e206f6e652074776f0a657869742030303030303030300a7368656c6c3e20206f6e652074776f657869742030303030303030300a7368656c6c3e200a657869742030303030303030300a7368656c6c3e20657869742030303030303030300a7368656c6c3e20206f6e65202d6e0a657869742030303030303030300a7368656c6c3e20202d2d206f6e650a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> saved
+shell> saved
+shell> saved
+shell> #define stdout 0 
+shell> int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} 
+shell> char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} 
+shell> built
+shell> one two
+exit 00000000
+shell>  one twoexit 00000000
+shell> 
+exit 00000000
+shell> exit 00000000
+shell>  one -n
+exit 00000000
+shell>  -- one
+exit 00000000
+shell>
+```
+
+#### +0:35:46
+
+> 💭 **Resetting globals at startup**
+> 💭 **Preserving main arguments**
+
+**→ `serial_send_text`**
+
+```
+save beta z=emit(s,43520,1011);z=emit(s,37888,mainat-s[3]);`
+append beta z=emit(s,43520,1011);z=emit(s,63519,4065);z=emit(s,63519,4066);
+append beta i=0;while(i<s[18]){a=256+i*4;t=out[s[a+3]];z=emit(s,21120,t*32);
+append beta z=emit(s,4096,(32768*16-s[3]+s[a+3])*32+1);z=emit(s,47360,32);i++;}
+append beta z=emit(s,63553,2018);z=emit(s,63553,2017);z=emit(s,37888,mainat-s[3]);`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build extra5
+exec echo one two
+exec echo -n one two
+exec echo
+exec echo -n
+exec echo one -n
+exec echo -- one
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":655}
+```
+
+#### +0:36:11
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e206f6e652074776f0a657869742030303030303030300a7368656c6c3e206f6e652074776f657869742030303030303030300a7368656c6c3e200a657869742030303030303030300a7368656c6c3e20657869742030303030303030300a7368656c6c3e206f6e65202d6e0a657869742030303030303030300a7368656c6c3e202d2d206f6e650a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> one two
+exit 00000000
+shell> one twoexit 00000000
+shell> 
+exit 00000000
+shell> exit 00000000
+shell> one -n
+exit 00000000
+shell> -- one
+exit 00000000
+shell>
+```
+
+#### +0:36:15
+
+> 💭 **Fixing unknown-include handling**
+> 💭 **Adding compiler pointer casts**
+
+> 💭 **Checking pointer conversions**
+> 💭 **Fixing preprocessor casts**
+
+> 💭 **Preparing modified source copy**
+> 💭 **Preparing source-copy helper**
+
+> 💭 **Measuring compiler output size**
+> 💭 **Preparing self-compiler migration**
+
+**→ `serial_send_text`**
+
+```
+save beta int *o=s[2]`int *o=(int *)s[2]`char *p=s[0]`char *p=(char *)s[0]`
+append beta int e=s[1]`char *e=(char *)s[1]`p<s[1]`p<(char *)s[1]`
+append beta s[0]=p+1`s[0]=(int)(p+1)`s[0]=p`s[0]=(int)p`s[7]=p-1`s[7]=(int)(p-1)`
+append beta s[7]=p;`s[7]=(int)p;`p=s[0]`p=(char *)s[0]`p=s[7]`p=(char *)s[7]`
+append beta same(s[k],s[7],s[8])`same((char *)s[k],(char *)s[7],s[8])`
+append beta int address=out;int *s=address+cap-2048;`
+append beta int address=(int)out;int *s=(int *)(address+cap-2048);`
+append beta s[0]=src;`s[0]=(int)src;`s[1]=src+n;`s[1]=(int)(src+n);`
+append beta s[2]=out;`s[2]=(int)out;`s[d]=src+a;`s[d]=(int)(src+a);`
+append beta s[d+2]=src+c;`s[d+2]=(int)(src+c);`same(src+a,s[d],b)`same(src+a,(char *)s[d],b)`
+append beta pp(s[hit+2],`pp((char *)s[hit+2],`int *s=16536*256*256;`
+append beta int *s=(int *)(16536*256*256);`char *text=16540*256*256;`
+append beta char *text=(char *)(16540*256*256);`char *dir=16448*256*256+1024;`
+append beta char *dir=(char *)(16448*256*256+1024);`
+append beta dir=16448*256*256+1024+d*128;`dir=(char *)(16448*256*256+1024+d*128);`
+append beta p=16448*256*256+5120+d*32768;`p=(char *)(16448*256*256+5120+d*32768);`
+build extra4
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build extra5
+exec echo a b c
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1362}
+```
+
+#### +0:37:52
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2061206220630a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> a b c
+exit 00000000
+shell>
+```
+
+#### +0:37:58
+
+> 💭 **Improving function macro support**
+> 💭 **Preparing function-macro state storage**
+
+> 💭 **Parsing parameter lists**
+> 💭 **Implementing function macros**
+
+> 💭 **Building a size probe**
+
+**→ `serial_send_text`**
+
+```
+save empty int main(){int *p=(int *)(16405*256*256);return p[0];}
+build empty
+exec size
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":88}
+```
+
+#### +0:39:03
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742031343030333764380a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> built
+shell> exit 140037d8
+shell>
+```
+
+#### +0:39:07
+
+> 💭 **Preparing compiler space**
+> 💭 **Adding range-rule handling**
+
+> 💭 **Preparing source trim helper**
+
+**→ `serial_send_text`**
+
+```
+save empty int eq(char *a,char *b,int n){int i=0;while(i<n){if(a[i]-b[i])return 0;i++;}return 1;}
+append empty int trim(char *src,int n,int *out,int cap){char *a=(char *)(16516*256*256);
+append empty char *b=(char *)(16448*256*256+5120+20*32768);
+append empty char *d=(char *)(16448*256*256+3584);int i=0;int k=0;int h=0;
+append empty while(i<n){if(eq(src+i,"if(t-42){if(t-257)",17)){
+append empty while(i<n&&!eq(src+i,"}int compile(",13))i++;}
+append empty if(i<n){a[k]=src[i];k++;i++;}}i=0;while(i<k){b[i]=a[i];i++;}
+append empty i=k;while(i>255){i=i-256;h++;}d[2]=i;d[3]=h;
+append empty out[0]=21120*256*256;out[1]=54879*256*256+960;return 8;}
+build empty
+install
+build extra2
+append extra2  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build extra5
+exec echo One Two
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":845}
+```
+
+#### +0:39:43
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e204f6e652054776f0a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> One Two
+exit 00000000
+shell>
+```
+
+#### +0:39:47
+
+> 💭 **Implementing function macro support**
+> 💭 **Documenting macro limits**
+
+> 💭 **Defining the replacement utility**
+> 💭 **Implementing literal replacement**
+
+**→ `serial_send_text`**
+
+```
+save beta int changed(char *src,int n,int *out,int cap){
+append beta char *b=(char *)(16448*256*256+5120);char *d=(char *)(16448*256*256+1024);
+append beta int i=0;int k=0;int h=0;while(i<n){if(i+3<n&&src[i]==39&&src[i+1]==92&&
+append beta src[i+2]==110&&src[i+3]==39){b[k]=39;b[k+1]=33;b[k+2]=39;k=k+3;i=i+4;}
+append beta else{b[k]=src[i];k++;i++;}}i=k;while(i>255){i=i-256;h++;}d[2]=i;d[3]=h;
+append beta out[0]=21120*256*256;out[1]=54879*256*256+960;return 8;}
+build beta
+install
+build extra5
+append alpha  
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build alpha
+exec other one two
+exec other -n one two
+cat alpha
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":671}
+```
+
+#### +0:40:34
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (1,574 chars, 1 lines)</summary>
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e206f6e652074776f21657869742030303030303030300a7368656c6c3e206f6e652074776f657869742030303030303030300a7368656c6c3e202f2a20536565204c4943454e53452066696c6520666f7220636f7079726967687420616e64206c6963656e73652064657461696c732e202a2f0a23696e636c756465203c737464696f2e683e0a23696e636c756465203c737472696e672e683e0a23696e636c75646520227574696c2e68220a0a696e740a6d61696e28696e7420617267632c2063686172202a617267765b5d290a7b0a09696e74206e666c6167203d20303b0a0a096172677630203d202a617267762c206172677630203f2028617267632d2d2c20617267762b2b29203a2028766f6964202a29303b0a0a09696620282a617267762026262021737472636d70282a617267762c20222d6e222929207b0a09096e666c6167203d20313b0a0909617267632d2d2c20617267762b2b3b0a097d0a0a09666f7220283b202a617267763b20617267632d2d2c20617267762b2b290a0909707574776f7264287374646f75742c202a61726776293b0a0969662028216e666c6167290a09097075746368617228272127293b0a0a0972657475726e206673687574287374646f75742c20223c7374646f75743e22293b0a7d0a200a7368656c6c3e20
+```
+
+</details>
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> one two!exit 00000000
+shell> one twoexit 00000000
+shell> /* See LICENSE file for copyright and license details. */
+#include <stdio.h>
+#include <string.h>
+#include "util.h"
+
+int
+main(int argc, char *argv[])
+{
+	int nflag = 0;
+
+	argv0 = *argv, argv0 ? (argc--, argv++) : (void *)0;
+
+	if (*argv && !strcmp(*argv, "-n")) {
+		nflag = 1;
+		argc--, argv++;
+	}
+
+	for (; *argv; argc--, argv++)
+		putword(stdout, *argv);
+	if (!nflag)
+		putchar('!');
+
+	return fshut(stdout, "<stdout>");
+}
+ 
+shell>
+```
+
+#### +0:40:41
+
+> 💭 **Preparing regression fixtures**
+> 💭 **Building pointer regression test**
+
+> 💭 **Preparing source-generation helper**
+> 💭 **Preparing source helper**
+
+**→ `serial_send_text`**
+
+```
+save Abc123xyz789 int main(){char *src="#include <stdio.h>\n#define N 67\n
+append Abc123xyz789 int ticks=0;int hit(int c){ticks++;putchar(c);return c;}
+append Abc123xyz789 int main(int argc,char **argv){int *p=(int *)(16516*256*256);int *q=2+p;
+append Abc123xyz789 char **a=argv+1;int i=0;p[2]=75;putchar(*q);putchar(48+q-p);
+append Abc123xyz789 a[1]=a[0];putchar(**(a+1));putchar(**a++);0&&hit(88);1||hit(89);
+append Abc123xyz789 0?hit(90):hit(65);putchar(48+ticks);putchar(48+(2&&3));
+append Abc123xyz789 putchar(48+(0||7));putchar(48+(3==3));putchar(48+(3!=3));
+append Abc123xyz789 for(i=0;i<2;i++)putchar(N+i);putchar(10);return 0;}";
+append Abc123xyz789 char *d=(char *)(16448*256*256+1024+17*128);
+append Abc123xyz789 char *b=(char *)(16448*256*256+5120+17*32768);int i=0;int n=0;
+append Abc123xyz789 while(src[i]){b[i]=src[i];i++;}while(i>255){i=i-256;n++;}d[2]=i;d[3]=n;return 0;}
+build Abc123xyz789
+exec author
+append longasm  
+build longasm
+exec regress Apple Banana
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":977}
+```
+
+#### +0:41:35
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e204b32414141313131313043440a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> exit 00000000
+shell> saved
+shell> built
+shell> K2AAA11110CD
+exit 00000000
+shell>
+```
+
+#### +0:41:39
+
+> 💭 **Checking warning conversions**
+
+**→ `serial_send_text`**
+
+```
+save Check int main(int argc,char **argv){char *a=(char *)(16405*256*256);
+append Check char *b=(char *)(16532*256*256);int i=0;int n=0;
+append Check if(argc<2){while(i<60000){b[i]=a[i];i++;}return 0;}
+append Check while(i<60000){if(a[i]-b[i])n++;i++;}putchar(n?78:89);putchar(10);return n;}
+build extra2
+install
+build Check
+exec compare
+build extra2
+install
+build Check
+exec compare test
+build extra2
+install
+build Check
+exec compare test
+build extra5
+exec echo a b
+build progBad
+exec echo a b
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":495}
+```
+
+#### +0:41:51
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e206120620a657869742030303030303030300a7368656c6c3e206275696c64206572726f720a7368656c6c3e206120620a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> built
+shell> installed
+shell> built
+shell> exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> a b
+exit 00000000
+shell> build error
+shell> a b
+exit 00000000
+shell>
+```
+
+#### +0:41:55
+
+> 💭 **Rerunning mixed-argument tests**
+> 💭 **Preparing guest-assembly check**
+
+> 💭 **Checking pointer semantics**
+> 💭 **Reviewing ordinary C support**
+
+> 💭 **Verifying malformed restore**
+
+The unchanged upstream `extra5` now builds in the guest without an adapter. No args, mixed args, initial `-n`, `-n` alone, noninitial `-n`, and `--` produce the expected output and exit status.
+
+The build uses generic include/object-macro preprocessing and reusable guest-written headers/libc. A separately saved copy with `'\n'` changed to `'!'` prints `one two!`, confirming source consumption. Unrelated short-circuit and pointer tests pass, as do full 60,000-byte comparisons across successive self-built compiler generations. I’m finishing the fresh-boot check and handoff.
+
+
+**→ `serial_send_text`**
+
+```
+save progBad start:;mov w4,60000;adr x0,start;ldr w0,[x0];ret;
+as progBad
+exec opcode
+save progBad int main(){return ;}
+cat extra5
+ls
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":134}
+```
+
+#### +0:42:54
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742035323964346330340a7368656c6c3e2073617665640a7368656c6c3e202f2a20536565204c4943454e53452066696c6520666f7220636f7079726967687420616e64206c6963656e73652064657461696c732e202a2f0a23696e636c756465203c737464696f2e683e0a23696e636c756465203c737472696e672e683e0a23696e636c75646520227574696c2e68220a0a696e740a6d61696e28696e7420617267632c2063686172202a617267765b5d290a7b0a09696e74206e666c6167203d20303b0a0a096172677630203d202a617267762c206172677630203f2028617267632d2d2c20617267762b2b29203a2028766f6964202a29303b0a0a09696620282a617267762026262021737472636d70282a617267762c20222d6e222929207b0a09096e666c6167203d20313b0a0909617267632d2d2c20617267762b2b3b0a097d0a0a09666f7220283b202a617267763b20617267632d2d2c20617267762b2b290a0909707574776f7264287374646f75742c202a61726776293b0a0969662028216e666c6167290a09097075746368617228275c6e27293b0a0a0972657475726e206673687574287374646f75742c20223c7374646f75743e22293b0a7d0a0a7368656c6c3e20616c7068610a626574610a41626331323378797a3738390a656d7074790a7574696c680a737464696f680a70726f674261640a737472696e67680a4673426f6f740a4673526563760a62696e0a7372630a6b65726e656c300a6b65726e656c310a436865636b0a46734669780a6e6577310a6c6f6e6761736d0a7261770a6578747261310a6578747261320a6578747261330a6578747261340a6578747261350a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> assembled
+shell> exit 529d4c04
+shell> saved
+shell> /* See LICENSE file for copyright and license details. */
+#include <stdio.h>
+#include <string.h>
+#include "util.h"
+
+int
+main(int argc, char *argv[])
+{
+	int nflag = 0;
+
+	argv0 = *argv, argv0 ? (argc--, argv++) : (void *)0;
+
+	if (*argv && !strcmp(*argv, "-n")) {
+		nflag = 1;
+		argc--, argv++;
+	}
+
+	for (; *argv; argc--, argv++)
+		putword(stdout, *argv);
+	if (!nflag)
+		putchar('\n');
+
+	return fshut(stdout, "<stdout>");
+}
+
+shell> alpha
+beta
+Abc123xyz789
+empty
+utilh
+stdioh
+progBad
+stringh
+FsBoot
+FsRecv
+bin
+src
+kernel0
+kernel1
+Check
+FsFix
+new1
+longasm
+raw
+extra1
+extra2
+extra3
+extra4
+extra5
+shell>
+```
+
+#### +0:42:59
+
+> 💭 **Checking byte-for-byte preservation**
+> 💭 **Checking integer overflow**
+
+> 💭 **Adding C escape handling**
+> 💭 **Checking logical equality parsing**
+
+> 💭 **Reviewing runtime flag tests**
+> 💭 **Verifying fresh boot state**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:44:12
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T103328.542579Z"}
+```
+
+#### +0:44:15
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build Check
+exec compare
+build extra2
+install
+build Check
+exec compare test
+build extra2
+install
+build Check
+exec compare test
+cat stdioh
+cat stringh
+cat utilh
+build extra5
+exec echo
+exec echo Alpha 123 z-9
+exec echo -n Alpha 123
+exec echo -n
+exec echo Alpha -n
+exec echo -- Alpha
+exec echo -n -n
+exec echo -nn
+exec echo -- -n
+build progBad
+exec echo Alpha 123 z-9
+build alpha
+exec changed one two
+exec changed -n one two
+build longasm
+exec regress Apple Banana
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":580}
+```
+
+#### +0:44:26
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (2,168 chars, 1 lines)</summary>
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e2023646566696e65207374646f75742030200a7368656c6c3e20696e7420737472636d702863686172202a612c63686172202a62297b7768696c65282a6126262a613d3d2a62297b612b2b3b622b2b3b7d72657475726e202a612d2a623b7d200a7368656c6c3e2063686172202a61726776303b696e7420776f726466697273743d313b696e7420707574776f726428696e742073747265616d2c63686172202a776f7264297b69662821776f726466697273742970757463686172283332293b776f726466697273743d303b7768696c65282a776f72642970757463686172282a776f72642b2b293b72657475726e20303b7d696e7420667368757428696e742073747265616d2c63686172202a6e616d65297b72657475726e20303b7d200a7368656c6c3e206275696c740a7368656c6c3e200a657869742030303030303030300a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e20416c70686120313233657869742030303030303030300a7368656c6c3e20657869742030303030303030300a7368656c6c3e20416c706861202d6e0a657869742030303030303030300a7368656c6c3e202d2d20416c7068610a657869742030303030303030300a7368656c6c3e202d6e657869742030303030303030300a7368656c6c3e202d6e6e0a657869742030303030303030300a7368656c6c3e202d2d202d6e0a657869742030303030303030300a7368656c6c3e206275696c64206572726f720a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e206f6e652074776f21657869742030303030303030300a7368656c6c3e206f6e652074776f657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e204b32414141313131313043440a657869742030303030303030300a7368656c6c3e20
+```
+
+</details>
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> #define stdout 0 
+shell> int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} 
+shell> char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} 
+shell> built
+shell> 
+exit 00000000
+shell> Alpha 123 z-9
+exit 00000000
+shell> Alpha 123exit 00000000
+shell> exit 00000000
+shell> Alpha -n
+exit 00000000
+shell> -- Alpha
+exit 00000000
+shell> -nexit 00000000
+shell> -nn
+exit 00000000
+shell> -- -n
+exit 00000000
+shell> build error
+shell> Alpha 123 z-9
+exit 00000000
+shell> built
+shell> one two!exit 00000000
+shell> one twoexit 00000000
+shell> built
+shell> K2AAA11110CD
+exit 00000000
+shell>
+```
+
+#### +0:44:29
+
+> 💭 **Preserving source artifacts**
+> 💭 **Verifying raw bridge builds**
+
+> 💭 **Checking compiler limits**
+> 💭 **Checking prior executable preservation**
+
+**→ `guest_read`** `{"offset": 8040, "length": 64}`
+
+**← `guest_read`**
+
+```
+{"hex":"e203042a0320a8d2044c9d520004a8d200a0229144050094ed03002a0020a1d20802a8d208154091bf11007183010054bf214071bf414071a105001201010035"}
+```
+
+#### +0:45:20
+
+> 💭 **Correcting the kernel patch**
+
+**→ `guest_patch`** `{"offset": 8088, "hex": "bf 41 40 71 48 01 00 54"}`
+
+**← `guest_patch`**
+
+```
+{"bytes":18564}
+```
+
+#### +0:45:36
+
+> 💭 **Preparing final fresh boot**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:45:44
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T103500.806444Z"}
+```
+
+#### +0:45:47
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build Check
+exec compare
+build extra2
+install
+build Check
+exec compare test
+build extra5
+exec echo
+exec echo Alpha 123 z-9
+exec echo -n Alpha 123
+exec echo -n
+exec echo Alpha -n
+exec echo -- Alpha
+build progBad
+exec echo Alpha 123 z-9
+build alpha
+exec changed one two
+build longasm
+exec regress Apple Banana
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":426}
+```
+
+#### +0:45:54
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e200a657869742030303030303030300a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e20416c70686120313233657869742030303030303030300a7368656c6c3e20657869742030303030303030300a7368656c6c3e20416c706861202d6e0a657869742030303030303030300a7368656c6c3e202d2d20416c7068610a657869742030303030303030300a7368656c6c3e206275696c64206572726f720a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e206f6e652074776f21657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e204b32414141313131313043440a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> 
+exit 00000000
+shell> Alpha 123 z-9
+exit 00000000
+shell> Alpha 123exit 00000000
+shell> exit 00000000
+shell> Alpha -n
+exit 00000000
+shell> -- Alpha
+exit 00000000
+shell> build error
+shell> Alpha 123 z-9
+exit 00000000
+shell> built
+shell> one two!exit 00000000
+shell> built
+shell> K2AAA11110CD
+exit 00000000
+shell>
+```
+
+#### +0:45:57
+
+> 💭 **Completing notes**
+
+**→ `guest_read`** `{"offset": 8048, "length": 52}`
+
+**← `guest_read`**
+
+```
+{"hex":"044c9d520004a8d200a0229144050094ed03002a0020a1d20802a8d208154091bf11007183010054bf41407148010054a1050012"}
+```
+
+#### +0:46:06
+
+> 💭 **Checking source length limits**
+> 💭 **Verifying source handling**
+
+> 💭 **Verifying shell behavior**
+> 💭 **Inspecting new1 contents**
+
+> 💭 **Running second reset test**
+
+**→ `serial_send_text`**
+
+```
+exec regress Apple Banana
+build extra5
+exec echo -n -n
+exec echo -nn
+exec echo -- -n
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":85}
+```
+
+#### +0:47:01
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+4b32414141313131313043440a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e202d6e657869742030303030303030300a7368656c6c3e202d6e6e0a657869742030303030303030300a7368656c6c3e202d2d202d6e0a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+K2AAA11110CD
+exit 00000000
+shell> built
+shell> -nexit 00000000
+shell> -nn
+exit 00000000
+shell> -- -n
+exit 00000000
+shell>
+```
+
+#### +0:47:04
+
+> 💭 **Saving migration sources**
+> 💭 **Documenting opcode constants**
+
+> 💭 **Stopping VM after notes**
+
+**→ `notes_write`**
+
+<details><summary>text (10,779 chars, 57 lines)</summary>
+
+```
+STAGE038 FINAL (supersedes earlier unfinished handoffs). UNCHANGED upstream extra5 now compiles/runs IN GUEST without adapter. Final corrected kernel fresh boot tested 20261116T103500.806444Z, then VM STOPPED. Saved guest.hex18564 bytes + persistent disk are complete required artifacts. No host compiler/downloads/network used.
+
+REBUILD, one command per line:
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build extra5
+exec echo ARGS
+
+new1/extra1/extra3 unchanged inherited stage032/034/035 sources. raw is NOW a saved 16-function preprocessor-free C COMPILER BRIDGE, NOT the former stage036 echo adapter. It was explicitly copied from extended compiler before adding preprocessing. extra3 builds exact raw; raw builds exact final extra2; extra2 rebuilds itself. All these builds were repeated fresh. Final extra2 has19 functions including generic header lookup, pp, driver; driver is final compiler ABI entry. No input filename is passed to it, and it contains no filename/hash/source-specific recognition. Includes use generic directory lookup, not echo recognition. Extra5 slot23 never written: exact original421 bytes including license comment/includes/tabs/LFs retained. cat after all changes showed original byte formatting. Alpha is separate changed-input artifact, NOT extra5.
+
+SELFHOST EQUALITY: After bootstrap/install above, build Check; exec compare (snapshot installed60000 bytes). Then build extra2; install; build Check; exec compare test => Y\n exit00000000. Repeat generation and compare => Y/0. Full installed region40150000..+60000 compared byte-for-byte, not hash or source recognition; includes unchanged trailing bytes beyond binary. Check snapshot40940000; regenerate after boot. This passed repeated generations before final reboot, and another generation on final corrected-kernel fresh boot. Bridge and final compiler sources both persisted exactly.
+
+UPSTREAM ACCEPTANCE fresh boot: build extra5 => built. All exit00000000:
+exec echo => LF only
+exec echo Alpha 123 z-9 => Alpha 123 z-9\n
+exec echo -n Alpha 123 => Alpha 123 (no LF)
+exec echo -n => zero bytes
+exec echo Alpha -n => Alpha -n\n
+exec echo -- Alpha => -- Alpha\n
+Also -n -n => -n without LF; -nn => -nn\n; -- -n => -- -n\n.
+Multiple execs use SAME built executable. Generic startup resets every global from its compiled initial value on each exec, so libc/global state does not leak between process invocations. Earlier leading-space leak was fixed in generic startup, NOT via echo special case.
+
+SOURCE CONSUMPTION: alpha exact near-identical upstream copy with sole output literal '\n' changed to '!' plus one trailing space used to persist. build alpha;exec changed one two => one two! (no LF),exit0. exec changed -n one two => one two,exit0. beta saves exact guest C generator for this test: build beta;install;build extra5;append alpha<SPACE><SPACE> generates/persists alpha, then restore compiler via full bootstrap. This is explicit creation of an alternative input, NOT part of compilation/preprocessing of extra5. Original extra5 unchanged.
+
+MALFORMED REJECTION: progBad exact int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad => build error;exec echo Alpha 123 z-9 still prints same output/status. Verified on final boot. Compiler returns0 on parse/preprocess failure; kernel preserves prior executable. No diagnostic stub installed as successful program.
+
+UNRELATED REGRESSION: longasm is NOW exact saved C test, NOT assembler. build longasm;exec regress Apple Banana => K2AAA11110CD\n,exit0. Repeated exec gives identical result. It includes <stdio.h>, defines object macro N67, uses unrelated globals/functions, int* indexing/scaled addition/integer+pointer/pointer subtraction,64-bit char** index loads/stores, **(a+1),**a++, postfix effects, for, ?:, comma, casts, ==/!=, &&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A; ticks remains1, proving short circuit and skipped side effects. Both logical truth values normalized1, precedence tested previously with1||0&&0 =>1. Earlier int-pointer test produced ')9 3 2 10\n'; char** traversal gave A B 2; all superseded by persisted combined test. Abc123xyz789 is exact saved source authoring C program: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates the test including real directive newlines. It does not install a compiler.
+
+HEADERS/LIBC MANIFEST, ALL GUEST-WRITTEN (NO ORIGINAL UPSTREAM LIBRARY SOURCES imported). Header definitions are reusable ordinary C TU content, inserted by includes, not rewritten echo code. Guest flat filenames encode include paths by omitting dots, e.g stdio.h=>stdioh, string.h=>stringh, util.h=>utilh. Generic header(name,n) scans all24 directory entries for complete normalized name; no fixed source/slot dispatch. #include quoted/angle forms work. cat stdioh/stringh/utilh shows exact sources:
+stdioh: #define stdout 0 [trailing space]
+stringh: int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} [space]
+utilh: char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} [space]
+putchar is inherited generic compiler console intrinsic, serial output immediate/unbuffered/infallible in guest ABI. stdout0 is sole console stream; fshut has nothing buffered and returns success. This is a small reusable console libc, not complete FILE/disk stdio. No host libc, no hard-encoded echo machine implementation. Startup and TU code/data initialization generator are part of exact extra2 compile() source.
+
+C EXTENSIONS IMPLEMENTED for real upstream syntax: comments/chars/strings; int/char*/int*/char** and void* casts; scalar globals with zero/literal initialization; unsized array PARAMETER adjustment(char *argv[]=>char**); postfix++/-- with scaled pointer steps; pointer+integer/integer+pointer/pointer-integer, pointer difference in element units, char** loads/stores64-bit; unary!, arithmetic, comparisons/equality, short-circuit logical precedence, conditional, right-associative assignment expression, sequenced comma, general expression statements, if/else/while/for. Library function definitions precede use, valid C header-based combination. Globals storage and startup generic, not tied to argv0/wordfirst names.
+
+OWN COMPILER MIGRATION: original byte-based out+cap-1024 explicitly became integer byte address, then final C migrated to int address=(int)out;int *s=(int *)(address+cap-2048). All pointer/int state conversions and header/pp address constants in final compiler explicitly cast; char* end pointer used in lexer, comparisons typed. Integer-address state deliberately represents fixed guest32-bit addresses. No silent legacy pointer arithmetic retained for compiler. Raw bridge preserves pre-cast historical bootstrap form as explicit migration source only. New backend numeric AArch64 emitters follow inherited compiler convention and are generated in guest; new opcode constants manually derived, NOT host-compiled. No hand-patched echo code.
+
+IMPORTANT backend fix: inherited broad negative B/BL repair corrupted new ASR and ADD-address opcodes. Final bootstrap() narrows repair to high16>5118,<5120 and>37886,<37888 respectively. final() retains inherited frame fixes; repaired() retains now-redundant exact ASR repairs. Early hangs corrected before final tests. Primary lvalue address held x2, preserved on stack for assignment RHS; widths byte/32/64 selected by actual lvalue. Postfix returns saved old value after update. Runtime conditionals/logicals use actual branches, not eager RHS evaluation.
+
+ACTUAL LIMITS, not a full ISO C/preprocessor implementation: kernel build output60000 bytes; final compiler reserves2048 state, maxcode57952 bytes; input bound32768, pp output<=30000;32 functions,16 globals,32 locals/function,4 args/call. int32 wrap backend, guest addresses below2^32; char default unsigned; kernel argv cells64-bit. Fixed RAM scratch, compiler non-reentrant. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise. Function definitions must precede use. Local arrays/for-declaration initializer not supported; unsized parameter arrays supported. Preprocessor handles includes, comments and recursively expanded OBJECT macros(max32,depth16), strings protected; NO function macros/conditionals/undef/token pasting. It is generic preprocessing but bounded, not a complete ISO preprocessor. Guest headers deliberately need only supported ordinary directives. No claim of full C/libc conformance beyond recorded subset.
+
+EXACT KERNEL PATCH MANIFEST relative stage03718564-byte image: ONLY8048 old04009052 =>044c9d52 (mov w4,60000);8088 oldbf214071 =>bf414071 (cmp w13,#65536).8092 remains original48010054 branch. Initial mis-offset patch at8092 was corrected; final fresh-boot suite above used corrected bytes. MOV independently guest-assembled and verified exit529d4c04 using start:;mov w4,60000;adr x0,start;ldr w0,[x0];ret; ; compare patch manually encoded. No size change/other kernel edits. Boot/shell/assembler/argv/GUI/network code bytes otherwise unchanged; GUI/network not retested this stage. No fetch use. Existing kernel and disk files retained except documented storage-test repurposing.
+
+SOURCE/DISK MANIFEST: new1,extra1,extra3 unchanged active seeds; raw compiler bridge replaces obsolete stage036 adapter; extra2 final exact compiler; extra4 generic own-compiler string-replacement editor; empty own-compiler unreachable-tail trimming migration utility; beta alternate-input generator; alpha alternate echo source; Abc123xyz789 regression source author; longasm regression C; Check60000-byte generation comparator; progBad malformed fixture; old progFwd/progMath/prog8 renamed utilh/stdioh/stringh. All others unchanged. Full24 slots, no expansion. Old historical test slots repurposed intentionally. exact sources available via cat. Extra4 applies backtick-delimited old/new rules from beta WHEN beta contains rules, writes own compiler slot20 RAM then append extra2 with one-space body persists; beta now contains changed-input generator, so do NOT run extra4 unchanged without supplying rules. Compiler bootstrap does NOT use extra4/empty/beta/author at all. Source migration scratch40840000/40880000, pp state40980000/text409c0000, Check40940000. Never use40780000+4096 for large source buffers: inherited fetch state lives there (early failed attempts corrected; scratch relocated).
+
+Final saved kernel/FS sufficient for completely offline reproduction. Run stated bootstrap, self-comparison, upstream/changed/ordinary tests. All executable generation uses guest as/build; no sources translated to a custom echo dialect. VM stopped.
+```
+
+</details>
+
+**← `notes_write`** ⚠️ error
+
+<details><summary>result (10,966 chars, 7 lines)</summary>
+
+```
+Validation failed for tool "notes_write":
+  - text: expected at most 8192 characters
+
+Received arguments:
+{
+  "text": "STAGE038 FINAL (supersedes earlier unfinished handoffs). UNCHANGED upstream extra5 now compiles/runs IN GUEST without adapter. Final corrected kernel fresh boot tested 20261116T103500.806444Z, then VM STOPPED. Saved guest.hex18564 bytes + persistent disk are complete required artifacts. No host compiler/downloads/network used.\n\nREBUILD, one command per line:\nas new1\ninstall\nbuild extra1\ninstall\nbuild extra3\ninstall\nbuild raw\ninstall\nbuild extra2\ninstall\nbuild extra2\ninstall\nbuild extra5\nexec echo ARGS\n\nnew1/extra1/extra3 unchanged inherited stage032/034/035 sources. raw is NOW a saved 16-function preprocessor-free C COMPILER BRIDGE, NOT the former stage036 echo adapter. It was explicitly copied from extended compiler before adding preprocessing. extra3 builds exact raw; raw builds exact final extra2; extra2 rebuilds itself. All these builds were repeated fresh. Final extra2 has19 functions including generic header lookup, pp, driver; driver is final compiler ABI entry. No input filename is passed to it, and it contains no filename/hash/source-specific recognition. Includes use generic directory lookup, not echo recognition. Extra5 slot23 never written: exact original421 bytes including license comment/includes/tabs/LFs retained. cat after all changes showed original byte formatting. Alpha is separate changed-input artifact, NOT extra5.\n\nSELFHOST EQUALITY: After bootstrap/install above, build Check; exec compare (snapshot installed60000 bytes). Then build extra2; install; build Check; exec compare test => Y\\n exit00000000. Repeat generation and compare => Y/0. Full installed region40150000..+60000 compared byte-for-byte, not hash or source recognition; includes unchanged trailing bytes beyond binary. Check snapshot40940000; regenerate after boot. This passed repeated generations before final reboot, and another generation on final corrected-kernel fresh boot. Bridge and final compiler sources both persisted exactly.\n\nUPSTREAM ACCEPTANCE fresh boot: build extra5 => built. All exit00000000:\nexec echo => LF only\nexec echo Alpha 123 z-9 => Alpha 123 z-9\\n\nexec echo -n Alpha 123 => Alpha 123 (no LF)\nexec echo -n => zero bytes\nexec echo Alpha -n => Alpha -n\\n\nexec echo -- Alpha => -- Alpha\\n\nAlso -n -n => -n without LF; -nn => -nn\\n; -- -n => -- -n\\n.\nMultiple execs use SAME built executable. Generic startup resets every global from its compiled initial value on each exec, so libc/global state does not leak between process invocations. Earlier leading-space leak was fixed in generic startup, NOT via echo special case.\n\nSOURCE CONSUMPTION: alpha exact near-identical upstream copy with sole output literal '\\n' changed to '!' plus one trailing space used to persist. build alpha;exec changed one two => one two! (no LF),exit0. exec changed -n one two => one two,exit0. beta saves exact guest C generator for this test: build beta;install;build extra5;append alpha<SPACE><SPACE> generates/persists alpha, then restore compiler via full bootstrap. This is explicit creation of an alternative input, NOT part of compilation/preprocessing of extra5. Original extra5 unchanged.\n\nMALFORMED REJECTION: progBad exact int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad => build error;exec echo Alpha 123 z-9 still prints same output/status. Verified on final boot. Compiler returns0 on parse/preprocess failure; kernel preserves prior executable. No diagnostic stub installed as successful program.\n\nUNRELATED REGRESSION: longasm is NOW exact saved C test, NOT assembler. build longasm;exec regress Apple Banana => K2AAA11110CD\\n,exit0. Repeated exec gives identical result. It includes <stdio.h>, defines object macro N67, uses unrelated globals/functions, int* indexing/scaled addition/integer+pointer/pointer subtraction,64-bit char** index loads/stores, **(a+1),**a++, postfix effects, for, ?:, comma, casts, ==/!=, &&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A; ticks remains1, proving short circuit and skipped side effects. Both logical truth values normalized1, precedence tested previously with1||0&&0 =>1. Earlier int-pointer test produced ')9 3 2 10\\n'; char** traversal gave A B 2; all superseded by persisted combined test. Abc123xyz789 is exact saved source authoring C program: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates the test including real directive newlines. It does not install a compiler.\n\nHEADERS/LIBC MANIFEST, ALL GUEST-WRITTEN (NO ORIGINAL UPSTREAM LIBRARY SOURCES imported). Header definitions are reusable ordinary C TU content, inserted by includes, not rewritten echo code. Guest flat filenames encode include paths by omitting dots, e.g stdio.h=>stdioh, string.h=>stringh, util.h=>utilh. Generic header(name,n) scans all24 directory entries for complete normalized name; no fixed source/slot dispatch. #include quoted/angle forms work. cat stdioh/stringh/utilh shows exact sources:\nstdioh: #define stdout 0 [trailing space]\nstringh: int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} [space]\nutilh: char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} [space]\nputchar is inherited generic compiler console intrinsic, serial output immediate/unbuffered/infallible in guest ABI. stdout0 is sole console stream; fshut has nothing buffered and returns success. This is a small reusable console libc, not complete FILE/disk stdio. No host libc, no hard-encoded echo machine implementation. Startup and TU code/data initialization generator are part of exact extra2 compile() source.\n\nC EXTENSIONS IMPLEMENTED for real upstream syntax: comments/chars/strings; int/char*/int*/char** and void* casts; scalar globals with zero/literal initialization; unsized array PARAMETER adjustment(char *argv[]=>char**); postfix++/-- with scaled pointer steps; pointer+integer/integer+pointer/pointer-integer, pointer difference in element units, char** loads/stores64-bit; unary!, arithmetic, comparisons/equality, short-circuit logical precedence, conditional, right-associative assignment expression, sequenced comma, general expression statements, if/else/while/for. Library function definitions precede use, valid C header-based combination. Globals storage and startup generic, not tied to argv0/wordfirst names.\n\nOWN COMPILER MIGRATION: original byte-based out+cap-1024 explicitly became integer byte address, then final C migrated to int address=(int)out;int *s=(int *)(address+cap-2048). All pointer/int state conversions and header/pp address constants in final compiler explicitly cast; char* end pointer used in lexer, comparisons typed. Integer-address state deliberately represents fixed guest32-bit addresses. No silent legacy pointer arithmetic retained for compiler. Raw bridge preserves pre-cast historical bootstrap form as explicit migration source only. New backend numeric AArch64 emitters follow inherited compiler convention and are generated in guest; new opcode constants manually derived, NOT host-compiled. No hand-patched echo code.\n\nIMPORTANT backend fix: inherited broad negative B/BL repair corrupted new ASR and ADD-address opcodes. Final bootstrap() narrows repair to high16>5118,<5120 and>37886,<37888 respectively. final() retains inherited frame fixes; repaired() retains now-redundant exact ASR repairs. Early hangs corrected before final tests. Primary lvalue address held x2, preserved on stack for assignment RHS; widths byte/32/64 selected by actual lvalue. Postfix returns saved old value after update. Runtime conditionals/logicals use actual branches, not eager RHS evaluation.\n\nACTUAL LIMITS, not a full ISO C/preprocessor implementation: kernel build output60000 bytes; final compiler reserves2048 state, maxcode57952 bytes; input bound32768, pp output<=30000;32 functions,16 globals,32 locals/function,4 args/call. int32 wrap backend, guest addresses below2^32; char default unsigned; kernel argv cells64-bit. Fixed RAM scratch, compiler non-reentrant. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise. Function definitions must precede use. Local arrays/for-declaration initializer not supported; unsized parameter arrays supported. Preprocessor handles includes, comments and recursively expanded OBJECT macros(max32,depth16), strings protected; NO function macros/conditionals/undef/token pasting. It is generic preprocessing but bounded, not a complete ISO preprocessor. Guest headers deliberately need only supported ordinary directives. No claim of full C/libc conformance beyond recorded subset.\n\nEXACT KERNEL PATCH MANIFEST relative stage03718564-byte image: ONLY8048 old04009052 =>044c9d52 (mov w4,60000);8088 oldbf214071 =>bf414071 (cmp w13,#65536).8092 remains original48010054 branch. Initial mis-offset patch at8092 was corrected; final fresh-boot suite above used corrected bytes. MOV independently guest-assembled and verified exit529d4c04 using start:;mov w4,60000;adr x0,start;ldr w0,[x0];ret; ; compare patch manually encoded. No size change/other kernel edits. Boot/shell/assembler/argv/GUI/network code bytes otherwise unchanged; GUI/network not retested this stage. No fetch use. Existing kernel and disk files retained except documented storage-test repurposing.\n\nSOURCE/DISK MANIFEST: new1,extra1,extra3 unchanged active seeds; raw compiler bridge replaces obsolete stage036 adapter; extra2 final exact compiler; extra4 generic own-compiler string-replacement editor; empty own-compiler unreachable-tail trimming migration utility; beta alternate-input generator; alpha alternate echo source; Abc123xyz789 regression source author; longasm regression C; Check60000-byte generation comparator; progBad malformed fixture; old progFwd/progMath/prog8 renamed utilh/stdioh/stringh. All others unchanged. Full24 slots, no expansion. Old historical test slots repurposed intentionally. exact sources available via cat. Extra4 applies backtick-delimited old/new rules from beta WHEN beta contains rules, writes own compiler slot20 RAM then append extra2 with one-space body persists; beta now contains changed-input generator, so do NOT run extra4 unchanged without supplying rules. Compiler bootstrap does NOT use extra4/empty/beta/author at all. Source migration scratch40840000/40880000, pp state40980000/text409c0000, Check40940000. Never use40780000+4096 for large source buffers: inherited fetch state lives there (early failed attempts corrected; scratch relocated).\n\nFinal saved kernel/FS sufficient for completely offline reproduction. Run stated bootstrap, self-comparison, upstream/changed/ordinary tests. All executable generation uses guest as/build; no sources translated to a custom echo dialect. VM stopped."
+}
+```
+
+</details>
+
+#### +0:48:56
+
+> 💭 **Shortening by 2k words**
+
+**→ `notes_write`**
+
+<details><summary>text (8,827 chars, 39 lines)</summary>
+
+```
+STAGE038 FINAL supersedes unfinished handoffs. Unchanged upstream extra5 compiles/runs IN GUEST without adapter. Final corrected-kernel fresh boot20261116T103500.806444Z passed tests below. VM STOPPED. Saved guest.hex18564 bytes + persistent disk contain required artifacts. All offline; no host compiler/downloads.
+
+REBUILD, each semicolon below means NEWLINE:
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS
+new1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw is NOW saved16-function preprocessor-free C COMPILER BRIDGE, NOT former stage036 echo adapter. Explicitly copied from extended compiler before preprocessing. extra3 builds raw; raw builds exact final extra2; extra2 rebuilds itself. Repeated on fresh boots. Final extra2 has19 functions including generic header,pp,driver; driver is entry. Compiler receives source bytes, not input filename; no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: exact original421 bytes including comment/includes/tabs/LFs retained; cat confirmed formatting. Alpha is separate altered input.
+
+SELFHOST EQUALITY after bootstrap/install: build Check;exec compare (snapshot installed60000 bytes);build extra2;install;build Check;exec compare test => Y\n exit00000000. Repeat generation/compare =>Y/0. Compares FULL installed region40150000..+60000 byte-for-byte, including unchanged trailing bytes, not hashes. Snapshot40940000; regenerate each boot. Multiple generations passed; final corrected-kernel fresh boot again passed. All compiler sources persisted exactly.
+
+UPSTREAM fresh-boot acceptance: build extra5=>built; all exit0:
+exec echo => LF only
+exec echo Alpha 123 z-9 => Alpha 123 z-9\n
+exec echo -n Alpha 123 => Alpha 123, no LF
+exec echo -n => zero bytes
+exec echo Alpha -n => Alpha -n\n
+exec echo -- Alpha => -- Alpha\n
+Also -n -n=>-n no LF; -nn=>-nn\n; -- -n=>-- -n\n. SAME executable used repeatedly. Generic startup resets ALL globals from compiled initial values each exec, preventing process-state leakage. Earlier leading-space leak fixed in generic startup, not via echo special case.
+
+SOURCE CONSUMPTION: alpha near-identical upstream copy, only output literal '\n' changed to '!', plus trailing persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. beta exact guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> generates/persists test input. Restore compiler via full bootstrap. This is explicit alternative-input creation, NOT part of compilation/preprocessing of extra5.
+
+MALFORMED: progBad exact int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 still identical output/status. Verified final boot. Compiler returns0 on parse/pp failure, kernel preserves executable.
+
+UNRELATED C REGRESSION: longasm now exact saved C test. build longasm;exec regress Apple Banana=>K2AAA11110CD\n,exit0. Repeat exec identical. Includes<stdio.h>,object macro N67, globals/functions, int* indexing/scaled addition/integer+pointer/pointer difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A; ticks1 proves skipped side effects. Logical results normalized1. Earlier precedence1||0&&0=>1 also passed. Abc123xyz789 exact C source author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates test with real directive newlines. Does not install compiler.
+
+HEADERS/LIBC: ALL GUEST-WRITTEN; NO original upstream library sources imported. Reusable valid C definitions in headers inserted by includes, not rewritten echo. Flat guest filename encoding omits dots: stdio.h=>stdioh,string.h=>stringh,util.h=>utilh. Generic header(name,n) scans ALL24 complete directory names, no fixed source/slot dispatch. Quoted/angle includes work. cat shows exact sources:
+stdioh: #define stdout 0 [space]
+stringh: int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} [space]
+utilh: char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} [space]
+putchar inherited generic console intrinsic; immediate/unbuffered/infallible serial output. stdout0 sole stream; fshut has nothing buffered, returns success. Small reusable console libc, not complete FILE/disk stdio. No host libc/hand-encoded echo. Generic startup/TU data initialization generator is in extra2 compile(). Header function definitions before use are ordinary C combination.
+
+IMPLEMENTED C FEATURES: comments/chars/strings; int/char*/int*/char**,void* casts; zero/literal scalar globals; unsized array PARAMETER adjustment(char *argv[]=>char**); postfix++/-- with scaled pointer steps; pointer+integer/integer+pointer/pointer-integer; pointer difference in element units; char** loads/stores64-bit; unary!,+ - *,comparisons/equality,short-circuit precedence,conditional,right-associative assignment expression,sequenced comma,general expression statements,if/else/while/for. Globals/startup generic, no argv0/wordfirst-name special handling.
+
+OWN SOURCE MIGRATION: byte-based out+cap-1024 explicitly became integer byte address, then final source uses int address=(int)out;int *s=(int *)(address+cap-2048). Pointer/int state conversions and pp address constants explicitly cast; lexer end pointer char* with typed comparisons. Fixed32-bit guest addresses stored intentionally in integer state. No silent non-C pointer arithmetic retained. Raw preserves pre-cast historical bootstrap form as explicit migration source. New numeric AArch64 emitter constants manually derived following inherited compiler convention, executable generation in guest; no host-compiled or hand-patched echo.
+Backend: inherited overly broad negative B/BL repair corrupted new ASR/ADD-address opcodes. Final bootstrap() narrows to high16>5118,<5120 and>37886,<37888. final() retains inherited frame fixes; repaired() retains redundant exact ASR fixes. Early hangs corrected. Lvalue address x2 preserved on stack across assignment RHS; byte/32/64-bit stores chosen; postfix saves/returns old value. Runtime conditional/logical branching preserves side effects.
+
+ACTUAL LIMITS (NOT full ISO C/pp/libc): build60000 bytes, compiler reserves2048 state,maxcode57952; source32768,pp output<=30000;32 funcs,16 globals,32 locals/function,4 args. int32 wrap backend; guest addresses<2^32; unsigned char; kernel argv cells64-bit. Fixed scratch/non-reentrant. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise; definitions before use. No local arrays/for-declaration initializer; unsized parameter arrays supported. PP includes/comments/recursive OBJECT macros(max32,depth16), protects strings; NO function macros/conditional directives/undef/pasting. Generic bounded pp, not complete ISO pp; supplied guest headers need only supported directives. No claim of complete C conformance outside recorded subset.
+
+EXACT KERNEL MANIFEST relative inherited18564-byte stage037: ONLY8048 old04009052=>044c9d52(mov w4,60000);8088 oldbf214071=>bf414071(cmp w13,#65536).8092 ORIGINAL48010054 branch retained. Initial mis-offset8092 patch corrected before final fresh-boot suite. MOV independently guest-assembled/verified exit529d4c04 using start:;mov w4,60000;adr x0,start;ldr w0,[x0];ret; ; compare patch manually encoded. No size/other kernel edits. Boot/shell/assembler/argv/GUI/network code otherwise identical. GUI/network not retested. No fetch. Kernel exact bytes saved in guest.hex.
+
+DISK/SOURCE MANIFEST: new1,extra1,extra3 unchanged seeds; raw compiler bridge replaces obsolete adapter; extra2 final compiler; extra4 generic own-source replacement editor; empty own-source unreachable-tail trim migration utility; beta altered-input generator; alpha altered echo input; Abc123xyz789 test author; longasm C regression; Check60000-byte comparator; progBad malformed fixture. Old progFwd/progMath/prog8 renamed utilh/stdioh/stringh. All others unchanged; full24 slots, intentionally repurposed historical test slots. Sources readable by cat. Extra4 reads backtick-delimited old/new rules from beta WHEN beta holds rules, edits compiler slot20 RAM, then append extra2 with one-space body persists. Beta NOW test generator: DO NOT run editor unchanged without supplying rules. Bootstrap needs NONE of extra4/empty/beta/author. Migration scratch40840000/40880000; pp state40980000/text409c0000; Check40940000. Avoid large source buffers40780000+4096 (inherited fetch state; early failed attempts corrected/relocated). All required source-to-binary commands above; all compilation/executable generation in guest. VM stopped.
+```
+
+</details>
+
+**← `notes_write`** ⚠️ error
+
+<details><summary>result (8,995 chars, 7 lines)</summary>
+
+```
+Validation failed for tool "notes_write":
+  - text: expected at most 8192 characters
+
+Received arguments:
+{
+  "text": "STAGE038 FINAL supersedes unfinished handoffs. Unchanged upstream extra5 compiles/runs IN GUEST without adapter. Final corrected-kernel fresh boot20261116T103500.806444Z passed tests below. VM STOPPED. Saved guest.hex18564 bytes + persistent disk contain required artifacts. All offline; no host compiler/downloads.\n\nREBUILD, each semicolon below means NEWLINE:\nas new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS\nnew1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw is NOW saved16-function preprocessor-free C COMPILER BRIDGE, NOT former stage036 echo adapter. Explicitly copied from extended compiler before preprocessing. extra3 builds raw; raw builds exact final extra2; extra2 rebuilds itself. Repeated on fresh boots. Final extra2 has19 functions including generic header,pp,driver; driver is entry. Compiler receives source bytes, not input filename; no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: exact original421 bytes including comment/includes/tabs/LFs retained; cat confirmed formatting. Alpha is separate altered input.\n\nSELFHOST EQUALITY after bootstrap/install: build Check;exec compare (snapshot installed60000 bytes);build extra2;install;build Check;exec compare test => Y\\n exit00000000. Repeat generation/compare =>Y/0. Compares FULL installed region40150000..+60000 byte-for-byte, including unchanged trailing bytes, not hashes. Snapshot40940000; regenerate each boot. Multiple generations passed; final corrected-kernel fresh boot again passed. All compiler sources persisted exactly.\n\nUPSTREAM fresh-boot acceptance: build extra5=>built; all exit0:\nexec echo => LF only\nexec echo Alpha 123 z-9 => Alpha 123 z-9\\n\nexec echo -n Alpha 123 => Alpha 123, no LF\nexec echo -n => zero bytes\nexec echo Alpha -n => Alpha -n\\n\nexec echo -- Alpha => -- Alpha\\n\nAlso -n -n=>-n no LF; -nn=>-nn\\n; -- -n=>-- -n\\n. SAME executable used repeatedly. Generic startup resets ALL globals from compiled initial values each exec, preventing process-state leakage. Earlier leading-space leak fixed in generic startup, not via echo special case.\n\nSOURCE CONSUMPTION: alpha near-identical upstream copy, only output literal '\\n' changed to '!', plus trailing persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. beta exact guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> generates/persists test input. Restore compiler via full bootstrap. This is explicit alternative-input creation, NOT part of compilation/preprocessing of extra5.\n\nMALFORMED: progBad exact int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 still identical output/status. Verified final boot. Compiler returns0 on parse/pp failure, kernel preserves executable.\n\nUNRELATED C REGRESSION: longasm now exact saved C test. build longasm;exec regress Apple Banana=>K2AAA11110CD\\n,exit0. Repeat exec identical. Includes<stdio.h>,object macro N67, globals/functions, int* indexing/scaled addition/integer+pointer/pointer difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A; ticks1 proves skipped side effects. Logical results normalized1. Earlier precedence1||0&&0=>1 also passed. Abc123xyz789 exact C source author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates test with real directive newlines. Does not install compiler.\n\nHEADERS/LIBC: ALL GUEST-WRITTEN; NO original upstream library sources imported. Reusable valid C definitions in headers inserted by includes, not rewritten echo. Flat guest filename encoding omits dots: stdio.h=>stdioh,string.h=>stringh,util.h=>utilh. Generic header(name,n) scans ALL24 complete directory names, no fixed source/slot dispatch. Quoted/angle includes work. cat shows exact sources:\nstdioh: #define stdout 0 [space]\nstringh: int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} [space]\nutilh: char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} [space]\nputchar inherited generic console intrinsic; immediate/unbuffered/infallible serial output. stdout0 sole stream; fshut has nothing buffered, returns success. Small reusable console libc, not complete FILE/disk stdio. No host libc/hand-encoded echo. Generic startup/TU data initialization generator is in extra2 compile(). Header function definitions before use are ordinary C combination.\n\nIMPLEMENTED C FEATURES: comments/chars/strings; int/char*/int*/char**,void* casts; zero/literal scalar globals; unsized array PARAMETER adjustment(char *argv[]=>char**); postfix++/-- with scaled pointer steps; pointer+integer/integer+pointer/pointer-integer; pointer difference in element units; char** loads/stores64-bit; unary!,+ - *,comparisons/equality,short-circuit precedence,conditional,right-associative assignment expression,sequenced comma,general expression statements,if/else/while/for. Globals/startup generic, no argv0/wordfirst-name special handling.\n\nOWN SOURCE MIGRATION: byte-based out+cap-1024 explicitly became integer byte address, then final source uses int address=(int)out;int *s=(int *)(address+cap-2048). Pointer/int state conversions and pp address constants explicitly cast; lexer end pointer char* with typed comparisons. Fixed32-bit guest addresses stored intentionally in integer state. No silent non-C pointer arithmetic retained. Raw preserves pre-cast historical bootstrap form as explicit migration source. New numeric AArch64 emitter constants manually derived following inherited compiler convention, executable generation in guest; no host-compiled or hand-patched echo.\nBackend: inherited overly broad negative B/BL repair corrupted new ASR/ADD-address opcodes. Final bootstrap() narrows to high16>5118,<5120 and>37886,<37888. final() retains inherited frame fixes; repaired() retains redundant exact ASR fixes. Early hangs corrected. Lvalue address x2 preserved on stack across assignment RHS; byte/32/64-bit stores chosen; postfix saves/returns old value. Runtime conditional/logical branching preserves side effects.\n\nACTUAL LIMITS (NOT full ISO C/pp/libc): build60000 bytes, compiler reserves2048 state,maxcode57952; source32768,pp output<=30000;32 funcs,16 globals,32 locals/function,4 args. int32 wrap backend; guest addresses<2^32; unsigned char; kernel argv cells64-bit. Fixed scratch/non-reentrant. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise; definitions before use. No local arrays/for-declaration initializer; unsized parameter arrays supported. PP includes/comments/recursive OBJECT macros(max32,depth16), protects strings; NO function macros/conditional directives/undef/pasting. Generic bounded pp, not complete ISO pp; supplied guest headers need only supported directives. No claim of complete C conformance outside recorded subset.\n\nEXACT KERNEL MANIFEST relative inherited18564-byte stage037: ONLY8048 old04009052=>044c9d52(mov w4,60000);8088 oldbf214071=>bf414071(cmp w13,#65536).8092 ORIGINAL48010054 branch retained. Initial mis-offset8092 patch corrected before final fresh-boot suite. MOV independently guest-assembled/verified exit529d4c04 using start:;mov w4,60000;adr x0,start;ldr w0,[x0];ret; ; compare patch manually encoded. No size/other kernel edits. Boot/shell/assembler/argv/GUI/network code otherwise identical. GUI/network not retested. No fetch. Kernel exact bytes saved in guest.hex.\n\nDISK/SOURCE MANIFEST: new1,extra1,extra3 unchanged seeds; raw compiler bridge replaces obsolete adapter; extra2 final compiler; extra4 generic own-source replacement editor; empty own-source unreachable-tail trim migration utility; beta altered-input generator; alpha altered echo input; Abc123xyz789 test author; longasm C regression; Check60000-byte comparator; progBad malformed fixture. Old progFwd/progMath/prog8 renamed utilh/stdioh/stringh. All others unchanged; full24 slots, intentionally repurposed historical test slots. Sources readable by cat. Extra4 reads backtick-delimited old/new rules from beta WHEN beta holds rules, edits compiler slot20 RAM, then append extra2 with one-space body persists. Beta NOW test generator: DO NOT run editor unchanged without supplying rules. Bootstrap needs NONE of extra4/empty/beta/author. Migration scratch40840000/40880000; pp state40980000/text409c0000; Check40940000. Avoid large source buffers40780000+4096 (inherited fetch state; early failed attempts corrected/relocated). All required source-to-binary commands above; all compilation/executable generation in guest. VM stopped."
+}
+```
+
+</details>
+
+#### +0:49:42
+
+**→ `notes_write`**
+
+<details><summary>text (7,937 chars, 39 lines)</summary>
+
+```
+STAGE038 FINAL supersedes unfinished handoffs. Unchanged upstream extra5 compiles/runs IN GUEST without adapter. Final corrected-kernel fresh boot20261116T103500.806444Z passed below. VM STOPPED. Saved guest.hex18564 bytes + persistent disk contain artifacts. All offline; no host compiler/downloads.
+
+REBUILD (semicolon means NEWLINE):
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS
+new1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw is NOW16-function preprocessor-free C COMPILER BRIDGE, NOT former stage036 adapter. Copied from extended compiler before pp. extra3 builds raw; raw builds exact final extra2; extra2 rebuilds itself. Final extra2 has19 functions; driver is entry. Receives source bytes, not input filename; no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: original421 bytes including comment/includes/tabs/LFs retained; cat confirmed. Alpha separate altered input.
+
+SELFHOST: after bootstrap/install, build Check;exec compare snapshots installed60000 bytes. Then build extra2;install;build Check;exec compare test=>Y\n exit0. Repeat generation/compare=>Y/0. FULL40150000..+60000 byte comparison, including unchanged trailing bytes, not hashes. Snapshot40940000; regenerate each boot. Multiple generations passed and final corrected-kernel fresh boot again passed.
+
+UPSTREAM fresh boot build extra5=>built; all exit0:
+exec echo => LF only
+exec echo Alpha 123 z-9 => Alpha 123 z-9\n
+exec echo -n Alpha 123 => Alpha 123,no LF
+exec echo -n => zero bytes
+exec echo Alpha -n => Alpha -n\n
+exec echo -- Alpha => -- Alpha\n
+Also -n -n=>-n no LF;-nn=>-nn\n;-- -n=>-- -n\n. Same executable repeatedly. Generic startup resets ALL globals from compiled initial values each exec. Earlier leading-space leak fixed in generic startup, NOT echo special case.
+
+CONSUMPTION: alpha near-identical original, only '\n' output literal changed to '!', plus trailing persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. beta exact guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> creates/persists alternative input; restore compiler via full bootstrap. Not part of extra5 compilation/preprocessing.
+
+MALFORMED progBad=int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 unchanged output/status. Verified final boot. Compiler returns0 on parse/pp failure; kernel preserves prior executable.
+
+UNRELATED longasm saved C test: build longasm;exec regress Apple Banana=>K2AAA11110CD\n,exit0. Repeat identical. Includes<stdio.h>,object macro N67, globals/functions,int* indexing/scaled addition/integer+pointer/pointer difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A;ticks1 proves skipped side effects; logical results normalized1. Earlier1||0&&0=>1 passed. Abc123xyz789 exact C author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates test with directive newlines. No compiler install.
+
+LIBRARY MANIFEST: ALL GUEST-WRITTEN, NO original upstream library sources imported. Reusable ordinary C definitions in headers, not rewritten echo. Flat header path encoding omits dots: stdio.h=>stdioh,string.h=>stringh,util.h=>utilh. Generic header(name,n) scans all24 complete names, no fixed slot/source dispatch. Quoted/angle includes. Exact sources via cat:
+stdioh: #define stdout 0 [space]
+stringh: int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} [space]
+utilh: char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} [space]
+putchar inherited generic console intrinsic: immediate/unbuffered/infallible serial. stdout0 sole stream; fshut nothing buffered, returns success. Small reusable console libc, NOT complete FILE/disk stdio. No host libc/hand-encoded echo. Startup/TU initialization generator in extra2 compile(). Definitions before use are ordinary header/TU combination.
+
+C FEATURES: comments/chars/strings;int/char*/int*/char**,void* casts;zero/literal globals;unsized array PARAMETER adjustment(char *argv[]=>char**);scaled postfix++/--;pointer+integer/integer+pointer/pointer-integer;pointer difference in elements;char** loads/stores64-bit;!,+ - *,comparisons/equality,short-circuit precedence,conditional,right-associative assignment,sequenced comma,general expression statements,if/else/while/for. Globals/startup generic, no argv0/wordfirst special handling.
+
+OWN SOURCE MIGRATION: byte-based out+cap-1024 explicitly became integer byte address; final uses int address=(int)out;int *s=(int *)(address+cap-2048). Pointer/int state conversions/pp address constants explicitly cast; lexer char* end pointer/typed comparison. Fixed32-bit guest addresses deliberately represented in integer state. No silent non-C pointer arithmetic retained. Raw pre-cast historical bootstrap form is separate migration source. Numeric AArch64 emitter constants manually derived following inherited compiler convention; executable generation in guest, no host-compiled/hand-patched echo.
+Backend inherited overly broad negative B/BL repair corrupted new ASR/ADD-address opcodes. Final bootstrap() narrows to high16>5118,<5120 and>37886,<37888. final() retains frame fixes; repaired() redundant ASR fixes. Early hangs corrected. Lvalue x2 preserved across assignment RHS; byte/32/64 stores; postfix returns old value; real branching for logical/conditional effects.
+
+LIMITS (NOT full ISO C/pp/libc): build60000 bytes,reserved state2048,maxcode57952;source32768,pp output<=30000;32 funcs,16 globals,32 locals/function,4 args. int32 wrap backend;addresses<2^32;unsigned char;kernel argv cells64-bit;fixed scratch/non-reentrant. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise. Definitions before use. No local arrays/for-declaration initializer; unsized parameter arrays supported. PP includes/comments/recursive OBJECT macros(max32,depth16), protects strings; NO function macros/conditional directives/undef/pasting. Generic bounded pp, not complete ISO pp; supplied headers need supported ordinary directives. No complete-C conformance claim outside subset.
+
+EXACT KERNEL MANIFEST vs inherited18564-byte stage037: ONLY8048 old04009052=>044c9d52(mov w4,60000);8088 oldbf214071=>bf414071(cmp w13,#65536).8092 original48010054 branch retained. Initial mis-offset8092 patch corrected before final suite. MOV guest-assembled/verified exit529d4c04 with start:;mov w4,60000;adr x0,start;ldr w0,[x0];ret; . Compare patch manually encoded. No size/other edits. Boot/shell/assembler/argv/GUI/network otherwise identical; GUI/network not retested. No fetch. Exact kernel saved guest.hex.
+
+DISK: new1/extra1/extra3 unchanged seeds;raw compiler bridge replaces obsolete adapter;extra2 final compiler;extra4 generic own-source replacement editor;empty unreachable-tail trim migration utility;beta alternate-input generator;alpha alternate input;Abc123xyz789 test author;longasm C test;Check60000-byte comparator;progBad malformed. Old progFwd/progMath/prog8 renamed utilh/stdioh/stringh. All others unchanged;full24 slots, historical tests intentionally repurposed. Exact sources via cat. Extra4 reads backtick-delimited old/new rules from beta WHEN beta holds rules, edits slot20 RAM, then append extra2 with one-space body persists. Beta NOW generator: DO NOT run editor without supplying rules. Bootstrap needs NONE of extra4/empty/beta/author. Migration scratch40840000/40880000;pp state40980000/text409c0000;Check40940000. Avoid large source buffers40780000+4096(inherited fetch state; early attempts corrected/relocated). All compilation/executable generation in guest. VM stopped.
+```
+
+</details>
+
+**← `notes_write`**
+
+```
+{"saved":true}
+```
+
+#### +0:50:28
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:50:35
+
+The unchanged upstream `extra5` now builds and runs without the adapter.
+
+Verified:
+- Required argument/output/status cases.
+- Changed-literal source consumption.
+- Unrelated pointer and short-circuit tests.
+- Byte-identical successive self-builds.
+- Malformed-source rejection preserving the executable.
+
+Exact sources, kernel patches, bootstrap commands, tests, and implementation limits are saved in the handoff. VM stopped.
+
+## Observer message 2 +0:51:28
+
+> The stage is still incomplete. Continue working. Unmet acceptance condition: Preserve the build ABI capacity boundary: a compiler returning more bytes than its supplied w4 capacity must fail without replacing the prior executable. Keep the accepted native echo/self-host features.
+> Observed result: Independent clean-disk verification passed native echo, changed-literal input, C semantics, exact self-build generation equality (53772 bytes), and reboot/rebuild. However, an observer guest-assembled compiler that returns w4+4 is accepted as built instead of build error. The current kernel supplies w4=60000; an output-size return of 60004 is accepted. This reproduced on the final saved kernel after your correction. The same ABI regression fixture passes stage037. Zero/too-short/unaligned/over-capacity results must all be rejected while retaining the prior program. Fix the mismatch, record the actual capacity consistently, rerun native echo and self-host checks, save handoff and stop.
+
+#### +0:51:28
+
+**→ `notes_read`**
+
+**← `notes_read`**
+
+`text`
+
+<details><summary>text (7,937 chars, 39 lines)</summary>
+
+```
+STAGE038 FINAL supersedes unfinished handoffs. Unchanged upstream extra5 compiles/runs IN GUEST without adapter. Final corrected-kernel fresh boot20261116T103500.806444Z passed below. VM STOPPED. Saved guest.hex18564 bytes + persistent disk contain artifacts. All offline; no host compiler/downloads.
+
+REBUILD (semicolon means NEWLINE):
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS
+new1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw is NOW16-function preprocessor-free C COMPILER BRIDGE, NOT former stage036 adapter. Copied from extended compiler before pp. extra3 builds raw; raw builds exact final extra2; extra2 rebuilds itself. Final extra2 has19 functions; driver is entry. Receives source bytes, not input filename; no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: original421 bytes including comment/includes/tabs/LFs retained; cat confirmed. Alpha separate altered input.
+
+SELFHOST: after bootstrap/install, build Check;exec compare snapshots installed60000 bytes. Then build extra2;install;build Check;exec compare test=>Y\n exit0. Repeat generation/compare=>Y/0. FULL40150000..+60000 byte comparison, including unchanged trailing bytes, not hashes. Snapshot40940000; regenerate each boot. Multiple generations passed and final corrected-kernel fresh boot again passed.
+
+UPSTREAM fresh boot build extra5=>built; all exit0:
+exec echo => LF only
+exec echo Alpha 123 z-9 => Alpha 123 z-9\n
+exec echo -n Alpha 123 => Alpha 123,no LF
+exec echo -n => zero bytes
+exec echo Alpha -n => Alpha -n\n
+exec echo -- Alpha => -- Alpha\n
+Also -n -n=>-n no LF;-nn=>-nn\n;-- -n=>-- -n\n. Same executable repeatedly. Generic startup resets ALL globals from compiled initial values each exec. Earlier leading-space leak fixed in generic startup, NOT echo special case.
+
+CONSUMPTION: alpha near-identical original, only '\n' output literal changed to '!', plus trailing persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. beta exact guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> creates/persists alternative input; restore compiler via full bootstrap. Not part of extra5 compilation/preprocessing.
+
+MALFORMED progBad=int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 unchanged output/status. Verified final boot. Compiler returns0 on parse/pp failure; kernel preserves prior executable.
+
+UNRELATED longasm saved C test: build longasm;exec regress Apple Banana=>K2AAA11110CD\n,exit0. Repeat identical. Includes<stdio.h>,object macro N67, globals/functions,int* indexing/scaled addition/integer+pointer/pointer difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A;ticks1 proves skipped side effects; logical results normalized1. Earlier1||0&&0=>1 passed. Abc123xyz789 exact C author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates test with directive newlines. No compiler install.
+
+LIBRARY MANIFEST: ALL GUEST-WRITTEN, NO original upstream library sources imported. Reusable ordinary C definitions in headers, not rewritten echo. Flat header path encoding omits dots: stdio.h=>stdioh,string.h=>stringh,util.h=>utilh. Generic header(name,n) scans all24 complete names, no fixed slot/source dispatch. Quoted/angle includes. Exact sources via cat:
+stdioh: #define stdout 0 [space]
+stringh: int strcmp(char *a,char *b){while(*a&&*a==*b){a++;b++;}return *a-*b;} [space]
+utilh: char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} [space]
+putchar inherited generic console intrinsic: immediate/unbuffered/infallible serial. stdout0 sole stream; fshut nothing buffered, returns success. Small reusable console libc, NOT complete FILE/disk stdio. No host libc/hand-encoded echo. Startup/TU initialization generator in extra2 compile(). Definitions before use are ordinary header/TU combination.
+
+C FEATURES: comments/chars/strings;int/char*/int*/char**,void* casts;zero/literal globals;unsized array PARAMETER adjustment(char *argv[]=>char**);scaled postfix++/--;pointer+integer/integer+pointer/pointer-integer;pointer difference in elements;char** loads/stores64-bit;!,+ - *,comparisons/equality,short-circuit precedence,conditional,right-associative assignment,sequenced comma,general expression statements,if/else/while/for. Globals/startup generic, no argv0/wordfirst special handling.
+
+OWN SOURCE MIGRATION: byte-based out+cap-1024 explicitly became integer byte address; final uses int address=(int)out;int *s=(int *)(address+cap-2048). Pointer/int state conversions/pp address constants explicitly cast; lexer char* end pointer/typed comparison. Fixed32-bit guest addresses deliberately represented in integer state. No silent non-C pointer arithmetic retained. Raw pre-cast historical bootstrap form is separate migration source. Numeric AArch64 emitter constants manually derived following inherited compiler convention; executable generation in guest, no host-compiled/hand-patched echo.
+Backend inherited overly broad negative B/BL repair corrupted new ASR/ADD-address opcodes. Final bootstrap() narrows to high16>5118,<5120 and>37886,<37888. final() retains frame fixes; repaired() redundant ASR fixes. Early hangs corrected. Lvalue x2 preserved across assignment RHS; byte/32/64 stores; postfix returns old value; real branching for logical/conditional effects.
+
+LIMITS (NOT full ISO C/pp/libc): build60000 bytes,reserved state2048,maxcode57952;source32768,pp output<=30000;32 funcs,16 globals,32 locals/function,4 args. int32 wrap backend;addresses<2^32;unsigned char;kernel argv cells64-bit;fixed scratch/non-reentrant. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise. Definitions before use. No local arrays/for-declaration initializer; unsized parameter arrays supported. PP includes/comments/recursive OBJECT macros(max32,depth16), protects strings; NO function macros/conditional directives/undef/pasting. Generic bounded pp, not complete ISO pp; supplied headers need supported ordinary directives. No complete-C conformance claim outside subset.
+
+EXACT KERNEL MANIFEST vs inherited18564-byte stage037: ONLY8048 old04009052=>044c9d52(mov w4,60000);8088 oldbf214071=>bf414071(cmp w13,#65536).8092 original48010054 branch retained. Initial mis-offset8092 patch corrected before final suite. MOV guest-assembled/verified exit529d4c04 with start:;mov w4,60000;adr x0,start;ldr w0,[x0];ret; . Compare patch manually encoded. No size/other edits. Boot/shell/assembler/argv/GUI/network otherwise identical; GUI/network not retested. No fetch. Exact kernel saved guest.hex.
+
+DISK: new1/extra1/extra3 unchanged seeds;raw compiler bridge replaces obsolete adapter;extra2 final compiler;extra4 generic own-source replacement editor;empty unreachable-tail trim migration utility;beta alternate-input generator;alpha alternate input;Abc123xyz789 test author;longasm C test;Check60000-byte comparator;progBad malformed. Old progFwd/progMath/prog8 renamed utilh/stdioh/stringh. All others unchanged;full24 slots, historical tests intentionally repurposed. Exact sources via cat. Extra4 reads backtick-delimited old/new rules from beta WHEN beta holds rules, edits slot20 RAM, then append extra2 with one-space body persists. Beta NOW generator: DO NOT run editor without supplying rules. Bootstrap needs NONE of extra4/empty/beta/author. Migration scratch40840000/40880000;pp state40980000/text409c0000;Check40940000. Avoid large source buffers40780000+4096(inherited fetch state; early attempts corrected/relocated). All compilation/executable generation in guest. VM stopped.
+```
+
+</details>
+
+#### +0:51:32
+
+> 💭 **Fixing capacity consistency**
+> 💭 **Preparing capacity-check helper**
+
+> 💭 **Computing branch offsets**
+> 💭 **Appending helper code**
+
+I’ll keep the supplied capacity at 60,000 bytes and make the return-size check enforce that same bound. Then I’ll test invalid sizes for prior-executable preservation and rerun the native echo and self-host checks.
+
+**→ `guest_read`** `{"offset": 8032, "length": 88}`
+
+**← `guest_read`**
+
+```
+{"hex":"defcff97e10305aae203042a0320a8d2044c9d520004a8d200a0229144050094ed03002a0020a1d20802a8d208154091bf11007183010054bf41407148010054a1050012010100352f050094c5010050c4008052bbf9ff17"}
+```
+
+#### +0:52:22
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T104140.576844Z"}
+```
+
+#### +0:52:27
+
+> 💭 **Preparing the capacity fixture**
+> 💭 **Choosing progBad validation payload**
+
+> 💭 **Implementing buffer fill logic**
+> 💭 **Restoring prior native program**
+
+> 💭 **Verifying helper assembly**
+
+**→ `serial_send_text`**
+
+```
+save progBad adr x0,guard;ldr w0,[x0];ret;guard:;mov w16,60000;cmp w13,w16;.word 402650564;
+as progBad
+exec opcode
+save progBad adr x0,guard;ldr w0,[x0,4];ret;guard:;mov w16,60000;cmp w13,w16;.word 402650564;
+as progBad
+exec opcode
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":232}
+```
+
+#### +0:53:32
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742035323964346331300a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20657869742036623130303162660a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> saved
+shell> assembled
+shell> exit 529d4c10
+shell> saved
+shell> assembled
+shell> exit 6b1001bf
+shell>
+```
+
+#### +0:53:36
+
+> 💭 **Patching 8088 append**
+
+**→ `guest_patch`** `{"offset": 18564, "hex": "10 4c 9d 52 bf 01 10 6b c4 f5 ff 17"}`
+
+**← `guest_patch`**
+
+```
+{"bytes":18576}
+```
+
+#### +0:53:43
+
+**→ `guest_patch`** `{"offset": 8088, "hex": "3b 0a 00 14"}`
+
+**← `guest_patch`**
+
+```
+{"bytes":18576}
+```
+
+#### +0:53:47
+
+> 💭 **Preparing empty-source fixture test**
+> 💭 **Preparing fixture source**
+
+**→ `serial_send_text`**
+
+```
+save empty ldrb w10,[x1];mov x5,x3;mov w6,w4;mov w7,0;
+append empty clear:;strb w7,[x5];add w5,w5,1;sub w6,w6,1;cmp w6,0;b.ne clear;
+append empty mov w7,21120;lsl w7,w7,16;add w7,w7,3168;str w7,[x3];
+append empty mov w7,54879;lsl w7,w7,16;add w7,w7,960;str w7,[x3,4];
+append empty mov w0,0;cmp w10,48;b.eq done;mov w0,1;cmp w10,49;b.eq done;
+append empty mov w0,2;cmp w10,50;b.eq done;mov w0,3;cmp w10,51;b.eq done;
+append empty mov w0,6;cmp w10,54;b.eq done;mov w0,8;cmp w10,56;b.eq done;
+append empty sub w0,w4,1;cmp w10,55;b.eq done;mov w0,w4;cmp w10,97;b.eq done;
+append empty add w0,w4,1;cmp w10,98;b.eq done;mov w0,1;lsl w0,w0,16;
+append empty cmp w10,99;b.eq done;mov w0,65535;lsl w0,w0,16;add w0,w0,65535;
+append empty cmp w10,100;b.eq done;add w0,w4,4;done:;ret;
+append empty guard:;mov w16,60000;cmp w13,w16;.word 402650564;
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":835}
+```
+
+#### +0:54:10
+
+> 💭 **Rewriting corrected fixture**
+
+**→ `serial_send_text`**
+
+```
+save empty ldrb w10,[x1];mov x5,x3;mov w6,w4;mov w7,0;
+append empty clear:;strb w7,[x5];add w5,w5,1;sub w6,w6,1;cmp w6,0;b.ne clear;
+append empty mov w7,21120;lsl w7,w7,16;add w7,w7,3168;str w7,[x3];
+append empty mov w7,54879;lsl w7,w7,16;add w7,w7,960;str w7,[x3,4];
+append empty mov w0,0;cmp w10,48;b.eq done;mov w0,1;cmp w10,49;b.eq done;
+append empty mov w0,2;cmp w10,50;b.eq done;mov w0,3;cmp w10,51;b.eq done;
+append empty mov w0,6;cmp w10,54;b.eq done;mov w0,8;cmp w10,56;b.eq done;
+append empty sub w0,w4,1;cmp w10,55;b.eq done;mov w0,w4;cmp w10,97;b.eq done;
+append empty add w0,w4,1;cmp w10,98;b.eq done;mov w0,1;lsl w0,w0,16;
+append empty cmp w10,99;b.eq done;mov w0,0;sub w0,w0,1;cmp w10,100;b.eq done;
+append empty add w0,w4,4;done:;ret;
+append empty guard:;mov w16,60000;cmp w13,w16;.word 402650564;
+as empty
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":823}
+```
+
+#### +0:54:26
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> assembled
+shell>
+```
+
+#### +0:54:31
+
+> 💭 **Patching boot**
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:54:39
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T104356.325031Z"}
+```
+
+#### +0:54:43
+
+**→ `serial_send_text`**
+
+```
+as empty
+install
+save progBad 8
+build progBad
+exec sentinel
+save progBad 0
+build progBad
+exec sentinel
+save progBad 1
+build progBad
+exec sentinel
+save progBad 2
+build progBad
+exec sentinel
+save progBad 3
+build progBad
+exec sentinel
+save progBad 6
+build progBad
+exec sentinel
+save progBad 7
+build progBad
+exec sentinel
+save progBad 9
+build progBad
+exec sentinel
+save progBad b
+build progBad
+exec sentinel
+save progBad c
+build progBad
+exec sentinel
+save progBad d
+build progBad
+exec sentinel
+save progBad a
+build progBad
+exec sentinel
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":533}
+```
+
+#### +0:54:49
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303036330a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> saved
+shell> built
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> built
+shell> exit 00000063
+shell>
+```
+
+#### +0:54:53
+
+> 💭 **Modifying mode-specific fixture output**
+> 💭 **Rewriting the test fixture**
+
+**→ `serial_send_text`**
+
+```
+save empty ldrb w10,[x1];mov x5,x3;mov w6,w4;mov w7,0;
+append empty clear:;strb w7,[x5];add w5,w5,1;sub w6,w6,1;cmp w6,0;b.ne clear;
+append empty mov w8,3200;cmp w10,56;b.ne stamp;mov w8,3168;
+append empty stamp:;mov w7,21120;lsl w7,w7,16;add w7,w7,w8;str w7,[x3];
+append empty mov w7,54879;lsl w7,w7,16;add w7,w7,960;str w7,[x3,4];
+append empty mov w0,0;cmp w10,48;b.eq done;mov w0,1;cmp w10,49;b.eq done;
+append empty mov w0,2;cmp w10,50;b.eq done;mov w0,3;cmp w10,51;b.eq done;
+append empty mov w0,6;cmp w10,54;b.eq done;mov w0,8;cmp w10,56;b.eq done;
+append empty sub w0,w4,1;cmp w10,55;b.eq done;mov w0,w4;cmp w10,97;b.eq done;
+append empty add w0,w4,1;cmp w10,98;b.eq done;mov w0,1;lsl w0,w0,16;
+append empty cmp w10,99;b.eq done;mov w0,0;sub w0,w0,1;cmp w10,100;b.eq done;
+append empty sub w0,w4,4;cmp w10,102;b.eq done;add w0,w4,4;done:;ret;
+append empty guard:;mov w16,60000;cmp w13,w16;.word 402650564;
+as empty
+install
+save progBad 8
+build progBad
+exec sentinel
+save progBad 0
+build progBad
+exec sentinel
+save progBad 1
+build progBad
+exec sentinel
+save progBad 2
+build progBad
+exec sentinel
+save progBad 3
+build progBad
+exec sentinel
+save progBad 6
+build progBad
+exec sentinel
+save progBad 7
+build progBad
+exec sentinel
+save progBad 9
+build progBad
+exec sentinel
+save progBad b
+build progBad
+exec sentinel
+save progBad c
+build progBad
+exec sentinel
+save progBad d
+build progBad
+exec sentinel
+save progBad f
+build progBad
+exec candidate
+save progBad a
+build progBad
+exec candidate
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":1491}
+```
+
+#### +0:55:22
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+<details><summary>hex (1,748 chars, 1 lines)</summary>
+
+```
+73617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e2073617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c64206572726f720a7368656c6c3e20657869742030303030303036330a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303036340a7368656c6c3e2073617665640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303036340a7368656c6c3e20
+```
+
+</details>
+
+`text`
+
+```
+saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> saved
+shell> assembled
+shell> installed
+shell> saved
+shell> built
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> build error
+shell> exit 00000063
+shell> saved
+shell> built
+shell> exit 00000064
+shell> saved
+shell> built
+shell> exit 00000064
+shell>
+```
+
+#### +0:55:26
+
+> 💭 **Checking capacity-boundary fixture**
+> 💭 **Checking size-guard branches**
+
+> 💭 **Preparing regression reboot**
+
+**→ `serial_send_text`**
+
+```
+save progBad int main(){return ;}
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build Check
+exec compare
+build extra2
+install
+build Check
+exec compare test
+build extra2
+install
+build Check
+exec compare test
+build extra5
+exec echo
+exec echo Alpha 123 z-9
+exec echo -n Alpha 123
+exec echo -n
+exec echo Alpha -n
+exec echo -- Alpha
+build progBad
+exec echo Alpha 123 z-9
+build alpha
+exec changed one two
+build longasm
+exec regress Apple Banana
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":511}
+```
+
+#### +0:56:12
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+73617665640a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e200a657869742030303030303030300a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e20416c70686120313233657869742030303030303030300a7368656c6c3e20657869742030303030303030300a7368656c6c3e20416c706861202d6e0a657869742030303030303030300a7368656c6c3e202d2d20416c7068610a657869742030303030303030300a7368656c6c3e206275696c64206572726f720a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e206f6e652074776f21657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e204b32414141313131313043440a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+saved
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> 
+exit 00000000
+shell> Alpha 123 z-9
+exit 00000000
+shell> Alpha 123exit 00000000
+shell> exit 00000000
+shell> Alpha -n
+exit 00000000
+shell> -- Alpha
+exit 00000000
+shell> build error
+shell> Alpha 123 z-9
+exit 00000000
+shell> built
+shell> one two!exit 00000000
+shell> built
+shell> K2AAA11110CD
+exit 00000000
+shell>
+```
+
+#### +0:56:16
+
+> 💭 **Checking compiler output checksum**
+> 💭 **Setting canonical kernel capacity**
+
+> 💭 **Running final boot regression**
+
+The boundary fix passes: returns of 0, 1, 2, 3, 6, 59,999, 60,001, 60,004, 65,536, and `0xffffffff` all report `build error` and retain the prior sentinel program. Valid returns of 8, 59,996, and exactly 60,000 are accepted.
+
+Native echo, changed-literal input, C semantics tests, and two successive self-build comparisons also pass. I’m doing the final reboot check and updating the handoff.
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:56:53
+
+**→ `vm_boot_disk`**
+
+**← `vm_boot_disk`**
+
+```
+{"run_id":"20261116T104610.601434Z"}
+```
+
+#### +0:56:57
+
+**→ `serial_send_text`**
+
+```
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra2
+install
+build Check
+exec compare
+build extra2
+install
+build Check
+exec compare test
+build extra5
+exec echo
+exec echo Alpha 123 z-9
+exec echo -n Alpha 123
+exec echo -n
+exec echo Alpha -n
+exec echo -- Alpha
+build progBad
+exec echo Alpha 123 z-9
+build alpha
+exec changed one two
+build longasm
+exec regress Apple Banana
+```
+
+**← `serial_send_text`**
+
+```
+{"sent":426}
+```
+
+#### +0:57:08
+
+**→ `serial_read`** `{"wait_ms": 1000}`
+
+**← `serial_read`**
+
+`hex`
+
+```
+424f4f540a7368656c6c3e20617373656d626c65640a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e20696e7374616c6c65640a7368656c6c3e206275696c740a7368656c6c3e20590a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e200a657869742030303030303030300a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e20416c70686120313233657869742030303030303030300a7368656c6c3e20657869742030303030303030300a7368656c6c3e20416c706861202d6e0a657869742030303030303030300a7368656c6c3e202d2d20416c7068610a657869742030303030303030300a7368656c6c3e206275696c64206572726f720a7368656c6c3e20416c70686120313233207a2d390a657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e206f6e652074776f21657869742030303030303030300a7368656c6c3e206275696c740a7368656c6c3e204b32414141313131313043440a657869742030303030303030300a7368656c6c3e20
+```
+
+`text`
+
+```
+BOOT
+shell> assembled
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> installed
+shell> built
+shell> exit 00000000
+shell> built
+shell> installed
+shell> built
+shell> Y
+exit 00000000
+shell> built
+shell> 
+exit 00000000
+shell> Alpha 123 z-9
+exit 00000000
+shell> Alpha 123exit 00000000
+shell> exit 00000000
+shell> Alpha -n
+exit 00000000
+shell> -- Alpha
+exit 00000000
+shell> build error
+shell> Alpha 123 z-9
+exit 00000000
+shell> built
+shell> one two!exit 00000000
+shell> built
+shell> K2AAA11110CD
+exit 00000000
+shell>
+```
+
+#### +0:57:14
+
+> 💭 **Preparing fixture compiler tests**
+
+> 💭 **Verifying capacity guard**
+
+**→ `notes_write`**
+
+<details><summary>text (8,603 chars, 40 lines)</summary>
+
+```
+STAGE038 FINAL ABI CORRECTION supersedes previous completion notes. Native upstream echo/self-host features retained; observer-reported capacity mismatch FIXED. Saved guest.hex now18576 bytes. Final reboot20261116T104610.601434Z: native bootstrap, self-comparison, echo, malformed rejection, changed input, unrelated C tests all passed. VM STOPPED. All work offline/in guest, no host compiler/downloads.
+
+ACTUAL BUILD ABI: supplied w4=60000 BYTES, inclusive output-size upper bound60000; minimum4; size must be4-byte aligned. Returned0/1/2/3,6,59999,60001,60004,65536,0xffffffff now rejected. Rejected builds retain prior executable. 8,59996,60000 accepted. Capacity remains60000, compiler reserves2048 =>maxcode57952. No compiler/header/source changes in this ABI correction. Observer independently verified exact self-built compiler53772 bytes; our full60000-byte region comparisons still pass.
+
+CAUSE/FIX: previous kernel supplied60000 but compared against65536. Keep supplied capacity unchanged; replace size compare at8088 with branch to appended guard that reloads60000 in scratch w16, cmp w13,w16, branches back8092. Existing B.HI consumes unsigned compare flags; existing minimum/alignment checks retained. Do not trust w4 after compiler return (caller scratch). Both supply and guard constants are60000.
+
+EXACT KERNEL MANIFEST relative stage03718564 bytes:8048 old04009052=>044c9d52 (mov w4,60000);8088 oldbf214071=>3b0a0014 (B18564).8092 remains original48010054. Append at18564 exactly12 bytes:
+104c9d52bf01106bc4f5ff17
+=>mov w16,60000;cmp w13,w16;B8092. Final18576 bytes, saved exact guest.hex. Relative immediately preceding stage038 image,8088 wasbf414071 (wrong65536 bound), now3b0a0014. Branch offsets2619 and-2620 words manually relocated; identify these as hand patches. MOV/CMP guest-assembled, independently returned opcodes529d4c10 and6b1001bf; guard source saved after guard: label in empty. Last branch .word402650564 relocation valid when guard placed18564. No other kernel edits. Boot/shell/assembler/argv/GUI/network code otherwise identical; GUI/network not retested.
+
+SAVED ABI REGRESSION: empty is NOW guest assembly compiler fixture (replaces obsolete own-source trim utility). as empty;install. Select return-size with first source byte in progBad:
+8=>8,0=>0,1=>1,2=>2,3=>3,6=>6,7=>w4-1,9/default=>w4+4,a=>w4,b=>w4+1,c=>65536,d=>0xffffffff,f=>w4-4.
+It clears exactly supplied capacity, emits a candidate returning100 (exit00000064), except selector8 emits sentinel returning99 (exit00000063). Test: save progBad 8;build progBad=>built;exec sentinel=>63. For each0,1,2,3,6,7,9,b,c,d: save progBad SELECTOR;build progBad=>build error;exec sentinel=>63, NOT candidate64. Thus rejected output differs from retained program. Select f/a=>built,exec candidate=>64 (59996/exact60000 accepted). All cases actually run on corrected kernel. Then restored progBad to malformed C and restored native compiler by full bootstrap. Fixture is test-only, NOT native compiler or source recognition. All other disk sources unchanged this correction. Exact fixture via cat empty.
+
+NATIVE REBUILD (semicolon means NEWLINE):
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS
+new1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw is16-function preprocessor-free C COMPILER BRIDGE, NOT former stage036 adapter. Copied from extended compiler before pp. extra3 builds raw;raw builds exact final extra2;extra2 rebuilds itself. Final extra2 has19 functions;driver entry. Receives source bytes, not input filename; no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: original421 bytes, comment/includes/tabs/LFs preserved. Alpha separate altered input.
+
+SELFHOST: after native bootstrap/install, build Check;exec compare snapshots installed60000 bytes at40940000. Then build extra2;install;build Check;exec compare test=>Y\n exit0. Repeat generation/compare=>Y/0. FULL40150000..+60000 byte comparison, including unchanged trailing bytes, not hashes. Regenerate snapshot each boot. Two successive generations passed after capacity correction; final fresh boot passed again. Sources and compiler unchanged from independently accepted native implementation.
+
+UPSTREAM build extra5=>built; all exit0, rerun final boot:
+exec echo => LF only
+exec echo Alpha 123 z-9 => Alpha 123 z-9\n
+exec echo -n Alpha 123 => Alpha 123,no LF
+exec echo -n => zero bytes
+exec echo Alpha -n => Alpha -n\n
+exec echo -- Alpha => -- Alpha\n
+Previously also -n -n=>-n no LF;-nn=>-nn\n;-- -n=>-- -n\n. Same executable repeatedly. Generic startup resets ALL globals from compiled initial values each exec.
+
+CONSUMPTION: alpha near-identical original with '\n' output literal changed to '!', plus persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. First case rerun final boot. beta guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> creates alternative input; restore compiler via full bootstrap. NOT part of extra5 compilation.
+MALFORMED progBad restored exact int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 unchanged output/status. Rerun final boot.
+
+UNRELATED longasm C test: build longasm;exec regress Apple Banana=>K2AAA11110CD\n,exit0, rerun final boot. Includes<stdio.h>,object macro N67, globals/functions,int* indexing/scaled addition/integer+pointer/pointer difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A;ticks1 proves skipped side effects; logical results normalized1. Earlier1||0&&0=>1 passed. Abc123xyz789 C author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates test including directive newlines.
+
+LIBRARY: stdioh,stringh,utilh ALL GUEST-WRITTEN; NO original upstream library sources imported. Exact sources via cat. Flat header path encoding omits dots(stdio.h=>stdioh etc). Generic header lookup scans24 complete names; quoted/angle includes. stdioh defines stdout0;stringh defines ordinary strcmp;utilh defines argv0,wordfirst,putword,fshut. Header C definitions inserted normally, not rewritten echo. putchar inherited generic console intrinsic: immediate/unbuffered/infallible serial. stdout0 sole stream;fshut nothing buffered,returns0. Small reusable console libc,not complete FILE/disk stdio. Generic startup/TU init generator in extra2 compile(). No hard-encoded echo.
+
+C FEATURES/LIMITS unchanged: int/char*/int*/char**,void* casts;comments/literals;zero/literal globals;unsized array PARAMETER adjustment;scaled postfix++/--;scaled pointer arithmetic/difference;64-bit char** loads/stores;!,+ - *,comparisons/equality,short circuit,conditional,right-associative assignment,sequenced comma,expression statements,if/else/while/for. Own source explicitly migrated to int address=(int)out;int *s=(int *)(address+cap-2048);pointer/int state conversions explicitly cast;typed lexer end pointer. Raw preserves pre-cast bridge separately. Backend negative B/BL fix narrowed to high16>5118,<5120 and>37886,<37888 to avoid corrupting ASR/ADD. Lvalue x2 stack-preserved over RHS;postfix returns old value;true branch-based logical effects.
+Not full ISO C/pp/libc: source32768,pp output30000,32 funcs,16 globals,32 locals/function,4 args;int32 wrap,addresses<2^32,unsigned char,kernel argv cells64-bit,fixed scratch/non-reentrant. Definitions before use;no structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise/local arrays/for-declaration initializer. PP includes/comments/recursive OBJECT macros(max32,depth16),strings protected;no function macros/conditional directives/undef/pasting. Supplied headers only need supported ordinary directives.
+
+DISK manifest: seeds unchanged;raw bridge;extra2 final compiler;extra4 generic own-source replacement editor;empty NOW ABI assembly fixture+guard source;beta alternate-input generator;alpha alternate input;Abc123xyz789 test author;longasm C test;Check60000-byte comparator;progBad malformed. Old progFwd/progMath/prog8 renamed utilh/stdioh/stringh previous stage. All other files unchanged,24 slots. Extra4 reads backtick-delimited rules from beta WHEN beta holds rules;beta now generator,do NOT run editor without supplying rules. Bootstrap needs none of extra4/empty/beta/author. Scratch40840000/40880000;pp40980000/409c0000;Check40940000. Avoid40780000+4096 inherited fetch state. All compilation/executable generation in guest. VM stopped.
+```
+
+</details>
+
+**← `notes_write`** ⚠️ error
+
+<details><summary>result (8,772 chars, 7 lines)</summary>
+
+```
+Validation failed for tool "notes_write":
+  - text: expected at most 8192 characters
+
+Received arguments:
+{
+  "text": "STAGE038 FINAL ABI CORRECTION supersedes previous completion notes. Native upstream echo/self-host features retained; observer-reported capacity mismatch FIXED. Saved guest.hex now18576 bytes. Final reboot20261116T104610.601434Z: native bootstrap, self-comparison, echo, malformed rejection, changed input, unrelated C tests all passed. VM STOPPED. All work offline/in guest, no host compiler/downloads.\n\nACTUAL BUILD ABI: supplied w4=60000 BYTES, inclusive output-size upper bound60000; minimum4; size must be4-byte aligned. Returned0/1/2/3,6,59999,60001,60004,65536,0xffffffff now rejected. Rejected builds retain prior executable. 8,59996,60000 accepted. Capacity remains60000, compiler reserves2048 =>maxcode57952. No compiler/header/source changes in this ABI correction. Observer independently verified exact self-built compiler53772 bytes; our full60000-byte region comparisons still pass.\n\nCAUSE/FIX: previous kernel supplied60000 but compared against65536. Keep supplied capacity unchanged; replace size compare at8088 with branch to appended guard that reloads60000 in scratch w16, cmp w13,w16, branches back8092. Existing B.HI consumes unsigned compare flags; existing minimum/alignment checks retained. Do not trust w4 after compiler return (caller scratch). Both supply and guard constants are60000.\n\nEXACT KERNEL MANIFEST relative stage03718564 bytes:8048 old04009052=>044c9d52 (mov w4,60000);8088 oldbf214071=>3b0a0014 (B18564).8092 remains original48010054. Append at18564 exactly12 bytes:\n104c9d52bf01106bc4f5ff17\n=>mov w16,60000;cmp w13,w16;B8092. Final18576 bytes, saved exact guest.hex. Relative immediately preceding stage038 image,8088 wasbf414071 (wrong65536 bound), now3b0a0014. Branch offsets2619 and-2620 words manually relocated; identify these as hand patches. MOV/CMP guest-assembled, independently returned opcodes529d4c10 and6b1001bf; guard source saved after guard: label in empty. Last branch .word402650564 relocation valid when guard placed18564. No other kernel edits. Boot/shell/assembler/argv/GUI/network code otherwise identical; GUI/network not retested.\n\nSAVED ABI REGRESSION: empty is NOW guest assembly compiler fixture (replaces obsolete own-source trim utility). as empty;install. Select return-size with first source byte in progBad:\n8=>8,0=>0,1=>1,2=>2,3=>3,6=>6,7=>w4-1,9/default=>w4+4,a=>w4,b=>w4+1,c=>65536,d=>0xffffffff,f=>w4-4.\nIt clears exactly supplied capacity, emits a candidate returning100 (exit00000064), except selector8 emits sentinel returning99 (exit00000063). Test: save progBad 8;build progBad=>built;exec sentinel=>63. For each0,1,2,3,6,7,9,b,c,d: save progBad SELECTOR;build progBad=>build error;exec sentinel=>63, NOT candidate64. Thus rejected output differs from retained program. Select f/a=>built,exec candidate=>64 (59996/exact60000 accepted). All cases actually run on corrected kernel. Then restored progBad to malformed C and restored native compiler by full bootstrap. Fixture is test-only, NOT native compiler or source recognition. All other disk sources unchanged this correction. Exact fixture via cat empty.\n\nNATIVE REBUILD (semicolon means NEWLINE):\nas new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS\nnew1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw is16-function preprocessor-free C COMPILER BRIDGE, NOT former stage036 adapter. Copied from extended compiler before pp. extra3 builds raw;raw builds exact final extra2;extra2 rebuilds itself. Final extra2 has19 functions;driver entry. Receives source bytes, not input filename; no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: original421 bytes, comment/includes/tabs/LFs preserved. Alpha separate altered input.\n\nSELFHOST: after native bootstrap/install, build Check;exec compare snapshots installed60000 bytes at40940000. Then build extra2;install;build Check;exec compare test=>Y\\n exit0. Repeat generation/compare=>Y/0. FULL40150000..+60000 byte comparison, including unchanged trailing bytes, not hashes. Regenerate snapshot each boot. Two successive generations passed after capacity correction; final fresh boot passed again. Sources and compiler unchanged from independently accepted native implementation.\n\nUPSTREAM build extra5=>built; all exit0, rerun final boot:\nexec echo => LF only\nexec echo Alpha 123 z-9 => Alpha 123 z-9\\n\nexec echo -n Alpha 123 => Alpha 123,no LF\nexec echo -n => zero bytes\nexec echo Alpha -n => Alpha -n\\n\nexec echo -- Alpha => -- Alpha\\n\nPreviously also -n -n=>-n no LF;-nn=>-nn\\n;-- -n=>-- -n\\n. Same executable repeatedly. Generic startup resets ALL globals from compiled initial values each exec.\n\nCONSUMPTION: alpha near-identical original with '\\n' output literal changed to '!', plus persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. First case rerun final boot. beta guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> creates alternative input; restore compiler via full bootstrap. NOT part of extra5 compilation.\nMALFORMED progBad restored exact int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 unchanged output/status. Rerun final boot.\n\nUNRELATED longasm C test: build longasm;exec regress Apple Banana=>K2AAA11110CD\\n,exit0, rerun final boot. Includes<stdio.h>,object macro N67, globals/functions,int* indexing/scaled addition/integer+pointer/pointer difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||. 0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A;ticks1 proves skipped side effects; logical results normalized1. Earlier1||0&&0=>1 passed. Abc123xyz789 C author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates test including directive newlines.\n\nLIBRARY: stdioh,stringh,utilh ALL GUEST-WRITTEN; NO original upstream library sources imported. Exact sources via cat. Flat header path encoding omits dots(stdio.h=>stdioh etc). Generic header lookup scans24 complete names; quoted/angle includes. stdioh defines stdout0;stringh defines ordinary strcmp;utilh defines argv0,wordfirst,putword,fshut. Header C definitions inserted normally, not rewritten echo. putchar inherited generic console intrinsic: immediate/unbuffered/infallible serial. stdout0 sole stream;fshut nothing buffered,returns0. Small reusable console libc,not complete FILE/disk stdio. Generic startup/TU init generator in extra2 compile(). No hard-encoded echo.\n\nC FEATURES/LIMITS unchanged: int/char*/int*/char**,void* casts;comments/literals;zero/literal globals;unsized array PARAMETER adjustment;scaled postfix++/--;scaled pointer arithmetic/difference;64-bit char** loads/stores;!,+ - *,comparisons/equality,short circuit,conditional,right-associative assignment,sequenced comma,expression statements,if/else/while/for. Own source explicitly migrated to int address=(int)out;int *s=(int *)(address+cap-2048);pointer/int state conversions explicitly cast;typed lexer end pointer. Raw preserves pre-cast bridge separately. Backend negative B/BL fix narrowed to high16>5118,<5120 and>37886,<37888 to avoid corrupting ASR/ADD. Lvalue x2 stack-preserved over RHS;postfix returns old value;true branch-based logical effects.\nNot full ISO C/pp/libc: source32768,pp output30000,32 funcs,16 globals,32 locals/function,4 args;int32 wrap,addresses<2^32,unsigned char,kernel argv cells64-bit,fixed scratch/non-reentrant. Definitions before use;no structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise/local arrays/for-declaration initializer. PP includes/comments/recursive OBJECT macros(max32,depth16),strings protected;no function macros/conditional directives/undef/pasting. Supplied headers only need supported ordinary directives.\n\nDISK manifest: seeds unchanged;raw bridge;extra2 final compiler;extra4 generic own-source replacement editor;empty NOW ABI assembly fixture+guard source;beta alternate-input generator;alpha alternate input;Abc123xyz789 test author;longasm C test;Check60000-byte comparator;progBad malformed. Old progFwd/progMath/prog8 renamed utilh/stdioh/stringh previous stage. All other files unchanged,24 slots. Extra4 reads backtick-delimited rules from beta WHEN beta holds rules;beta now generator,do NOT run editor without supplying rules. Bootstrap needs none of extra4/empty/beta/author. Scratch40840000/40880000;pp40980000/409c0000;Check40940000. Avoid40780000+4096 inherited fetch state. All compilation/executable generation in guest. VM stopped."
+}
+```
+
+</details>
+
+#### +0:58:36
+
+> 💭 **Trimming source content**
+
+**→ `notes_write`**
+
+<details><summary>text (7,653 chars, 39 lines)</summary>
+
+```
+STAGE038 FINAL ABI CORRECTION supersedes previous notes. Native echo/self-host features retained; capacity mismatch FIXED. Saved guest.hex18576 bytes. Final reboot20261116T104610.601434Z passed native bootstrap/self-comparison/echo/malformed/changed-input/C tests. VM STOPPED. All offline/in guest, no host compiler/downloads.
+
+BUILD ABI: supplied w4=60000 BYTES; inclusive return-size bound60000; minimum4;4-byte aligned. Returned0/1/2/3,6,59999,60001,60004,65536,0xffffffff now rejected, retaining prior program.8,59996,60000 accepted. Compiler reserve2048=>maxcode57952. No accepted compiler/header changes this correction. Observer independently measured exact self-built compiler53772 bytes; our60000-byte comparisons still pass.
+CAUSE: previous kernel supplied60000 but checked65536. Replace compare8088 with branch to appended guard: reload60000 in scratch w16,cmp w13,w16,branch back8092. Existing unsigned B.HI,min/alignment checks retained. Cannot trust compiler-clobbered w4 after return. Supply and guard both60000.
+
+EXACT KERNEL MANIFEST vs stage03718564 bytes:8048 old04009052=>044c9d52(mov w4,60000);8088 oldbf214071=>3b0a0014(B18564).8092 original48010054. Append at18564 exactly12 bytes:
+104c9d52bf01106bc4f5ff17
+mov w16,60000;cmp w13,w16;B8092. Final18576 bytes saved guest.hex. Previous stage0388088 wasbf414071(wrong65536 bound), now3b0a0014. Branch offsets2619/-2620 words manually relocated: hand patches. MOV/CMP guest-assembled, independently verified opcodes529d4c10/6b1001bf. Guard source saved after guard: in empty; .word402650564 last branch valid when relocated18564. No other kernel edits. Boot/shell/assembler/argv/GUI/network otherwise identical; GUI/network not retested.
+
+ABI FIXTURE: empty NOW guest assembly compiler(replaces obsolete trim utility). as empty;install. Input first byte via progBad chooses size:
+8=>8,0=>0,1=>1,2=>2,3=>3,6=>6,7=>w4-1,9/default=>w4+4,a=>w4,b=>w4+1,c=>65536,d=>0xffffffff,f=>w4-4.
+Clears exactly supplied capacity; emits candidate returning100(exit00000064), except selector8 emits sentinel99(exit00000063). Actual test: save progBad 8;build progBad=>built;exec sentinel=>63. For EACH0,1,2,3,6,7,9,b,c,d: save progBad SELECTOR;build progBad=>build error;exec sentinel=>63,NOT candidate64. Positive f/a=>built;exec candidate=>64 (59996/exact60000 accepted). All run corrected kernel. Restored progBad malformed C and native compiler afterward. Fixture is ONLY ABI test, not native source recognition. Exact source via cat empty. Other disk sources unchanged this correction.
+
+NATIVE REBUILD (semicolon means NEWLINE):
+as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install;build extra2;install;build extra5;exec echo ARGS
+new1/extra1/extra3 unchanged inherited assembly/C/CLI seeds. raw16-function preprocessor-free C COMPILER BRIDGE,NOT former stage036 adapter;copied from extended compiler before pp. extra3 builds raw;raw builds exact final extra2;extra2 self-builds. Final19 functions,driver entry. Compiler receives bytes,not input filename;no filename/hash/source-specific recognition. Extra5 slot23 NEVER written: original421 bytes/comment/includes/tabs/LFs preserved. Alpha separate alternative input.
+
+SELFHOST after native bootstrap/install: build Check;exec compare snapshots installed60000 bytes to40940000. build extra2;install;build Check;exec compare test=>Y\n exit0. Repeat=>Y/0. FULL40150000..+60000 byte comparison incl unchanged trailing bytes,not hash. Regenerate snapshot each boot. Two generations passed after correction,another final fresh boot. Accepted compiler sources unchanged.
+
+NATIVE ECHO: build extra5=>built; all exit0,rerun final boot:
+exec echo=>LF only
+exec echo Alpha 123 z-9=>Alpha 123 z-9\n
+exec echo -n Alpha 123=>Alpha 123,no LF
+exec echo -n=>zero bytes
+exec echo Alpha -n=>Alpha -n\n
+exec echo -- Alpha=>-- Alpha\n
+Previously -n -n=>-n no LF;-nn=>-nn\n;-- -n=>-- -n\n. Same executable repeatedly. Generic startup resets ALL globals from compiled initial values each exec.
+
+CONSUMPTION alpha near-identical original,only '\n' literal changed to '!',plus persistence space. build alpha;exec changed one two=>one two!,exit0;exec changed -n one two=>one two,exit0. First rerun final boot. beta guest C generator: build beta;install;build extra5;append alpha<SPACE><SPACE> creates input;restore native bootstrap. Not part of extra5 compilation.
+MALFORMED progBad restored int main(){return ;}. build extra5;exec echo Alpha 123 z-9;build progBad=>build error;exec echo Alpha 123 z-9 unchanged. Rerun final boot.
+
+UNRELATED longasm C: build longasm;exec regress Apple Banana=>K2AAA11110CD\n,exit0,rerun final boot. Includes<stdio.h>,object macro N67,globals/functions,int* indexing/scaled addition/integer+pointer/difference,64-bit char** loads/stores,**(a+1),**a++,postfix,for,?:,comma,casts,==/!=,&&/||.0&&hit(88),1||hit(89),0?hit(90):hit(65) emit ONLY A;ticks1 proves skipped side effects;logical results normalized1. Earlier1||0&&0=>1 passed. Abc123xyz789 author: build Abc123xyz789;exec author;append longasm<SPACE><SPACE> regenerates source incl directive newlines.
+
+LIBRARY: stdioh/stringh/utilh ALL GUEST-WRITTEN;NO original upstream library sources imported. Exact sources via cat. Header path encoding omits dots(stdio.h=>stdioh etc);generic lookup scans24 complete names;quoted/angle includes. stdioh defines stdout0;stringh ordinary strcmp;utilh argv0,wordfirst,putword,fshut. Valid C header definitions inserted normally,not rewritten echo. putchar inherited generic console intrinsic:immediate/unbuffered/infallible serial.stdout0 sole stream;fshut nothing buffered,returns0. Small reusable console libc,not complete FILE/disk stdio. Generic startup/TU init in extra2 compile(). No hard-encoded echo.
+
+C subset unchanged: int/char*/int*/char**,void* casts,comments/literals,zero/literal globals,unsized array PARAMETER adjustment,scaled postfix++/--,pointer arithmetic/difference,char**64-bit loads/stores,!,+ - *,comparisons/equality,short circuit,conditional,assignment,sequenced comma,expression statements,if/else/while/for. Own source explicitly migrated to int address=(int)out;int *s=(int *)(address+cap-2048);explicit pointer/int casts,typed lexer end pointer. Raw pre-cast bridge separate. Backend B/BL fix narrowed high16>5118,<5120 and>37886,<37888 to avoid ASR/ADD corruption. Lvalue x2 stack-preserved across RHS;postfix returns old value;real branch-based logical effects.
+LIMITS(not full ISO C/pp/libc): source32768,pp output30000,32 funcs,16 globals,32 locals/function,4 args;int32 wrap,addresses<2^32,unsigned char,kernel argv64-bit,fixed scratch/non-reentrant. Definitions before use. No structs/typedefs/prototypes/variadics/sizeof/int**/prefix++/division/general bitwise/local arrays/for-declaration initializer. PP includes/comments/recursive OBJECT macros(max32,depth16),strings protected;no function macros/conditional directives/undef/pasting. Guest headers need only supported directives.
+
+DISK: seeds unchanged;raw bridge;extra2 final compiler;extra4 own-source replacement editor;empty NOW ABI fixture+guard;beta alternative-input generator;alpha alternative input;Abc123xyz789 author;longasm C test;Check60000-byte comparator;progBad malformed. Previous stage renamed progFwd/progMath/prog8=>utilh/stdioh/stringh. All other files unchanged,24 slots. Extra4 reads backtick rules from beta WHEN beta holds rules;beta now generator,do NOT run editor without rules. Native bootstrap needs none of extra4/empty/beta/author. Scratch40840000/40880000;pp40980000/409c0000;Check40940000. Avoid40780000+4096 inherited fetch state. All executable generation in guest. VM stopped.
+```
+
+</details>
+
+**← `notes_write`**
+
+```
+{"saved":true}
+```
+
+#### +0:59:24
+
+> 💭 **Recording latest notes**
+
+**→ `guest_read`** `{"offset": 18564, "length": 12}`
+
+**← `guest_read`**
+
+```
+{"hex":"104c9d52bf01106bc4f5ff17"}
+```
+
+#### +0:59:35
+
+**→ `vm_stop`**
+
+**← `vm_stop`**
+
+```
+{}
+```
+
+#### +0:59:39
+
+Fixed: the kernel now enforces the supplied 60,000-byte capacity exactly.
+
+Invalid sizes are rejected while retaining the prior executable; valid boundary sizes pass. Native echo, changed-input, C semantics, and self-host equality checks still pass after reboot.
+
+Kernel bytes, regression fixture, and handoff saved. VM stopped.

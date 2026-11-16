@@ -1,0 +1,3 @@
+#include <stdio.h>
+#define N 67
+int ticks=0;int hit(int c){ticks++;putchar(c);return c;}int main(int argc,char **argv){int *p=(int *)(16516*256*256);int *q=2+p;char **a=argv+1;int i=0;p[2]=75;putchar(*q);putchar(48+q-p);a[1]=a[0];putchar(**(a+1));putchar(**a++);0&&hit(88);1||hit(89);0?hit(90):hit(65);putchar(48+ticks);putchar(48+(2&&3));putchar(48+(0||7));putchar(48+(3==3));putchar(48+(3!=3));for(i=0;i<2;i++)putchar(N+i);putchar(10);return 0;} 

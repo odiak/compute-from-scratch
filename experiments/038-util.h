@@ -1,0 +1,1 @@
+char *argv0;int wordfirst=1;int putword(int stream,char *word){if(!wordfirst)putchar(32);wordfirst=0;while(*word)putchar(*word++);return 0;}int fshut(int stream,char *name){return 0;} 

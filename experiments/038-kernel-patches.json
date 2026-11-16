@@ -1,0 +1,19 @@
+{
+  "base": "037-campaign.hex",
+  "base_binary_sha256": "44d8f01615f3fedacecda2cfd0599c5c7813a53f5fdb43fcec0d7cdc859f089b",
+  "final_binary_sha256": "ef1a1e99f44d58a98faae15f66ffc9100ce44439f9095c16067eb382e793176c",
+  "patches": [
+    {
+      "offset": 8048,
+      "hex": "044c9d52"
+    },
+    {
+      "offset": 8088,
+      "hex": "3b0a0014"
+    },
+    {
+      "offset": 18564,
+      "hex": "104c9d52bf01106bc4f5ff17"
+    }
+  ]
+}

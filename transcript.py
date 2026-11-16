@@ -130,7 +130,7 @@ def convert(campaign, stage):
                 continues += 1
             text = "".join(b.get("text", "") for b in content) if isinstance(content, list) else content
             title = "Stage prompt" if prompts == 1 else f"Observer message {prompts - 1}"
-            out.append(f"## {title} {stamp}\n\n" + "\n".join("> " + line for line in prose(text).splitlines()))
+            out.append(f"## {title} {stamp}\n\n" + "\n".join("> " + line if line else ">" for line in prose(text).splitlines()))
         elif role == "assistant":
             for key in totals:
                 totals[key] += message.get("usage", {}).get(key, 0)
