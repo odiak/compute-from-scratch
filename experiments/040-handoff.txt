@@ -1,0 +1,75 @@
+STAGE040 IMPLEMENTED + GUEST-VERIFIED; independent acceptance pending. VM STOPPED after final clean disk boot20261116T123837.499492Z. Stage039 was independently accepted. No host compilation/downloads, source-specific command adapters, kernel image patches, or host interpretation/replay of generated command lists. Exact changed C sources persist on disk. Campaign kernel image UNCHANGED from accepted039 (18640 bytes). New functionality lives in a resident ordinary C subshell: ENTER dev> before using it; original kernel parser remains unchanged.
+
+CLEAN BOOT, EXACT REBUILD (semicolon=LF):
+shell> as new1;install;build extra1;install;build extra3;install;build raw;install;build extra2;install
+Then shell> build extra4;exec dev
+Never install extra4 (application, not compiler). Check build says built before install. No helper script/editor seed/decoding step needed. After ordinary commands, all editing/building/loading/executing/pipeline control occurs inside guest. dev make() directly invokes installed self-hosted compiler and loads generated code.
+
+PRESERVATION:
+NEVER WRITTEN upstream: alpha=cat.c824,sha25677412bfd11435541add6e02208cd19fc357e2988132b874d546647c3f091b7ab; beta=basename.c549,sha2569ea4b5b45842ba2ca5c36857147c5f3ad5608e5708cf7b6786afc12c45f3e07e; Abc123xyz789=arg.h1310,sha2565f4ecca1bb057a6d6301aff8f2b403e723af5dc86a5e00e8c7e5c2f56cdb9c79; extra5=inherited original echo.c421. No rewritten upstream macro/source bytes.
+Unchanged bootstrap: new1,extra1,extra3,raw. Unchanged headers/manifests: utilh,stdioh,stringh,fcntlh,libgenh,unistdh,catbuild,basebuild,Check. progBad remains passing accepted039 PP regression, NOT malformed C. Manifests still include ONE ordinary guest-written libc then upstream input; no copied per-command library implementations.
+Changed deliverables: extra2 compiler extensions; libc descriptor extensions; extra4 NEW resident shell/editor replacing obsolete build-hook editor. FsFix temporarily held edit rules, then restored to accepted039 admin source (snapshot/compare/decode/remove) before final tests.
+DOCUMENTED SCRATCH CHANGES: removed empty(old filedemo) and persist(old18-byte data); slots now NEW orbit.c and poem. Temporary generic edit/patch/size diagnostics are gone. Final orbit.c is passing edited C with normal output and binary/capacity modes. Final poem EXACT three LF-terminated lines: 'orbit area: sixteen', 'finished', 'orbit area: sixteen'. Other files preserved. Disk FULL24: observer can dev> remove poem and/or remove orbit.c to free slots for independently chosen names. Do not delete upstream/bootstrap/library.
+Final ls: alpha beta Abc123xyz789 orbit.c utilh stdioh progBad stringh fcntlh libgenh unistdh libc catbuild basebuild Check FsFix new1 poem raw extra1 extra2 extra3 extra4 extra5.
+
+USAGE AT dev>:
+edit NAME: opens existing bytes, or empty buffer on ENOENT; new file created only on w.
+  p = all numbered lines; p N = line N.
+  i N TEXT = insert LF-terminated line before N. Empty buffer starts1; LF-terminated buffer last+1 appends.
+  r N TEXT = replace existing line N with TEXT+LF.
+  d N = delete existing line N.
+  w = save actual persistent file, stay editing. q = leave DISCARDING changes since last w. EOF also leaves. Save errors printed; q/EOF returns1 until successful save, normal discard0. Syntax errors remain interactive.
+  Binary bytes load/save unchanged unless edited; input rejects NUL. Unterminated last line replace/delete supported; inserting AFTER it requires replacing with LF-terminated line first. No undo/regex/fullscreen.
+build SOURCE: normal preprocessing/includes + installed compiler, separate staging; copy pinned USER only on success. Failed build prints error/status1 and RETAINS previous USER even with intervening editor/pipelines.
+exec ARGV0 [PREFIX REDIRS] [ARGS]: execute pinned USER, argv0 arbitrary. Before build=>2. Here redirects must be prefix pairs (inherited startup convention).
+SOURCE [ARGS/REDIRS] | SOURCE [ARGS/REDIRS] ...: bare SOURCE names ordinary C TU/manifest; compile/run each stage inside guest, argv0=SOURCE. One bare SOURCE works too. Pipeline recompilation NEVER overwrites pinned USER.
+  Operators separate whitespace tokens: < FILE, > FILE, >> FILE, 2> FILE, |. Bare-source form collects redirects anywhere in stage into startup prefix pairs. Single/double quoted strings preserve spaces; no escape/variable/glob expansion. Operator-valued tokens reserved even quoted.
+  < readonly; > create/truncate; >> create/append from current length; 2> stderr. Setup left-to-right: 'catbuild 2> poem < missing | catbuild' captures error; '< missing 2> poem' fails before stderr open. Open failures print generic errno diagnostic/status1.
+  First stage may redirect stdin; last stdout/append; conflicting redirects error2. stderr allowed each stage. stdout/stderr independent. Shell UI ('built','status ...') stays console; program bytes route descriptors.
+  SEQUENTIAL, not concurrent/POSIX: two alternating32768-byte memory streams; stage completes before next. First failed compile/nonzero exit aborts rest and propagates status. Completed stages/files not rolled back. Syntax/stage-count checked as reached, so earlier stages may have run. Existing output can be truncated before later failure.
+replace FILE OLD NEW: generic first literal substring replacement+save; quote arguments if needed. Useful for inherited single-line sources beyond editor command length. No command-name recognition.
+remove NAME: actual directory deletion+commit, missing1; no essential-file protection.
+quit: original kernel shell. Executables/compiler RAM-only, source/files survive reboot.
+EXAMPLES at dev> (semicolon=separate LF, not implemented shell operator):
+build orbit.c;exec demo
+orbit.c | catbuild > poem
+catbuild < poem | catbuild
+Check hello world >> poem
+basebuild /usr/bin/tool.c .c | catbuild >> poem
+catbuild < poem | catbuild | catbuild
+For independently chosen program: free scratch slot, edit newname.c, i1 '#include "libc"', ordinary C lines, w,q,build newname.c,exec chosen-name. Usage comments ALSO SAVED lines2..12 of extra4. Exact sources accessible via kernel cat extra4/libc/extra2.
+
+IMPLEMENTATION:
+extra2 function table moved128..255=>512..767, max functions64 (was32); all function finds/indexing updated, state clears1024 ints. Locals32/function,globals16,switch labels56 unchanged. Enables normal dev+libc TU, no custom linking.
+Generic intrinsic invoke(addr,arg1,arg2,arg3): x1=>x16 target,x2=>x1,x3=>x2,x4=>x3; w4=65532(cap ABI); preserve x29/x30; inherited UART callback x19=>x0;BLR x16;restore x29/x30. Calls compiler entry OR any generated program, not recognized commands. Negative intrinsicID-4,arity4. Exact emit hi/lo sequence (43521,1008),(43522,993),(43523,994),(43524,995),(21151,65412),(43455,31741),(43539,992),(54847,512),(43201,31741).
+Raw uartput intrinsic aliases old UART callback emission. putchar ordinary C definition wins; intrinsic only if no ordinary definition found. Old compiler/seeds without libc still work. Removed redundant late exit/diskcommit name checks, retaining early lexical checks, to fit unchanged65532 slot. No C/PP acceptance weakened.
+libc terminal write calls uartput; new ordinary putchar calls fdch(1,c). Thus UNMODIFIED echo newline now respects descriptor redirection/pipes. Existing generic errno/argv0 messages preserved.
+libc __start recognizes >>,opens65(writable/create,not truncate),sets descriptor position to file length. Existing open flags unchanged; not concurrent/general O_APPEND.
+libc read/write/close support reusable fd16,17 backed by two32768 RAM buffers. Read returns count/EOF; write beyond capacity returns-1,errno28 (atomic rejection, no silent partial truncation). Shared inheritance control maps standard streams before ordinary redirects. __start resets ordinary fd table,initializes argv0,compacts argv. File writes sync commit; dev execute also commits empty/truncated output on return.
+extra4 ordinary libc-linked C main implements editor, generic substring operation, source build/load, tokenizer, execution wrapper,pipeline. Separate staging/pinned USER/transient process slots. Pipeline uses integer bank IDs, NOT temp filenames/command-specific output. Input overflow drained/reported, never executes truncated prefix. Backspace/delete emits ASCII8/32/8. Full source workspace disjoint from commands/argv. execute preserves nonlocal exit result, returns125 on commit failure if otherwise0; disk fault path not injected.
+
+ACTUAL LIMITS / MEMORY:
+Kernel unchanged original USER40140000, compiler40150000, shell40160000; build/install min4,aligned4,max65532; failure retains. Final installed compiler MEASURED65412(0xff84),120-byte margin. dev measured38368 before final small editor/cleanup changes; final repeatedly rebuilt below65532, final size not remeasured.
+Dev staging40b00000,pinned USER40c00000,transient process40d00000 (each65532 cap). Editor40e00000+32768; rawchar40e10000; editor command40e101d0+1024; shell command40e222e0+4096; argv at40e00000+145000; stage argv at+150000. Source40e40000+32768 (moved away from argv; large source tested). Memory streams40f00000/40f08000; metadata40f20000(length/readpos/writepos per bank); inheritance40f30000; fixture scratch40f40000+32768. Inherited compilerPP/state/snapshot4098/409c/409e/4094 unchanged. Filefd3..15;0/1/2 aliases;16/17 memory streams.
+FS24 slots,names1..12 bytes,file32768. Source32768,PP output30000,macro/include depth16,macros32,functions64,globals16,locals32,callargs4. Code65532. Dev command4095 bytes,64 tokens; editor command1023,buffer32768; pipeline8 stages,32768/hop. ConsoleCtrl-D EOF; NUL/EOT in files/pipes ordinary data. Inherited limited C: definitions-before-use; no general typedef/struct/prototypes/variadic/sizeof/local arrays/division/bitwise/function macros/#if/#elif. No concurrency/isolation/timeouts/signals/sandbox/fullPOSIX; hostile code can hang/corrupt VM. Execute ordinary main programs, NOT compiler driver as application.
+
+ACTUAL TESTS / DEVELOPMENT LOOP:
+Created NEW multiline orbit.c THROUGH EDITOR after freeing scratch. Initial output 'orbit area: nine',square(3)!=9=>0. Edited output to sixteen,computation square(4)!=16,saved/rebuilt/observed sixteen/0. Malformed 'return square(4) BAD 16;' saved via editor; build error1; exec retained printed sixteen/0. Fixed via editor; inserted temporary puts,printed numbered lines,deleted it,saved. Replaced output with 'discard me' without w,q; rebuild showed sixteen only. After reboot repeated malformed INVALID/fix/retention. Latest clean boot inserted 'not saved',p9 inspected,q discarded; rebuilt showed sixteen only. All build/exec control inside guest; no generated host command lists.
+Final orbit.c normal square helper/output plus OPTIONAL modes added THROUGH EDITOR:
+full => fill/write32768 A bytes,return7 on write failure.
+overflow => same +one byte; failure prints 'capacity rejected\n' stderr,returns7.
+count => readstdin untilEOF,require32768 bytes,return0 exact else1.
+binary => write41 00 04 42 0a,return write-result check.
+Noargs prints sixteen,verifies square(4)==16. Source persisted passing.
+New C program pipelines orbit.c|catbuild, >poem, >>poem; binary|catbuild>poem gave EXACT41 00 04 42 0a, persisted/reobserved after reboot.
+UNMODIFIED upstream tests: catbuild<poem|catbuild>poem;3-stage cat with filein/fileout;Check words>>poem;Check -n no-newline|catbuild>>poem;basebuild /usr/bin/tool.c .c|catbuild>>poem. Correct append/newline/output.4-stage echo/cat passed. Empty persistent input saved through editor, pipeline0 and empty output. Console catbuild|catbuild>poem with 'console-through-pipe\n' then04=>0; cat poem matched.
+Errors: missing input diagnostic/status1,no next compile; too-long output single/laststage diagnostic1; full directory output diagnostic1; missing stage SOURCE buildopen1; basename noargs first/middle stage usage1,no latercat; trailing pipe syntax2. Normal commands/pinned USER survived all. stderr-before-missing captured exact generic error/status1. Full-directory editor save printed error; after final refinement q returned1,no file created.0/huge/out-of-range line numbers rejected.
+Boundary:32768 A passed2- and3-stage pipelines to persistent poem; orbit count consumed file via pipe,0. Extra byte error/status7 stopped before next stage,previous output retained. Upstream cat poem poem overflowed memory stream =>'write <stdout>: No space left on device',1. Editor insert into32768-byte file=>buffer capacity;discard;count still0. Invalid32768-byte source build error retained USER;exec printed sixteen. INSIDE dev build extra2 succeeded producing65412-byte compiler, demonstrating long-source/near-capacity builder doesn't clobber argv; subsequent orbit build/run0.
+progBad accepted039 PP regression repeatedly0,including finalboot. Four upstream files neverwritten.
+
+SELF-HOST / FINAL REBOOT:
+Using restored FsFix, build FsFix;exec admin snapshot;build extra2;install;build FsFix;exec admin compare=>Y/0. Snapshot and transition again=>Y/0. FULL65532 installed-byte comparisons, not just size/output. Passed before reboot AND twice on final cleanboot20261116T123837.499492Z after entire bootstrap from saved sources: gen1=>2 and2=>3 bothY/0. Finalcompiler size0xff84 measured before finalboots,compiler source unchanged since. Later edits only extra4.
+Latestboot rebuilt final documented extra4, read persisted poem BEFORE changing it: 'orbit area: sixteen\nfinished\n'. Rebuilt saved orbit.c,exec reboot-final=>sixteen/0. Discarded inserted line test passed. NewC pipelineappend, persistentinputpipe,upstreamecho/basenamepipes,PP regression all0. Finalpoem three lines above. Quit to original shell,ls24 files,STOPPED VM.
+
+FIXED DIAGNOSTICS (not outstanding gaps): invoke initially lacked x0 callback=>hang;fixed. Nonlocal exit clobbered x29 causing wrong statuses=>invoke frame preserve/restore;retested error1. Echo intrinsic newline bypassedfd=>libcputchar/rawuartput;ret ested redirs/pipes. Preliminary pipe conflict rejectedfirst<=>fixed. Initial source workspace overlapped commands for longsource=>moved40e40000;large compiler/32768 failed source tested. No obsolete temp-filename bank labels remain.
+No known incomplete requested normal workflow; independent observer acceptance pending. Original KERNEL shell has NOT gained parser syntax: DOCUMENTED C dev subshell supplies it. Hardware disk-fault injection, hostile-code isolation, fullPOSIX, exhaustive inherited C semantics beyond regressions not claimed/tested.

@@ -1,0 +1,116 @@
+{
+  "kernel": "experiments/040-campaign.hex",
+  "kernel_binary_sha256": "24861e5520d7fafa2043210e06938c3a91881d91928d29862fcd6fc8b66faa87",
+  "files": {
+    "new1": {
+      "path": "experiments/032-seed.s",
+      "length": 10241,
+      "sha256": "5390c3bfffc0ecf3956d24bb9088e6f7521e9ea58260c6335b82716fdf7ea3ef"
+    },
+    "extra1": {
+      "path": "experiments/034-compiler.c",
+      "length": 7101,
+      "sha256": "b248fbce80bb3fa09eeb4a5aa81f816a6ed29bfb8224a8ad3b1d42c47bd5500d"
+    },
+    "extra3": {
+      "path": "experiments/035-compiler.c",
+      "length": 8557,
+      "sha256": "fcce63bd1aa252e07eef4df27bf4a219272bbd82451987b90828c2ffd57b4f78"
+    },
+    "raw": {
+      "path": "experiments/039-bootstrap-compiler.c",
+      "length": 12636,
+      "sha256": "82038e67222c6bf1362c8b14e634e866ec33665fba1a05c87419cdd084d85e0e"
+    },
+    "extra2": {
+      "path": "experiments/040-compiler.c",
+      "length": 16746,
+      "sha256": "4b630eae9123850f35d8b1585b0655062e1b9dc5dbc7748f492d0d0faabe28eb"
+    },
+    "libc": {
+      "path": "experiments/040-libc.c",
+      "length": 5785,
+      "sha256": "974e027bcbe73218fa65766d366067d569bee0fc6c2c76727e293dbefbb4911b"
+    },
+    "stdioh": {
+      "path": "experiments/039-stdio.h",
+      "length": 51,
+      "sha256": "fe0caf3b16a3328d54480415252970b72456dc2595b52d142cd6a970ca47c2b2"
+    },
+    "stringh": {
+      "path": "experiments/039-string.h",
+      "length": 1,
+      "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068"
+    },
+    "utilh": {
+      "path": "experiments/039-util.h",
+      "length": 45,
+      "sha256": "c08907927b1beb9ca30b48151594cf11fd44232375d106b1295040ade260669a"
+    },
+    "fcntlh": {
+      "path": "experiments/039-fcntl.h",
+      "length": 95,
+      "sha256": "e3e4c5b471a51c496595c2bbed98125a6657e0353f6537e506ca7d0f1ad2e34d"
+    },
+    "libgenh": {
+      "path": "experiments/039-libgen.h",
+      "length": 21,
+      "sha256": "7a95454b1f901238e977da412a15162805439aabcbab14a67526c61ae1cf5e85"
+    },
+    "unistdh": {
+      "path": "experiments/039-unistd.h",
+      "length": 2,
+      "sha256": "6c179f21e6f62b629055d8ab40f454ed02e48b68563913473b857d3638e23b28"
+    },
+    "Abc123xyz789": {
+      "path": "fixtures/sbase-0.1/arg.h",
+      "length": 1310,
+      "sha256": "5f4ecca1bb057a6d6301aff8f2b403e723af5dc86a5e00e8c7e5c2f56cdb9c79"
+    },
+    "alpha": {
+      "path": "fixtures/sbase-0.1/cat.c",
+      "length": 824,
+      "sha256": "77412bfd11435541add6e02208cd19fc357e2988132b874d546647c3f091b7ab"
+    },
+    "beta": {
+      "path": "fixtures/sbase-0.1/basename.c",
+      "length": 549,
+      "sha256": "9ea4b5b45842ba2ca5c36857147c5f3ad5608e5708cf7b6786afc12c45f3e07e"
+    },
+    "extra5": {
+      "path": "fixtures/sbase-0.1/echo.c",
+      "length": 421,
+      "sha256": "117c10e0e5a5139a80490673a3f14dd1dfcc45856adb84a83b28e3b301f1b48c"
+    },
+    "catbuild": {
+      "path": "experiments/039-cat-build.c",
+      "length": 34,
+      "sha256": "b7705b28d8c9b98a1ea9dc0f7ac56c0e0c3607a0394a2f3b64759e73bc3580f0"
+    },
+    "basebuild": {
+      "path": "experiments/039-basename-build.c",
+      "length": 33,
+      "sha256": "501ff57102fc9a9220d60640067888b4f4d19b7b215a3c948346e8c55d04fa93"
+    },
+    "Check": {
+      "path": "experiments/039-echo-build.c",
+      "length": 34,
+      "sha256": "1a807cbd1c066549dd6c71b675788db8287874ad0a69b20a8934d9d51565ccc7"
+    },
+    "extra4": {
+      "path": "experiments/040-development.c",
+      "length": 7699,
+      "sha256": "abe3ad155ec9e5670732e203303fc290e24062b99b0f444586f986ee89dffd2b"
+    },
+    "orbit.c": {
+      "path": "experiments/040-editor-example.c",
+      "length": 530,
+      "sha256": "26470fcc002cc7fd97555787d631badffe0fe4a3bf27a51b435f0f6d962f93ec"
+    },
+    "poem": {
+      "path": "experiments/040-output.txt",
+      "length": 49,
+      "sha256": "261afe20c69b725f0252df1b95712b3864361a0dff0f7e9fc3185c763d99be2c"
+    }
+  }
+}
