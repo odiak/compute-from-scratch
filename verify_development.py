@@ -22,7 +22,8 @@ def until(guest, prompt, timeout=15):
         data.extend(bytes.fromhex(guest.serial_read(100)["hex"]))
         if data.endswith(prompt):
             return bytes(data)
-    raise ValueError(f"Missing {prompt!r}: {bytes(data)!r}")
+    raise ValueError(f"Missing {prompt!r}: {len(data)} output bytes; "
+                     f"first={bytes(data[:200])!r}, last={bytes(data[-200:])!r}")
 
 
 def enter(guest, line, prompt=b"dev> ", contains=None):

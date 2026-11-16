@@ -1,0 +1,323 @@
+{
+  "kernel": {
+    "path": "experiments/041-campaign.hex",
+    "size": 21012,
+    "sha256": "b5392072bdcfb35971c00392d5bf153f593630864615b5349f68813c2b416aa8"
+  },
+  "trust_boundary": "Kernel/OS, built-in assembler and initial compiler are trusted binary inputs. All final compiler, libc, development and CLI executables are built inside the guest from the declared source-only disk inputs.",
+  "entry": "batch bootplan",
+  "load": "enter devbin devbin.2 dev restore ccbin ccbin.2",
+  "inputs": {
+    "new1": {
+      "path": "experiments/032-seed.s",
+      "size": 10241,
+      "sha256": "5390c3bfffc0ecf3956d24bb9088e6f7521e9ea58260c6335b82716fdf7ea3ef"
+    },
+    "extra1": {
+      "path": "experiments/034-compiler.c",
+      "size": 7101,
+      "sha256": "b248fbce80bb3fa09eeb4a5aa81f816a6ed29bfb8224a8ad3b1d42c47bd5500d"
+    },
+    "extra3": {
+      "path": "experiments/035-compiler.c",
+      "size": 8557,
+      "sha256": "fcce63bd1aa252e07eef4df27bf4a219272bbd82451987b90828c2ffd57b4f78"
+    },
+    "raw": {
+      "path": "experiments/039-bootstrap-compiler.c",
+      "size": 12636,
+      "sha256": "82038e67222c6bf1362c8b14e634e866ec33665fba1a05c87419cdd084d85e0e"
+    },
+    "extra2": {
+      "path": "experiments/040-compiler.c",
+      "size": 16746,
+      "sha256": "4b630eae9123850f35d8b1585b0655062e1b9dc5dbc7748f492d0d0faabe28eb"
+    },
+    "extra4": {
+      "path": "experiments/041-development.c",
+      "size": 9347,
+      "sha256": "4bd6caa5e89561f08ffeb7a53defc0b1149e2ecf600f92f8747810ae7d3ea7e0"
+    },
+    "blobs": {
+      "path": "experiments/041-storage.c",
+      "size": 3985,
+      "sha256": "399e2b43523b223113055bfb4609012c8be72d05843446cd26c8a9812ec05f1b"
+    },
+    "runner": {
+      "path": "experiments/041-build-plan.c",
+      "size": 1665,
+      "sha256": "d056ce0c9c237e224fa3cb89817c3a294ae92559ae4a72e6054f5d2139f38d7c"
+    },
+    "libc": {
+      "path": "experiments/040-libc.c",
+      "size": 5785,
+      "sha256": "974e027bcbe73218fa65766d366067d569bee0fc6c2c76727e293dbefbb4911b"
+    },
+    "sources": {
+      "path": "experiments/041-upstream-sources.archive",
+      "size": 6396,
+      "sha256": "8e98a14430996140a1d1250ec7d66bc696985403fe462b9f89a7d866d7a2f349"
+    },
+    "controls": {
+      "path": "experiments/041-build-sources.archive",
+      "size": 32327,
+      "sha256": "9739b932de1e269e567c6d6f032539ddf8837aab27cb593015be123f915cedaf"
+    },
+    "bootplan": {
+      "path": "experiments/041-bootstrap.plan",
+      "size": 132,
+      "sha256": "eb82d266a89f9198185691ef37d4db2f10fd2dc290992d68f21e6dd8b2c6c341"
+    },
+    "rebuild": {
+      "path": "experiments/041-rebuild.plan",
+      "size": 1211,
+      "sha256": "bf0ab83a60404fc943f983b85020ceb1fd169d28eaddb89ca6c29170b9c1d8e2"
+    },
+    "inputs": {
+      "path": "experiments/041-input-names.txt",
+      "size": 96,
+      "sha256": "725ca01e20d49cb2ed88ff5a73aa95a15f2f00c8ce0f9c223c55c8c0dd63a418"
+    }
+  },
+  "archives": {
+    "sources": {
+      "format": "u8 name_length, u16le data_length, name, data; final zero byte",
+      "size": 6396,
+      "sha256": "8e98a14430996140a1d1250ec7d66bc696985403fe462b9f89a7d866d7a2f349",
+      "members": {
+        "sys": {
+          "path": "experiments/041-sources-sys.c",
+          "size": 2347,
+          "sha256": "6ceb7ef700da10a913ca582e8c00258cc888eb71e3701f11e3f2d45f351171b7"
+        },
+        "alpha": {
+          "path": "fixtures/sbase-0.1/cat.c",
+          "size": 824,
+          "sha256": "77412bfd11435541add6e02208cd19fc357e2988132b874d546647c3f091b7ab"
+        },
+        "beta": {
+          "path": "fixtures/sbase-0.1/basename.c",
+          "size": 549,
+          "sha256": "9ea4b5b45842ba2ca5c36857147c5f3ad5608e5708cf7b6786afc12c45f3e07e"
+        },
+        "Abc123xyz789": {
+          "path": "fixtures/sbase-0.1/arg.h",
+          "size": 1310,
+          "sha256": "5f4ecca1bb057a6d6301aff8f2b403e723af5dc86a5e00e8c7e5c2f56cdb9c79"
+        },
+        "extra5": {
+          "path": "fixtures/sbase-0.1/echo.c",
+          "size": 421,
+          "sha256": "117c10e0e5a5139a80490673a3f14dd1dfcc45856adb84a83b28e3b301f1b48c"
+        },
+        "utilh": {
+          "path": "experiments/039-util.h",
+          "size": 45,
+          "sha256": "c08907927b1beb9ca30b48151594cf11fd44232375d106b1295040ade260669a"
+        },
+        "stdioh": {
+          "path": "experiments/039-stdio.h",
+          "size": 51,
+          "sha256": "fe0caf3b16a3328d54480415252970b72456dc2595b52d142cd6a970ca47c2b2"
+        },
+        "stringh": {
+          "path": "experiments/039-string.h",
+          "size": 1,
+          "sha256": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068"
+        },
+        "fcntlh": {
+          "path": "experiments/039-fcntl.h",
+          "size": 95,
+          "sha256": "e3e4c5b471a51c496595c2bbed98125a6657e0353f6537e506ca7d0f1ad2e34d"
+        },
+        "libgenh": {
+          "path": "experiments/039-libgen.h",
+          "size": 21,
+          "sha256": "7a95454b1f901238e977da412a15162805439aabcbab14a67526c61ae1cf5e85"
+        },
+        "unistdh": {
+          "path": "experiments/039-unistd.h",
+          "size": 2,
+          "sha256": "6c179f21e6f62b629055d8ab40f454ed02e48b68563913473b857d3638e23b28"
+        },
+        "catbuild": {
+          "path": "experiments/039-cat-build.c",
+          "size": 34,
+          "sha256": "b7705b28d8c9b98a1ea9dc0f7ac56c0e0c3607a0394a2f3b64759e73bc3580f0"
+        },
+        "basebuild": {
+          "path": "experiments/039-basename-build.c",
+          "size": 33,
+          "sha256": "501ff57102fc9a9220d60640067888b4f4d19b7b215a3c948346e8c55d04fa93"
+        },
+        "Check": {
+          "path": "experiments/039-echo-build.c",
+          "size": 34,
+          "sha256": "1a807cbd1c066549dd6c71b675788db8287874ad0a69b20a8934d9d51565ccc7"
+        },
+        "progBad": {
+          "path": "experiments/039-preprocessor-regression.c",
+          "size": 486,
+          "sha256": "8c4b4b296bb26956f176b18f256806fb09e2b30bb117a574542fc75a55ef10cf"
+        }
+      },
+      "stage": "initial"
+    },
+    "controls": {
+      "format": "u8 name_length, u16le data_length, name, data; final zero byte",
+      "size": 32327,
+      "sha256": "9739b932de1e269e567c6d6f032539ddf8837aab27cb593015be123f915cedaf",
+      "members": {
+        "sys": {
+          "path": "experiments/041-controls-sys.c",
+          "size": 3804,
+          "sha256": "392d02377279c92e6a8f612d0cc7ab66e3c91db1155d4307ada619582bb97765"
+        },
+        "batchsrc": {
+          "path": "experiments/041-batch.s",
+          "size": 8319,
+          "sha256": "362e5de7814ded15aa2cdf64fe5e9b73666eefaf8e583e90e5f4e7df50cdfd59"
+        },
+        "fsmap": {
+          "path": "experiments/041-controls-fsmap.c",
+          "size": 455,
+          "sha256": "15ba176db83a21a745053624b0a73ab1358a2f3232b6bf65ec6504881942307b"
+        },
+        "split": {
+          "path": "experiments/041-controls-split.c",
+          "size": 444,
+          "sha256": "222f2f496715c799c6a03294e1d0ee53aaddf6cad3f30bfb4e54c5e86f58635a"
+        },
+        "join": {
+          "path": "experiments/041-controls-join.c",
+          "size": 352,
+          "sha256": "b52399b74c6a09c4391056bf8e3156d816f3fdcac8afad9158ee444119747f78"
+        },
+        "raw": {
+          "path": "experiments/039-bootstrap-compiler.c",
+          "size": 12636,
+          "sha256": "82038e67222c6bf1362c8b14e634e866ec33665fba1a05c87419cdd084d85e0e"
+        },
+        "bits": {
+          "path": "experiments/041-bits.c",
+          "size": 439,
+          "sha256": "fb602e7fa7acb693ab40587e3708ae4c5be32bfa07a0b23e0e303e82752c258b"
+        },
+        "shasrc": {
+          "path": "experiments/041-sha256.c",
+          "size": 3468,
+          "sha256": "9a9c9e7662af8d194da731e6ec1533d70b650a8ef8f7d77415920537c2a61f3d"
+        },
+        "bootplan": {
+          "path": "experiments/041-bootstrap.plan",
+          "size": 132,
+          "sha256": "eb82d266a89f9198185691ef37d4db2f10fd2dc290992d68f21e6dd8b2c6c341"
+        },
+        "rebuild": {
+          "path": "experiments/041-rebuild.plan",
+          "size": 1211,
+          "sha256": "bf0ab83a60404fc943f983b85020ceb1fd169d28eaddb89ca6c29170b9c1d8e2"
+        },
+        "inputs": {
+          "path": "experiments/041-input-names.txt",
+          "size": 96,
+          "sha256": "725ca01e20d49cb2ed88ff5a73aa95a15f2f00c8ce0f9c223c55c8c0dd63a418"
+        },
+        "cleanplan": {
+          "path": "experiments/041-clean.plan",
+          "size": 279,
+          "sha256": "8b4fc4d2aaf9792b3f41123b1400f64335b5299a423567f87ab5770f14685163"
+        },
+        "auditsrc": {
+          "path": "experiments/041-controls-auditsrc.c",
+          "size": 576,
+          "sha256": "eab50ac02ed41aad3e4073592e6fd92df44c4fc93788ffefbfdd407dec18adb3"
+        }
+      },
+      "stage": "initial"
+    },
+    "seedpack": {
+      "format": "u8 name_length, u16le data_length, name, data; final zero byte",
+      "size": 25925,
+      "sha256": "86546890e9f245c56f660da1f0a1cdf42095f0b76d3ce8215124c62ab41e627e",
+      "members": {
+        "new1": {
+          "path": "experiments/032-seed.s",
+          "size": 10241,
+          "sha256": "5390c3bfffc0ecf3956d24bb9088e6f7521e9ea58260c6335b82716fdf7ea3ef"
+        },
+        "extra1": {
+          "path": "experiments/034-compiler.c",
+          "size": 7101,
+          "sha256": "b248fbce80bb3fa09eeb4a5aa81f816a6ed29bfb8224a8ad3b1d42c47bd5500d"
+        },
+        "extra3": {
+          "path": "experiments/035-compiler.c",
+          "size": 8557,
+          "sha256": "fcce63bd1aa252e07eef4df27bf4a219272bbd82451987b90828c2ffd57b4f78"
+        }
+      },
+      "stage": "generated"
+    }
+  },
+  "outputs": {
+    "ccbin": {
+      "size": 32768,
+      "sha256": "3c55d81e0c77e97a7527ab4a6a125b54a3e1622d1f6eca9e4ffe51f22d2f31d1"
+    },
+    "ccbin.2": {
+      "size": 32648,
+      "sha256": "239f50cd3cc753b73cab57f40c62729451b0f8ff39dcaa1a06f27890bf01384a"
+    },
+    "devbin": {
+      "size": 32768,
+      "sha256": "9013700a25315ee33653dba0e4829d560f3a4353527a410a767bf29b4ac938df"
+    },
+    "devbin.2": {
+      "size": 27916,
+      "sha256": "36ca7ffcd7d9d1a3bf062dccb3a4ecec528cbc9b20c0eda88ae432b144f10295"
+    },
+    "cat": {
+      "size": 20512,
+      "sha256": "b2fb8b4fee020b10b21b37f7132ec22412c820047a2768baf304e3e760383326"
+    },
+    "basename": {
+      "size": 20248,
+      "sha256": "2b59ec867b920af4000f494b5ea833f740b282f608b3c25dd871143c8337610a"
+    },
+    "echo": {
+      "size": 19008,
+      "sha256": "b1edac3b54f4e49ccc6860aafddc5d72b8886f8ca8a1d57e19b278b173745641"
+    },
+    "sha": {
+      "size": 30680,
+      "sha256": "d4faf4db5d60c902b459534c718658eaf6a50d3bde5c2f8016f02b9965dc9a4a"
+    }
+  },
+  "code": {
+    "ccbin": {
+      "size": 65412,
+      "sha256": "9bef5076693902e05c3a7a612b50c039fdd8317b21efc2f8a8b5554c1fe19d1a"
+    },
+    "devbin": {
+      "size": 60680,
+      "sha256": "c42248f3b75015de258b867c9010ed610b016acb6cccb2f7dbb57db086b89284"
+    },
+    "cat": {
+      "size": 20508,
+      "sha256": "1816cb885a5cbd79a9c1555e7780d11f4e345e2af71daa3c567b3ace07342739"
+    },
+    "basename": {
+      "size": 20244,
+      "sha256": "2bd9277368c3ead802cb958350db3ba5e095568e9be067ab8ee6c5aa06ae74a0"
+    },
+    "echo": {
+      "size": 19004,
+      "sha256": "f1141cc50cea3e7c2a5ae059a76f74a144ebaee41a7e18c5a6ac79c4e7bdd7ed"
+    },
+    "sha": {
+      "size": 30676,
+      "sha256": "2a5ed44275a56477cc24ad43c676c0395b5a8d9ca60f1fea36954038f9ba69ae"
+    }
+  }
+}

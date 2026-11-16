@@ -1,0 +1,101 @@
+STAGE041 — OBSERVER-VERIFIED FINAL HANDOFF
+2026-11-16 JST
+
+This handoff was written by the observer from the independently verified final artifacts. The experimental agent's last API request ended with:
+  Codex error: This content was flagged for possible cybersecurity risk.
+The runner's finally block closed the VM broker, whose finally block stopped QEMU. The API error occurred while preparing additional malformed-batch tests, after the final implementation and guest return/load tests. Independent malformed-batch tests and all remaining acceptance tests passed. The earlier agent note marked PARTIAL describes attempt1 and is superseded by this record. No additional target implementation was performed after the API error.
+
+ADOPTED VERSION / TRUST BOUNDARY
+Kernel: experiments/041-campaign.hex, 21012 decoded bytes.
+SHA256 b5392072bdcfb35971c00392d5bf153f593630864615b5349f68813c2b416aa8
+The existing OS, built-in assembler and initial compiler are trusted binary inputs. Kernel source reconstruction is outside041's acceptance. The batch/loader assembly, guest-written generation/check helpers and exact patches from040 are archived. Final compiler, libc-linked CLI and development executables are generated inside the guest. The host imports exact source bytes and checks results; it does not compile guest executables, preprocess target inputs, or replay intermediate commands to implement the build.
+
+AUTHORITATIVE INPUT / OUTPUT MANIFEST
+experiments/041-inputs.json records every file length/hash/path, source-archive member and generated-code hash. Its inputs section names ONLY these14 source-only disk inputs:
+  new1 extra1 extra3 raw extra2 extra4 blobs runner libc sources controls bootplan rebuild inputs
+Never include ccbin/devbin/cat/basename/echo/sha binaries in a clean initial disk.
+The observer independently imported these14 files into two entirely new zero-filled1MiB disks. One ordinary entry command on each boot rebuilt everything. All eight saved binary files were byte-identical between the two runs. All guest input/archive-member/output SHA256 reports matched the host, including the immutable copy of the boot image.
+
+CLEAN BUILD ENTRY (shell>)
+  batch bootplan
+No manual as/install/build intermediates are needed. The saved132-byte bootplan contains the ordinary seed chain, then exec dev plan rebuild. All interpretation, compilation, comparison, source extraction, loading and saving occur in the guest.
+
+BUILD ORDER
+1. Assemble new1, install; build/install extra1, extra3, raw, extra2.
+2. Build extra4 (ordinary development application), enter its C build-plan runner.
+3. Extract bits/shasrc from controls; build SHA256; inventory boot image, all declared inputs and all members of sources/controls.
+4. Build/install final compiler and compare two successive self-build transitions over the full65532-byte slot, including zero padding.
+5. Save ccbin/ccbin.2. Pack new1/extra1/extra3 as the generated SOURCE archive seedpack, then free their expanded slots and consumed plan/seed files.
+6. Extract headers and exact pinned upstream sources; build and save cat, basename, echo with the same libc. Remove temporary expanded command inputs.
+7. Build/save devbin/devbin.2; demonstrate saved-command pipelines and source compilation; inventory generated binaries.
+A plan stops at its first failed command. Completed writes are not rolled back. A partial two-part save/rebuild is not a completed environment; rerun from declared inputs. Physical disk-fault/power-loss injection was not performed.
+
+SAVED EXECUTABLE FORMAT
+Little-endian u32 code length followed by machine code. First file at most32768 bytes; continuation is needed only when length+4 exceeds32768. Length must be4..65532 and aligned4. The loader validates all required parts into staging before publishing executable bytes. Small binaries do not require an existing continuation file. The development shell's @NAME convention uses NAME.2 for continuation, so NAME is at most10 bytes.
+
+Saved file lengths:
+  ccbin32768, ccbin.2=32648
+  devbin32768, devbin.2=27916
+  cat20512, basename20248, echo19008, sha30680
+Actual code lengths (excluding header):
+  compiler65412, development60680, cat20508, basename20244, echo19004, SHA30676
+Compiler code SHA256:
+  9bef5076693902e05c3a7a612b50c039fdd8317b21efc2f8a8b5554c1fe19d1a
+All other file/code hashes are in041-inputs.json. libc and compiler source remain byte-identical to accepted040; upstream echo.c/cat.c/basename.c/arg.h are byte-identical to pinned sbase0.1 fixtures.
+
+NORMAL REBOOT / LOAD (shell>)
+  enter devbin devbin.2 dev restore ccbin ccbin.2
+This loads the generated resident development shell and restores the generated compiler, without compiling a loader. It reaches dev>.
+After quit, the compiler is retained and reentry WITHOUT restoration also works:
+  enter devbin devbin.2 dev
+  build extra2
+  compare
+Kernel enter returns to shell without the old exec command's exit-status line. The development shell reports its own numeric status values.
+
+DEVELOPMENT (dev>)
+On the canonical freshly rebuilt disk, free one expanded header first; its exact source remains in sources.
+  remove stringh
+  edit new.c
+  i 1 #include "libc"
+  i 2 int main(void){puts("hello");return 0;}
+  w
+  q
+  build new.c
+  exec chosen-name
+  new.c | @cat > result
+  @echo tail >> result
+  @cat result
+  quit
+Editor: p [N], i N text, r N text, d N, w saves, q discards changes after the last save. A failed build retains the last successful USER, including across editor/pipeline operations. build pins USER; exec supplies argv0/arguments. A bare source name compiles/runs in a separate transient slot. @NAME loads an arbitrary saved binary through the same descriptors/pipeline; there are no cat/echo/basename-specific adapters.
+Operators are whitespace-separated < > >> 2> |; quotes preserve spaces, without escape/variable/glob expansion. Pipes are sequential, max8 stages and32768 bytes per hop; first failure stops subsequent stages. Input redirects belong to the first stage, output redirects to the last. Existing output writes are not transactional.
+
+SOURCE ARCHIVES / REPEAT BUILD
+sources holds exact upstream inputs, headers, ordinary include manifests, the PP fixture and an archived helper source. controls holds bootstrap/compiler seed raw, batch assembly and maintenance helpers, SHA sources, plans, input list and compiler audit source. seedpack is a GENERATED SOURCE archive of new1/extra1/extra3, not a prebuilt compiler.
+Format: repeated u8 name length, u16le content length, name, content; final zero byte. Exact archives and plaintext members are archived separately for inspection. Plaintext inspection copies must continue to match the actual archived input bytes; the verification CLI checks this.
+  extract ARCHIVE NAME
+extracts an exact source member. archive/merge/rename/erase/clean are reusable storage/plan operations; see041-storage.c and041-build-plan.c.
+To restore the declared initial directory from a generated environment:
+  extract controls cleanplan
+  plan cleanplan
+Then quit and STOP/REBOOT the VM before batch bootplan. clean removes directory entries outside the validated whitelist; it is not physical media erasure. The independent two-rebuild proof used entirely new disks instead.
+The campaign's last diagnostic disk may contain audit/fixture/bad files and fewer expanded headers. They are test artifacts, not declared initial inputs. The canonical reproduction command always starts from the manifest and a blank disk. Disposable expanded headers can be removed when working with libc-only new programs; originals remain in sources. Never delete the sole source archives or essential compiler/runtime source accidentally.
+
+LIMITS / MEMORY
+FS24 slots, names1..12 bytes,32768 bytes/file; source32768, PP output30000, function count64, locals32, globals16, call arguments4. C remains the inherited subset (no general struct/typedef/prototypes/variadic/local arrays/division/bitwise/function-like macros/#if/#elif). SHA uses ordinary guest-generated generic AND/XOR/shift/rotate instruction stubs; it does not add these operators to the C language.
+Code limit65532; final compiler has120 bytes of margin. Kernel batch: LF-terminated printable ASCII, max126 bytes/line, intended for as/install/build/exec bootstrap steps. C build-plan:32768 bytes,4095 bytes/line; shell4095 bytes/64 tokens; editor commands1023 bytes,buffer32768. No concurrency, isolation, timeout enforcement or full POSIX behavior.
+Resident app40140000, compiler40150000; dev staging40b00000, pinned USER40c00000, pipeline app40d00000; editor40e00000, source40e40000; streams40f00000/40f08000. Compiler workspace409e0000. Boot image SHA is taken from the immutable21012-byte shadow at41f00000. Other exact loader/scratch addresses are in the assembly and helper source.
+
+INDEPENDENT ACCEPTANCE
+verify_environment_rebuild.py experiments/041-inputs.json ECHO_REF CAT_REF BASENAME_REF:
+  Two blank-disk source-only single-command builds; all input/member/output hashes; boot-image hash; actual installed compiler equality; whole output reproducibility; generated seed archive; failed assembly, failed C, missing raw stop before next install and recover; reboot/load; reference CLI normal/errors; editor-created independent C; edit/failed-build USER retention/fix/discard; NUL/EOT/random binary transformer pipelines; append/stderr/exit7/errors; immediate empty-truncation persistence; saved source equality and further reboot/load/build/run.
+Latest full record: .local/environment-rebuild-check/tmpkpij3ddf/result.json
+verify_rebuild_boundaries.py RESULT_DIRECTORY/clean-1:
+  Compiler full equality before/after quit; reentry without restore and byte-identical self-build; direct loaded C program calls exit(7) and retains compiler; malformed length/alignment/capacity/continuation inputs reject without changing resident RAM or compiler; valid reloading after each failure; malformed batch LF/NUL/line-capacity cases reject and recover.
+Latest boundary record: .local/rebuild-boundary-check/tmp2gedgo65
+Final kernel ABI,65532-byte build/install and process-I/O, full CPP/C/shared CLI/reboot and browser links all passed. Final browser screenshots were synthetic GREEN FIELD pages, visually inspected.
+
+FIXED RETURN DEFECT
+The observer found compiler bytes2048..2051 changing from e10741f8 to zero on leaving the loaded development shell. Reentry without restore then hung while self-building. The return-to-shell state path was corrected. All65412 installed bytes now remain unchanged across quit; return/reentry/self-build and explicit exit(7) passed. Resident development images have mutable libc globals, so failed-load preservation compares actual pre-call/post-call RAM, not pristine on-disk global values.
+
+PROVENANCE / SESSION END
+One initial partial attempt, two observer continuations. The observer interrupted continuation1 once to deliver the independently found return defect. The last continuation completed the fix and guest tests, then its API request was rejected by the provider as quoted above. The adopted final image, every declared input and all eight saved binaries were checked byte-for-byte/hash-for-hash against that final campaign state after the API error. The observer performed the full independent acceptance and authored this final handoff. Full event transcript and experimental report are committed; raw logs and generated machine-code files remain in.local.

@@ -1,0 +1,16 @@
+erase ccbin
+erase ccbin.2
+erase devbin
+erase devbin.2
+erase cat
+erase basename
+erase echo
+erase sha
+extract seedpack new1
+extract seedpack extra1
+extract seedpack extra3
+extract controls raw
+extract controls bootplan
+extract controls rebuild
+extract controls inputs
+clean inputs
