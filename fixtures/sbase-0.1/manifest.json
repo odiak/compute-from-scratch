@@ -45,6 +45,106 @@
     "compat.h": {
       "bytes": 151,
       "sha256": "00fc3129294c2ddf3d39dee3b6a2f581d98b565f66250796deabf82d2fe78e07"
+    },
+    "LICENSE": {
+      "bytes": 2878,
+      "sha256": "8888e1bc7f31874dd24a76658489183e6263f5b4c5b1d9a375c1f67da68860d2"
+    },
+    "head.c": {
+      "bytes": 1383,
+      "sha256": "ccb2b9c79a9528da4522548b43953987aad3cefde80c6398f04ffd01abe18d86"
+    },
+    "wc.c": {
+      "bytes": 1853,
+      "sha256": "b8717d7226c721332225557b2404461940bdacbdc92a0b4bf2249554d8d2d31a"
+    },
+    "utf.h": {
+      "bytes": 2498,
+      "sha256": "cdc0942ec2fb161b35c341e3642392c9dc9e9b1126db9a5e69200b5ee2942e72"
+    },
+    "libutf/fgetrune.c": {
+      "bytes": 576,
+      "sha256": "a8eefcdc683d65acd8671dbbe791ea6eb9927558a0eeced7ddf4ac1d384a319d"
+    },
+    "libutf/fputrune.c": {
+      "bytes": 467,
+      "sha256": "9abbb77dd41283480196c9bda699462264efacf2d3848e9bd401e505868e8889"
+    },
+    "libutf/isalnumrune.c": {
+      "bytes": 161,
+      "sha256": "368353bfb2b10491591b872dba352e9f8cfee5ebcb0b33341ce76a9a30104243"
+    },
+    "libutf/isalpharune.c": {
+      "bytes": 16879,
+      "sha256": "115ea1faacee43fb3b47cd7cab90c224c61922b95ecda91e38cc0a7e9b418914"
+    },
+    "libutf/isblankrune.c": {
+      "bytes": 150,
+      "sha256": "c9408ee5b18cc3a137570bdcc84512faae29c179016652015a0e37fb97a61f99"
+    },
+    "libutf/iscntrlrune.c": {
+      "bytes": 310,
+      "sha256": "f75706e10fd19d19569703919490e023648ab6b243684c510f3ada1ad7143783"
+    },
+    "libutf/isdigitrune.c": {
+      "bytes": 1666,
+      "sha256": "c976502dcd0f83f79bfb7ed02e733a51755238fbf28aa1af3edcebf54490e3cf"
+    },
+    "libutf/isgraphrune.c": {
+      "bytes": 162,
+      "sha256": "05421461615d817fb846875f4b43b0fcf265e80ba12e844b2cb2f1e4238f63f9"
+    },
+    "libutf/isprintrune.c": {
+      "bytes": 220,
+      "sha256": "ecee877accf784ede0aa39329767008e1d5a89f609727514a5f723de4b6eafb2"
+    },
+    "libutf/ispunctrune.c": {
+      "bytes": 162,
+      "sha256": "40667768cd461ff5b4a9332ab06314f1bbe8aab4e4895d6b8278295aaedb655b"
+    },
+    "libutf/isspacerune.c": {
+      "bytes": 520,
+      "sha256": "162d6be69ff4ce973a9f485624b4ede00b4b7b073ac6ceff52270689525eb80f"
+    },
+    "libutf/istitlerune.c": {
+      "bytes": 508,
+      "sha256": "91fc51700b15de515d3318be2b6796d0b7fbac96fadba018921c567e49bd08ba"
+    },
+    "libutf/isxdigitrune.c": {
+      "bytes": 189,
+      "sha256": "bd80159c6446bb60db4a34a42701473fa20a209b977bb860344b5e4adcc492e8"
+    },
+    "libutf/lowerrune.c": {
+      "bytes": 8538,
+      "sha256": "e79bed1f9835472e0e0440920a384b7b4f93f7195d4a1f2b6490bb0376d6a9c3"
+    },
+    "libutf/rune.c": {
+      "bytes": 4243,
+      "sha256": "6ca6b52c45ba89ab0eaba3f2da09ada3bb57aaa7b831e191ed7144ba1f16f6a5"
+    },
+    "libutf/runetype.c": {
+      "bytes": 1508,
+      "sha256": "e3c319986e45ba8fd2c191e54fd144357874e277c6698f2d67cc9e5b9b97ffea"
+    },
+    "libutf/runetype.h": {
+      "bytes": 1353,
+      "sha256": "5d5dd94074d7f4c685e5ae5789f3f92e5e447b52e39cea39e5d625599a853928"
+    },
+    "libutf/upperrune.c": {
+      "bytes": 6337,
+      "sha256": "2a2d314064821bf2e3abedeaf2e3b0050a6f48699698b93b00a37d4197cb9a4c"
+    },
+    "libutf/utf.c": {
+      "bytes": 3014,
+      "sha256": "55cece857350ea463f8e27a080304d2a54be511e1ba07fce8df6972233864f16"
+    },
+    "libutf/utftorunestr.c": {
+      "bytes": 427,
+      "sha256": "f33e4383f0ef4e647fbc210adcdfef89eb239346bf731c176f324f2458fe5f54"
+    },
+    "libutil/strtonum.c": {
+      "bytes": 2185,
+      "sha256": "698a2f71bbd6e93cb1f3d09964446dea52cb38ea6a928c945553f199b308421f"
     }
   }
 }

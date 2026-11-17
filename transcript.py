@@ -145,6 +145,8 @@ def convert(campaign, stage):
                     calls += 1
                     boots += item["name"].startswith("vm_boot")
                     parts.append(render_args(item["name"], item.get("arguments") or {}))
+            if message.get("errorMessage"):
+                parts.append("**Provider error:**\n\n" + block(message["errorMessage"], "error"))
             out.append("\n\n".join(parts))
         elif role == "toolResult":
             mark = " ⚠️ error" if message.get("isError") else ""
@@ -164,6 +166,13 @@ def convert(campaign, stage):
         "**Tools:** " + ", ".join(f"`{t}`" for t in config.get("activeTools", [])),
         "**System prompt:**\n\n" + fence(scrub(config.get("systemPrompt", ""))),
     ]
+    runs = [json.loads(path.read_text()) for path in sorted(campaign.glob(f"{stage}-run-*.json"))]
+    if runs:
+        header.append("**Runner execution records** (independent acceptance is recorded in the stage report):")
+        for run in runs:
+            header.append(block(json.dumps({key: run.get(key) for key in (
+                "startedAt", "finishedAt", "runStatus", "exitCode", "signal", "error",
+            ) if run.get(key) is not None}, ensure_ascii=False, indent=2), "execution", "json"))
     text = "\n\n".join(header + out) + "\n"
     leftover = HOME.search(text) or JWT.search(text)
     if leftover:
