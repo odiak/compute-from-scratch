@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, mkdtempSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
@@ -154,6 +154,26 @@ const stages = {
     requiresCampaign: true,
     notesMaxLength: 16384,
   },
+  "042": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+    notesMaxLength: 16384,
+  },
+  "043": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+    notesMaxLength: 16384,
+  },
+  "044": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+    notesMaxLength: 16384,
+  },
+  "045": {
+    tools: [...common, "guest_patch", "serial_send", "serial_send_text", "vm_boot_disk"],
+    requiresCampaign: true,
+    notesMaxLength: 16384,
+  },
 };
 const definition = stages[stage];
 if (!Object.hasOwn(stages, stage)) throw new Error("Unknown stage");
@@ -171,6 +191,35 @@ const trial = previous ? resolve(previous) : mkdtempSync(join(trials, "pi-"));
 const work = join(trial, "work");
 mkdirSync(work, { recursive: true });
 console.log(trial);
+// Execution status is separate from the observer's independent acceptance.
+const startedAt = new Date().toISOString();
+const runPath = join(trial, `${stage}-run-${startedAt.replaceAll(":", "-")}.json`);
+const statusPath = join(trial, `${stage}-status.json`);
+let execution = { stage, mode, startedAt, updatedAt: startedAt, runStatus: "starting", work };
+function recordExecution(fields) {
+  execution = { ...execution, ...fields, updatedAt: new Date().toISOString() };
+  for (const path of [runPath, statusPath]) {
+    writeFileSync(path + ".tmp", JSON.stringify(execution, null, 2) + "\n");
+    renameSync(path + ".tmp", path);
+  }
+}
+recordExecution({});
+process.once("uncaughtExceptionMonitor", error => {
+  recordExecution({ runStatus: "failed", finishedAt: new Date().toISOString(), error: error.message });
+});
+for (const [signal, code] of [["SIGINT", 130], ["SIGTERM", 143]]) {
+  process.once(signal, () => {
+    recordExecution({ runStatus: "interrupted", finishedAt: new Date().toISOString(), signal });
+    process.exit(code);
+  });
+}
+process.once("exit", code => {
+  recordExecution({ exitCode: code,
+    ...(["completed", "failed", "interrupted"].includes(execution.runStatus) ? {} : {
+      runStatus: "failed", finishedAt: new Date().toISOString(), error: "Runner exited before completion",
+    }),
+  });
+});
 const sessionPointer = join(trial, "session-path.txt");
 const prompt = mode === "--continue"
   ? `The stage is still incomplete. Continue working. Unmet acceptance condition: ${unmetCondition}\nObserved result: ${observation}`
@@ -343,6 +392,7 @@ const { session } = await createAgentSession({
   }),
 });
 try {
+  recordExecution({ runStatus: "running", sessionFile: session.sessionFile });
   writeFileSync(sessionPointer, session.sessionFile + "\n");
   const active = session.getActiveToolNames();
   if (JSON.stringify(active) !== JSON.stringify(names)) {
@@ -359,6 +409,8 @@ try {
   session.subscribe(event => {
     if (["message_end", "tool_execution_start", "tool_execution_end", "compaction_start", "compaction_end"].includes(event.type)) {
       appendFileSync(join(trial, `${stage}-events.jsonl`), JSON.stringify({ ...event, timestamp: new Date().toISOString() }) + "\n");
+      recordExecution({ lastEvent: event.type, lastEventAt: new Date().toISOString(),
+        activeTool: event.type === "tool_execution_start" ? event.toolName : null });
     }
   });
   await session.prompt(prompt);
@@ -366,6 +418,10 @@ try {
   if (last?.role !== "assistant" || ["error", "aborted"].includes(last.stopReason)) {
     throw new Error(last?.errorMessage ?? "No successful final assistant message");
   }
+  recordExecution({ runStatus: "completed", finishedAt: new Date().toISOString(), stopReason: last.stopReason });
+} catch (error) {
+  recordExecution({ runStatus: "failed", finishedAt: new Date().toISOString(), error: error.message });
+  throw error;
 } finally {
   session.dispose();
   broker.stdin.end();

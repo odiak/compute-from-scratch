@@ -30,7 +30,7 @@ The later campaign built a self-hosted C compiler and a small CLI runtime, built
 
 ### Next milestones
 
-Each stage below delivers a working development workflow, including the language and OS changes it needs. Completion is recorded only after independent verification. Stages 039–041 allow 16,384 characters in handoff notes to retain build steps and implementation limits.
+Each stage below delivers a working development workflow, including the language and OS changes it needs. Completion is recorded only after independent verification. Stages 039–045 allow 16,384 characters in handoff notes to retain build steps and implementation limits.
 
 | Experiment | Goal and acceptance criteria |
 | --- | --- |
@@ -38,8 +38,12 @@ Each stage below delivers a working development workflow, including the language
 | 039 — Multiple upstream commands (complete) | Verified unmodified sbase echo, cat, and basename with shared libc, file and console I/O, reference error outputs, and compiler self-hosting in [039](experiments/039-campaign.md). Build several unmodified commands covering string processing, standard input, and file I/O. Share headers and libc across commands and provide a repeatable build path for multiple source files. Compare normal and error cases with upstream references. |
 | 040 — Develop inside the guest (complete) | Verified a guest-written editor, protected build/run workflow, redirection, append, binary pipelines and reboot reproduction in [040](experiments/040-campaign.md). Edit source, build, run, fix, save, reboot, and rebuild inside the guest. Provide a usable editor, redirection, and pipes; demonstrate commands processing each other's output and persistent files. |
 | 041 — Rebuild the environment from source (complete) | Verified one-command guest bootstrap from 14 declared source inputs on two empty disks. All eight saved output files for the compiler, development shell, CLI and SHA tools matched byte-for-byte. Reboot/load, editing, pipelines and failure recovery passed in [041](experiments/041-campaign.md). The trusted OS and seed boundary is explicit. |
+| 042 — Work on multiple projects | Expand storage and executable capacity with a coherent memory layout and execution ABI. Keep toolchain sources, saved tools and two editable projects together without manual archive/slot juggling. Build, save, reload and execute code larger than 64 KiB, process files larger than 32 KiB, and reproduce the environment from declared source inputs. |
+| 043 — A useful text-processing environment | Build unmodified pinned head and wc with shared libc, extending the compiler and preprocessing as needed. Compare options, files/stdin, UTF-8 text, pipelines and error cases against upstream references; retain self-hosting and automatic reproducible rebuilds. |
+| 044 — Rebuild the OS itself | Build the OS from readable C/assembly source inside the guest, reducing the trusted binary boundary to an explicit small boot/assembler/compiler seed. Boot the generated OS, reproduce the development environment, compare two clean rebuilds and retain a working recovery image. |
+| 045 — Recover from application faults | Isolate ordinary application memory from kernel/compiler state and provide controlled termination. Demonstrate recovery to the shell after a memory fault, an unsupported instruction or a nonterminating application, then rebuild/run healthy programs and verify saved data and toolchain integrity. |
 
-For all four stages, keep upstream `.c` files byte-for-byte intact. Guest-specific headers, library implementations, startup code, and ordinary preprocessing are allowed; source-specific rewriting is not. Maintain compiler self-hosting, preserve reproducible inputs, and independently verify outputs. Record unsupported features and any build limits. Favor coherent reusable interfaces and reproducible rebuilds over elapsed time; fix regressions before advancing. Memory protection, preemptive scheduling, a fuller browser, and direct HTTPS are later, separate milestones.
+Across these stages, keep upstream `.c` files byte-for-byte intact. Guest-specific headers, library implementations, startup code, and ordinary preprocessing are allowed; source-specific rewriting is not. Maintain compiler self-hosting, preserve reproducible inputs, and independently verify outputs. Record unsupported features and any build limits. Favor coherent reusable interfaces and reproducible rebuilds over elapsed time; fix regressions before advancing. Stage 045 adds application fault recovery; a fuller browser and direct HTTPS remain later, separate milestones.
 
 Each stage builds on the previous artifacts and adds the tools it needs. The observer supplies the public source code initially and keeps both the agent and the guest offline. Record build inputs separately from the environment available for researching solutions.
 
@@ -59,7 +63,7 @@ QEMU uses the `virt` machine with a single Cortex-A53 core, TCG, and 64 MiB of R
 
 Stage 001 exposes tools to read and write the image and handoff notes, start and stop the VM, and read serial output. Stage 002 adds serial input. The experimental VM runs until the model stops it or the host ends the experiment. The observer's boot test CLI can stop the VM after a specified duration.
 
-The campaign directory stores the conversation, artifacts, each stage's tool list and events, and the image and serial log for each boot.
+The campaign directory stores the conversation, artifacts, each stage's tool list and events, and the image and serial log for each boot. A `<stage>-status.json` file and per-run JSON record execution state and errors; model completion does not imply independent acceptance.
 
 ### Evaluation and resuming
 
@@ -159,7 +163,7 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 
 ### 今後のマイルストーン
 
-今後は、必要な言語機能やOS機能をまとめて実装し、一通り使える開発手順を1段階とする。合格条件を示し、観測側の独立検証を通った段階だけ完了と記す。039〜041ではビルド手順と制約を省かず残すため、引き継ぎノートを16,384文字まで扱う。
+今後は、必要な言語機能やOS機能をまとめて実装し、一通り使える開発手順を1段階とする。合格条件を示し、観測側の独立検証を通った段階だけ完了と記す。039〜045ではビルド手順と制約を省かず残すため、引き継ぎノートを16,384文字まで扱う。
 
 | 実験 | 目標と合格条件 |
 | --- | --- |
@@ -167,8 +171,12 @@ GPT-6.1 Solが、ベアメタル環境で機械語からどこまでソフトウ
 | 039 — 複数のOSSコマンドを動かす（完了） | [039](experiments/039-campaign.md)で原本のecho・cat・basename、共通libc、ファイルとコンソールI/O、上流版のエラー出力、自己ホストを確認済み。文字列処理・標準入力・ファイルI/Oを使う複数のコマンドを無改変でビルドする。ヘッダとlibcを共有し、複数ソースを再現可能な手順でビルドする。正常系・異常系を上流版と照合する。 |
 | 040 — ゲスト内で日常的に開発する（完了） | [040](experiments/040-campaign.md)でゲスト製エディタ、失敗時に旧コードを保持するビルド・実行、リダイレクト、追記、バイナリのパイプ、再起動後の再現を確認済み。 ゲスト内でソースの編集・ビルド・実行・修正・保存・再起動後の再ビルドを完結する。使えるエディタ、リダイレクト、パイプを用意し、コマンド同士の出力と永続ファイルを処理する。 |
 | 041 — ソース一式から環境を再構築する（完了） | [041](experiments/041-campaign.md)で宣言したソース入力14個から、空ディスク2つで1コマンドの自動再構築を確認済み。コンパイラ・開発シェル・CLI・SHAツールの全8保存ファイルがバイト一致し、再起動・読み込み・編集・パイプ・失敗時の復帰も通った。信頼するOSと種の範囲を明記した。 |
+| 042 — 複数プロジェクトを扱える開発環境 | メモリ配置と実行ABIを整理して保存・実行容量を広げる。ツールチェーンのソース、保存済みツール、編集する2つのプロジェクトを、手作業でアーカイブや空き枠をやりくりせず共存させる。64 KiB超の実行コードと32 KiB超のファイルをビルド・保存・読み込み・処理し、宣言入力から環境を再現する。 |
+| 043 — 実用的なテキスト処理環境 | 必要なC・前処理機能と共通libcを整え、版を固定した原本のhead・wcを無改変でビルドする。オプション、ファイルと標準入力、UTF-8の文章、パイプ、異常系を上流版と照合し、自己ホストと環境の自動再構築も維持する。 |
+| 044 — OS本体をソースから再構築 | 読めるC・アセンブリソースからOSをゲスト内でビルドし、信頼するバイナリを明記した小さな起動部とアセンブラ・コンパイラの種へ縮める。生成したOSで起動して開発環境を再構築し、空の環境からの2回の再現と、起動失敗時の復旧も確認する。 |
+| 045 — 壊れたアプリから復帰できるOS | アプリのメモリをカーネル・コンパイラから分離し、制御して終了できるようにする。メモリ違反、未対応命令、終了しないアプリからシェルへ戻り、正常なプログラムを再ビルド・実行できること、保存データとツールチェーンが保持されることを確認する。 |
 
-4段階を通じて、上流の`.c`はバイト単位で保持する。ゲスト向けヘッダ・ライブラリ実装・起動処理と通常のプリプロセッサは認め、ソース固有の書き換えは使わない。自己ホストを維持し、入力を再現できる形で保存して、観測側が出力を独立検証する。未対応機能とビルド容量の制約も記録する。所要時間より、再利用できる一貫した設計と再構築の確実さを優先し、回帰を直してから次へ進む。メモリ保護・プリエンプティブなプロセス・本格的なブラウザ・直接のHTTPSは、その後の別のマイルストーンとする。
+これらの段階を通じて、上流の`.c`はバイト単位で保持する。ゲスト向けヘッダ・ライブラリ実装・起動処理と通常のプリプロセッサは認め、ソース固有の書き換えは使わない。自己ホストを維持し、入力を再現できる形で保存して、観測側が出力を独立検証する。未対応機能とビルド容量の制約も記録する。所要時間より、再利用できる一貫した設計と再構築の確実さを優先し、回帰を直してから次へ進む。アプリの保護と異常時の復帰は045で扱い、本格的なブラウザと直接のHTTPSはその後の別のマイルストーンとする。
 
 各段階で前段の成果物を引き継ぎ、その段階で必要なツールを追加する。公開ソースの初回投入は観測側が行い、エージェントとゲストにインターネットへの経路を渡さない。ビルド時の入力と、解法を調べられる環境を分けて記録する。
 
@@ -188,7 +196,7 @@ QEMUは `virt`、Cortex-A53、1コア、TCG、RAM 64 MiB。生バイト列を `0
 
 001ではイメージと引き継ぎメモの読み書き、VMの起動・停止、シリアル出力の読み取りを公開する。002ではシリアル入力を追加する。実験用VMに固定の実行時間はなく、モデルが停止するか、ホストが実験を終了すると停止する。観測側の起動テスト用CLIは時間を指定して終了できる。
 
-会話と成果物、各ステージのツール一覧・イベント、起動ごとのイメージとシリアルログはキャンペーンディレクトリに保存する。
+会話と成果物、各ステージのツール一覧・イベント、起動ごとのイメージとシリアルログはキャンペーンディレクトリに保存する。`<stage>-status.json`と起動ごとのJSONには実行状態とエラーを記録する。モデルの正常終了と観測側の独立検証での合格は区別する。
 
 ### 判定と再開
 
