@@ -1,0 +1,59 @@
+extract controls bits
+extract controls shasrc
+build shasrc
+exec sha -m 1106247680 21012
+exec sha new1 extra1 extra3 raw extra2 extra4 blobs runner libc sources controls bootplan rebuild inputs
+exec sha -a sources
+exec sha -a controls
+save sha sha.2
+erase bits
+erase shasrc
+build extra2
+install
+build extra2
+compare
+install
+build extra2
+compare
+save ccbin ccbin.2
+archive seedpack new1 extra1 extra3
+erase new1
+erase extra1
+erase extra3
+erase raw
+erase bootplan
+erase rebuild
+erase inputs
+extract sources utilh
+extract sources stdioh
+extract sources stringh
+extract sources fcntlh
+extract sources libgenh
+extract sources unistdh
+extract sources Abc123xyz789
+extract sources alpha
+extract sources catbuild
+build catbuild
+erase alpha
+erase catbuild
+save cat cat.2
+extract sources beta
+extract sources basebuild
+build basebuild
+erase beta
+erase basebuild
+save basename basename.2
+extract sources extra5
+extract sources Check
+build Check
+erase extra5
+erase Check
+save echo echo.2
+build extra4
+save devbin devbin.2
+source @echo automatic environment | @cat | @cat
+source @basename /usr/bin/tool.c .c
+extract sources progBad
+source progBad
+erase progBad
+source @sha ccbin ccbin.2 devbin devbin.2 cat basename echo sha

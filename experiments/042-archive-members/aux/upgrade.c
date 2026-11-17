@@ -1,0 +1,2 @@
+#include "fs42"
+int main(void){int *h=(int *)IMAGE;char *p=(char *)IMAGE;char *s=(char *)SNAPSHOT;char *t=(char *)(DISK+5120);char *d=(char *)(DISK+1024);int k=find("start");int i=0;int old=23*32768;int n=0;if(!k||length(k)>32768)return 1;if(h[3]!=old&&h[3]!=FSSIZE)return 2;while(i<old){s[i]=p[i];i++;}if(!equal(p,s,old))return 3;i=old;while(i<FSSIZE){p[i]=0;i++;}h[3]=FSSIZE;if(fscheck())return 4;p[FSSIZE-1]=90;n=length(k);s=bytes(k);i=0;while(i<n){t[i]=s[i];i++;}if(!equal(t,s,n))return 5;d[2]=n;d[3]=0;while(n>255){d[3]++;n=n-256;}d[2]=n;return fscommit();}

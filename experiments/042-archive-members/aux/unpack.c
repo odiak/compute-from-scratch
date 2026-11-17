@@ -1,0 +1,2 @@
+#include "runtime"
+int main(int ac,char **av){int k=0;int n=0;int at=0;int z=0;int m=0;int j=0;char *p=(char *)INPUT;char *name=(char *)(TRANSFER+FILEMAX+64);if(ac!=2)return 2;k=find(av[1]);if(!k)return 1;n=lzdecode(bytes(k),length(k),p,FILEMAX);if(n<0)return 3;while(at<n){m=p[at];at++;if(!m)return 0;if(m>NAMEMAX||at+2>n)return 4;z=p[at]+p[at+1]*256;at=at+2;if(at+m+z>n)return 5;j=0;while(j<m){name[j]=p[at+j];j++;}name[m]=0;at=at+m;if(fsput(name,p+at,z)){puts(name);return 6;}at=at+z;}return 7;}

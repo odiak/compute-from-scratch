@@ -1,0 +1,49 @@
+/* 042 interface authority. Legacy disk transport is private to fscommit/mount. */
+#define DISK (16448*256*256)
+#define IMAGE (16692*256*256)
+#define FSSIZE (24*256*256)
+#define DIRECTORY (IMAGE+64)
+#define DATA (IMAGE+9216)
+#define SPACE (FSSIZE-9216)
+#define FILES 128
+#define NAMEMAX 47
+#define FILEMAX (3*256*256)
+#define CODEMAX (2*65532)
+#define SOURCEMAX (2*256*256)
+#define PPMAX (3*65532)
+#define COMPILER (16656*256*256)
+#define SHELL (16660*256*256)
+#define OUTPUT (16664*256*256)
+#define USER (16668*256*256)
+#define APP (16672*256*256)
+#define PPTEXT (16676*256*256)
+#define LOADBUF (16680*256*256)
+#define EDITBUF (16684*256*256)
+#define SCRATCH (16788*256*256)
+#define SNAPSHOT (16720*256*256)
+#define INPUT (16736*256*256)
+#define TRANSFER (16752*256*256)
+#define FDS (16528*256*256+4096)
+#define CONTROL (16624*256*256+768*256)
+#define MAGIC (83*256*256+70*256+50)
+/* Executable = u32le code byte count + aligned code, count 4..CODEMAX. */
+#define PIPEBASE (16768*256*256)
+#define PIPESTEP (4*256*256)
+#define PIPEMETA (16624*256*256+512*256)
+#define PLANBUF (16818*256*256)
+/* Private accepted041 disk-format stride header. Zero means old 16x8192 format. */
+#define LEGACY_CAP 32768
+#define LEGACY_MARKER 4096
+#define LEGACY_SLOTS 24
+#define LEGACY_CC (16405*256*256)
+#define LEGACY_OUT (16560*256*256)
+#define PPSTATE (16536*256*256)
+#define CCSTATE (16542*256*256)
+#define SHASTATE (16832*256*256)
+#define SHABUF (16834*256*256)
+#define TESTBUF (16848*256*256)
+#define EXEZ (90*256*256+69*256+88)
+#define BITCODE (SHASTATE+4096)
+#define PERSISTMAX (26*32768)
+#define PACKMAGIC (80*256*256+75*256+51)
+/* Legacy batch control41b00000 and argv41b10000 are reserved; plan uses41b20000 after the tested quit/return fix. */

@@ -1,0 +1,188 @@
+#include "libc"
+#include "fs42"
+/* Source-only bootstrap: read/verify all legacy inputs before publishing. */
+int importseed(void){
+  char *disk=(char *)DISK;
+  char *old=(char *)SNAPSHOT;
+  char *image=(char *)IMAGE;
+  char *name=(char *)(TRANSFER+FILEMAX+32);
+  char *d=0;
+  int *h=(int *)IMAGE;
+  int i=0;
+  int j=0;
+  int k=0;
+  int n=0;
+  while(i<16*256*256){
+    old[i]=disk[i];
+    i++;
+  }
+  i=0;
+  while(i<FSSIZE){
+    image[i]=0;
+    i++;
+  }
+  h[0]=MAGIC;
+  h[1]=2;
+  h[2]=FILES;
+  h[3]=FSSIZE;
+  h[4]=CODEMAX;
+  h[5]=FILEMAX;
+  if(fsput("_legacy",old,5120))return 1;
+  i=0;
+  while(i<LEGACY_SLOTS){
+    d=old+1024+i*128;
+    if(d[0]){
+      j=0;
+      while(j<d[0]){
+        name[j]=d[j+4];
+        j++;
+      }
+      name[j]=0;
+      n=d[2]+d[3]*256;
+      if(n>LEGACY_CAP||fsput(name,old+5120+i*LEGACY_CAP,n))return 2;
+    }
+    i++;
+  }
+  i=0;
+  while(i<LEGACY_SLOTS){
+    d=old+1024+i*128;
+    if(d[0]){
+      j=0;
+      while(j<d[0]){
+        name[j]=d[j+4];
+        j++;
+      }
+      name[j]=0;
+      k=find(name);
+      n=d[2]+d[3]*256;
+      if(!k||length(k)!=n||!equal(bytes(k),old+5120+i*LEGACY_CAP,n))return 3;
+    }
+    i++;
+  }
+  puts("all initial input bytes verified before publication");
+  return fscheck();
+}
+
+int unpackseed(char *file){
+  int k=find(file);
+  int n=0;
+  int at=0;
+  int z=0;
+  int m=0;
+  int j=0;
+  char *p=(char *)INPUT;
+  char *name=(char *)(TRANSFER+FILEMAX+64);
+  if(!k)return 1;
+  n=lzdecode(bytes(k),length(k),p,FILEMAX);
+  if(n<0)return 2;
+  while(at<n){
+    m=p[at];
+    at++;
+    if(!m)return at!=n;
+    if(m>NAMEMAX||at+2>n)return 3;
+    z=p[at]+p[at+1]*256;
+    at=at+2;
+    if(at+m+z>n)return 4;
+    j=0;
+    while(j<m){
+      name[j]=p[at+j];
+      j++;
+    }
+    name[m]=0;
+    at=at+m;
+    if(fsput(name,p+at,z))return 5;
+    at=at+z;
+  }
+  return 6;
+}
+
+int makefile(char *name,int compiler){
+  int k=find(name);
+  int i=0;
+  int n=0;
+  char *p=(char *)INPUT;
+  char *s=0;
+  if(!k||length(k)>SOURCEMAX)return 0;
+  s=bytes(k);
+  while(i<length(k)){
+    p[i]=s[i];
+    i++;
+  }
+  n=invoke(compiler,INPUT,i,OUTPUT);
+  if(n<4||n>CODEMAX||align4(n)!=n)return 0;
+  return n;
+}
+
+int publishboot(void){
+  int k=find("start");
+  int n=0;
+  int i=0;
+  int lo=0;
+  char *d=(char *)(DISK+1024);
+  char *t=(char *)(DISK+5120);
+  char *s=0;
+  if(!k)return 1;
+  n=length(k);
+  s=bytes(k);
+  if(n<8||n>LEGACY_CAP||u32(s)!=n-4)return 2;
+  while(i<128){
+    d[i]=0;
+    i++;
+  }
+  d[0]=5;
+  d[80]=165;
+  lo=n;
+  while(lo>255){
+    d[3]++;
+    lo=lo-256;
+  }
+  d[2]=lo;
+  s="start";
+  i=0;
+  while(i<5){
+    d[i+4]=s[i];
+    i++;
+  }
+  s=bytes(k);
+  i=0;
+  while(i<n){
+    t[i]=s[i];
+    i++;
+  }
+  if(!equal(t,s,n))return 3;
+  return fscommit();
+}
+
+int main(int ac,char **av){
+  int n=0;
+  int size=0;
+  int i=0;
+  char *p=(char *)OUTPUT;
+  char *c=(char *)COMPILER;
+  char **args=(char **)(TRANSFER+FILEMAX+1024);
+  if(ac!=2||strcmp(av[1],"auto"))return 2;
+  if(importseed()||unpackseed("bundle")||unpackseed("aux")||unpackseed("work"))return 3;
+  n=makefile("cc.c",LEGACY_CC);
+  if(!n)return 4;
+  size=n;
+  while(i<n){
+    c[i]=p[i];
+    i++;
+  }
+  n=makefile("cc.c",COMPILER);
+  if(n!=size||!equal(p,c,n))return 5;
+  n=makefile("cc.c",COMPILER);
+  if(n!=size||!equal(p,c,n)||fsnative("cc",COMPILER,n))return 6;
+  puts("three compiler generations byte-identical");
+  n=makefile("dev.c",COMPILER);
+  if(!n||fsnative("dev",OUTPUT,n))return 7;
+  n=makefile("start.c",COMPILER);
+  if(!n||fsnative("start",OUTPUT,n))return 8;
+  if(publishboot())return 9;
+  if(!native("dev",SHELL))return 10;
+  args[0]="dev";
+  args[1]="rebuild42";
+  args[2]=(char *)0;
+  return invoke(SHELL,2,(int)args,0);
+}
+

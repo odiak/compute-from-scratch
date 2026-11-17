@@ -1,0 +1,12 @@
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build extra2
+install
+build extra4
+exec dev plan rebuild

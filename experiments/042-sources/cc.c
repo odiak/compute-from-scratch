@@ -1,0 +1,1785 @@
+#include "layout"
+int emit(int *s,int hi,int lo){
+  int *o=(int *)s[2];
+  int k=s[3];
+  if(k<s[4]){
+    o[k]=hi*256*256+lo;
+    s[3]=k+1;
+  }
+  else{
+    s[5]=1;
+  }
+  return k;
+}
+int patch(int *s,int at,int dest){
+  int *o=(int *)s[2];
+  o[at]=5120*256*256+dest-at;
+  return 0;
+}
+int same(char *a,char *b,int n){
+  int i=0;
+  while(i<n){
+    if(a[i]-b[i]){
+      return 0;
+    }
+    i=i+1;
+  }
+  return 1;
+}
+int word(int c){
+  if(c==95)return 1;
+  if(c>64&&c<91)return 1;
+  return c>96&&c<123;
+}
+int quoted(int *s){
+  char *p=(char *)s[0];
+  int c=0;
+  if(p<(char *)s[1]){
+    c=*p;
+    p=p+1;
+    if(c-92){
+    }
+    else{
+      if(p<(char *)s[1]){
+        c=*p;
+        p=p+1;
+        if(c-110){
+        }
+        else{
+          c=10;
+        }
+        if(c-116){
+        }
+        else{
+          c=9;
+        }
+        if(c-48){
+        }
+        else{
+          c=0;
+        }
+      }
+      else{
+        s[5]=1;
+      }
+    }
+  }
+  else{
+    s[5]=1;
+  }
+  s[0]=(int)p;
+  return c;
+}
+int lex(int *s){
+  char *p=(char *)s[0];
+  char *e=(char *)s[1];
+  int c=0;
+  int n=0;
+  int v=0;
+  while(p<e){
+    if(*p>32){
+      c=*p;
+      p=p+1;
+      s[7]=(int)(p-1);
+      if(c-47){
+      }
+      else{
+        if(p<e){
+          if(*p-47){
+          }
+          else{
+            while(p<e){
+              if(*p-10){
+                p=p+1;
+              }
+              else{
+                s[0]=(int)p;
+                return lex(s);
+              }
+            }
+            s[0]=(int)p;
+            return lex(s);
+          }
+          if(*p-42){
+          }
+          else{
+            p=p+1;
+            while(p<e){
+              if(*p-42){
+                p=p+1;
+              }
+              else{
+                p=p+1;
+                if(p<e){
+                  if(*p-47){
+                  }
+                  else{
+                    s[0]=(int)(p+1);
+                    return lex(s);
+                  }
+                }
+              }
+            }
+            s[5]=1;
+            s[6]=0;
+            return 0;
+          }
+        }
+      }
+      if(c-39){
+      }
+      else{
+        s[0]=(int)p;
+        v=quoted(s);
+        p=(char *)s[0];
+        if(p<e){
+          if(*p-39){
+            s[5]=1;
+          }
+          p=p+1;
+        }
+        else{
+          s[5]=1;
+        }
+        s[0]=(int)p;
+        s[6]=256;
+        s[9]=v;
+        return 256;
+      }
+      if(c-34){
+      }
+      else{
+        s[7]=(int)p;
+        n=0;
+        while(p<e){
+          c=*p;
+          if(c-34){
+          }
+          else{
+            s[0]=(int)(p+1);
+            s[8]=n;
+            s[6]=264;
+            return 264;
+          }
+          if(c-92){
+          }
+          else{
+            p=p+1;
+            n=n+1;
+          }
+          p=p+1;
+          n=n+1;
+        }
+        s[5]=1;
+        s[6]=0;
+        return 0;
+      }
+      if(c>47){
+        if(c<58){
+          v=c-48;
+          while(p<e){
+            c=*p;
+            if(c<48){
+              c=0;
+            }
+            else{
+              if(c>57){
+                c=0;
+              }
+            }
+            if(c<1){
+              s[0]=(int)p;
+              s[6]=256;
+              s[9]=v;
+              return 256;
+            }
+            v=v*10+c-48;
+            if(v>65534){
+              s[5]=1;
+            }
+            p=p+1;
+          }
+          s[0]=(int)p;
+          s[6]=256;
+          s[9]=v;
+          return 256;
+        }
+      }
+      n=word(c);
+      if(n){
+        n=1;
+        while(p<e){
+          c=*p;
+          v=0;
+          v=word(c);
+          if(c>47&&c<58)v=1;
+          if(v<1){
+            e=p;
+          }
+          else{
+            p=p+1;
+            n=n+1;
+          }
+        }
+        s[8]=n;
+        s[0]=(int)p;
+        s[6]=257;
+        p=(char *)s[7];
+        if(n==6&&(same(p,"static",6)||same(p,"extern",6)))return lex(s);
+        if(n==6&&same(p,"switch",6))s[6]=275;
+        if(n==4&&same(p,"case",4))s[6]=276;
+        if(n==7&&same(p,"default",7))s[6]=277;
+        if(n==5&&same(p,"break",5))s[6]=278;
+        if(n==8&&same(p,"continue",8))s[6]=279;
+        if(n-3){
+        }
+        else{
+          if(same(p,"for",3)){
+            s[6]=274;
+          }
+          if(same(p,"int",3))s[6]=258;
+        }
+        if(n-4){
+        }
+        else{
+          if(same(p,"void",4)){
+            s[6]=273;
+          }
+          if(same(p,"char",4))s[6]=259;
+          if(same(p,"else",4))s[6]=263;
+        }
+        if(n-2){
+        }
+        else{
+          if(same(p,"if",2))s[6]=261;
+        }
+        if(n-5){
+        }
+        else{
+          if(same(p,"while",5))s[6]=262;
+        }
+        if(n-6){
+        }
+        else{
+          if(same(p,"return",6))s[6]=260;
+        }
+        return s[6];
+      }
+      if(p<e){
+        v=*p;
+        if(c-v){
+        }
+        else{
+          if(c-43){
+            if(c-45){
+            }
+            else{
+              c=272;
+              p=p+1;
+            }
+          }
+          else{
+            c=271;
+            p=p+1;
+          }
+          if(c-38){
+            if(c-124){
+            }
+            else{
+              c=266;
+              p=p+1;
+            }
+          }
+          else{
+            c=265;
+            p=p+1;
+          }
+        }
+        if(v-61){
+        }
+        else{
+          if(c-61){
+            if(c-33){
+            }
+            else{
+              c=268;
+              p=p+1;
+            }
+          }
+          else{
+            c=267;
+            p=p+1;
+          }
+        }
+      }
+      s[0]=(int)p;
+      s[6]=c;
+      return c;
+    }
+    p=p+1;
+  }
+  s[0]=(int)p;
+  s[6]=0;
+  return 0;
+}
+int need(int *s,int t){
+  int z=0;
+  if(s[6]-t){
+    s[5]=1;
+    return 0;
+  }
+  z=lex(s);
+  return 0;
+}
+int typ(int *s){
+  int t=s[6];
+  int z=0;
+  int r=0;
+  if(t-258){
+    if(t-259){
+      if(t-273){
+        s[5]=1;
+        return 0;
+      }
+      r=2;
+    }
+    else{
+      r=1;
+    }
+  }
+  z=lex(s);
+  if(s[6]-42){
+    return 0;
+  }
+  z=lex(s);
+  if(r-2){
+  }
+  else{
+    return 4;
+  }
+  if(r){
+    if(s[6]-42){
+    }
+    else{
+      z=lex(s);
+      return 3;
+    }
+    return 1;
+  }
+  return 2;
+}
+int find(int *s,int tab,int count,int stride){
+  int i=0;
+  int k=0;
+  while(i<count){
+    k=tab+i*stride;
+    if(s[k+1]-s[8]){
+    }
+    else{
+      if(same((char *)s[k],(char *)s[7],s[8])){
+        return i+1;
+      }
+    }
+    i=i+1;
+  }
+  return 0;
+}
+int expr(int *s,int lev){
+  int t=0;
+  int r=0;
+  int op=0;
+  int z=0;
+  int k=0;
+  int a=0;
+  int f=0;
+  int b=0;
+  int c=0;
+  int d=0;
+  char *p=0;
+  if(lev<0-3){
+    t=expr(s,lev+1);
+    if(lev+6){
+      if(lev+5){
+        if(s[6]-63){
+        }
+        else{
+          z=lex(s);
+          z=emit(s,13568,64);
+          b=emit(s,5120,0);
+          r=expr(s,0-6);
+          z=need(s,58);
+          c=emit(s,5120,0);
+          z=patch(s,b,s[3]);
+          t=expr(s,0-4);
+          z=patch(s,c,s[3]);
+          s[16]=0;
+        }
+      }
+      else{
+        if(s[6]-61){
+        }
+        else{
+          if(s[16]<1){
+            s[5]=1;
+            return 0;
+          }
+          d=s[17];
+          z=emit(s,63519,4066);
+          z=lex(s);
+          r=expr(s,0-5);
+          z=emit(s,63553,2017);
+          if(d-8){
+            if(d-1){
+              z=emit(s,47360,32);
+            }
+            else{
+              z=emit(s,14592,32);
+            }
+          }
+          else{
+            z=emit(s,63744,32);
+          }
+          s[16]=0;
+        }
+      }
+    }
+    else{
+      while(s[6]-44<1){
+        if(s[6]-44){
+          return t;
+        }
+        z=lex(s);
+        t=expr(s,0-5);
+        s[16]=0;
+      }
+    }
+    return t;
+  }
+  if(lev<0){
+    t=expr(s,lev+1);
+    if(lev+1){
+      op=265;
+      if(lev+3){
+      }
+      else{
+        op=266;
+      }
+      while(s[6]-op<1){
+        if(s[6]-op){
+          return t;
+        }
+        z=lex(s);
+        z=emit(s,28928,31);
+        z=emit(s,6815,2016);
+        if(op-265){
+          z=emit(s,13312,64);
+        }
+        else{
+          z=emit(s,13568,64);
+        }
+        b=emit(s,5120,0);
+        r=expr(s,lev+1);
+        z=emit(s,28928,31);
+        z=emit(s,6815,2016);
+        z=patch(s,b,s[3]);
+        t=0;
+      }
+    }
+    else{
+      op=s[6];
+      while(op>266){
+        if(op>268){
+          return t;
+        }
+        z=lex(s);
+        z=emit(s,63519,4064);
+        r=expr(s,0);
+        z=emit(s,63553,2017);
+        z=emit(s,27392,63);
+        if(op-267){
+          z=emit(s,6815,2016);
+        }
+        else{
+          z=emit(s,6815,6112);
+        }
+        t=0;
+        op=s[6];
+      }
+    }
+    return t;
+  }
+  if(lev<3){
+    t=expr(s,lev+1);
+    op=s[6];
+    k=0;
+    if(lev<1){
+      if(op-60){
+      }
+      else{
+        k=1;
+      }
+      if(op-62){
+      }
+      else{
+        k=1;
+      }
+    }
+    if(lev-1){
+    }
+    else{
+      if(op-43){
+      }
+      else{
+        k=1;
+      }
+      if(op-45){
+      }
+      else{
+        k=1;
+      }
+    }
+    if(lev-2){
+    }
+    else{
+      if(op-42){
+      }
+      else{
+        k=1;
+      }
+    }
+    while(k){
+      z=lex(s);
+      z=emit(s,63519,4064);
+      r=expr(s,lev+1);
+      if(lev-1){
+      }
+      else{
+        if(t>1){
+          if(r<1){
+            if(t-2){
+              z=emit(s,21277,28672);
+            }
+            else{
+              z=emit(s,21278,29696);
+            }
+          }
+        }
+      }
+      z=emit(s,63553,2017);
+      if(lev-1){
+      }
+      else{
+        if(t<1){
+          if(r>0){
+            if(op-43){
+              s[5]=1;
+            }
+            else{
+              if(r-2){
+                if(r-3){
+                }
+                else{
+                  z=emit(s,21277,28705);
+                }
+              }
+              else{
+                z=emit(s,21278,29729);
+              }
+              t=r;
+            }
+          }
+        }
+      }
+      if(op-43){
+      }
+      else{
+        z=emit(s,2816,32);
+      }
+      if(op-45){
+      }
+      else{
+        z=emit(s,19200,32);
+        if(r){
+          if(t-r){
+            s[5]=1;
+          }
+          else{
+            if(t-2){
+              if(t-3){
+              }
+              else{
+                z=emit(s,4867,31744);
+              }
+            }
+            else{
+              z=emit(s,4866,31744);
+            }
+            t=0;
+          }
+        }
+      }
+      if(op-42){
+      }
+      else{
+        z=emit(s,6912,31776);
+        t=0;
+      }
+      if(op-60){
+      }
+      else{
+        z=emit(s,27392,63);
+        z=emit(s,6815,42976);
+        t=0;
+      }
+      if(op-62){
+      }
+      else{
+        z=emit(s,27392,63);
+        z=emit(s,6815,55264);
+        t=0;
+      }
+      s[16]=0;
+      op=s[6];
+      k=0;
+      if(lev<1){
+        if(op-60){
+        }
+        else{
+          k=1;
+        }
+        if(op-62){
+        }
+        else{
+          k=1;
+        }
+      }
+      if(lev-1){
+      }
+      else{
+        if(op-43){
+        }
+        else{
+          k=1;
+        }
+        if(op-45){
+        }
+        else{
+          k=1;
+        }
+      }
+      if(lev-2){
+      }
+      else{
+        if(op-42){
+        }
+        else{
+          k=1;
+        }
+      }
+      if(s[5]){
+        return 0;
+      }
+    }
+    return t;
+  }
+  op=s[6];
+  s[16]=0;
+  if(op==45){
+    z=lex(s);
+    t=expr(s,3);
+    z=emit(s,19200,992);
+    s[16]=0;
+    return 0;
+  }
+  if(op-33){
+  }
+  else{
+    z=lex(s);
+    t=expr(s,3);
+    z=emit(s,28928,31);
+    z=emit(s,6815,6112);
+    s[16]=0;
+    return 0;
+  }
+  if(op-42){
+  }
+  else{
+    z=lex(s);
+    t=expr(s,3);
+    if(t<1){
+      s[5]=1;
+    }
+    z=emit(s,43520,994);
+    s[16]=1;
+    s[17]=4;
+    if(t-1){
+    }
+    else{
+      s[17]=1;
+    }
+    if(t-3){
+    }
+    else{
+      s[16]=2;
+      s[17]=8;
+    }
+    if(t-3){
+      if(t-1){
+        z=emit(s,47424,0);
+      }
+      else{
+        z=emit(s,14656,0);
+      }
+      t=0;
+    }
+    else{
+      z=emit(s,63808,0);
+      t=1;
+    }
+    return t;
+  }
+  if(op-40){
+  }
+  else{
+    z=lex(s);
+    a=0;
+    if(s[6]-258){
+    }
+    else{
+      a=1;
+    }
+    if(s[6]-259){
+    }
+    else{
+      a=1;
+    }
+    if(s[6]-273){
+    }
+    else{
+      a=1;
+    }
+    if(a){
+      a=typ(s);
+      z=need(s,41);
+      t=expr(s,3);
+      t=a;
+      s[16]=0;
+    }
+    else{
+      t=expr(s,0-6);
+      z=need(s,41);
+    }
+    k=1;
+  }
+  if(op-264){
+  }
+  else{
+    r=s[0];
+    s[0]=s[7];
+    a=emit(s,5120,0);
+    f=s[3];
+    b=0;
+    c=1;
+    d=0;
+    while(s[0]<s[7]+s[8]){
+      z=quoted(s);
+      b=b+z*c;
+      d=d+1;
+      if(d-4){
+        c=c*256;
+      }
+      else{
+        z=emit(s,0,b);
+        b=0;
+        c=1;
+        d=0;
+      }
+    }
+    z=emit(s,0,b);
+    z=patch(s,a,s[3]);
+    z=emit(s,4096,(32768*16-s[3]+f)*32);
+    s[0]=r;
+    z=lex(s);
+    t=1;
+    k=1;
+  }
+  if(op-256){
+  }
+  else{
+    z=emit(s,21120,s[9]*32);
+    z=lex(s);
+    k=1;
+  }
+  if(op-257){
+  }
+  else{
+    f=find(s,512,s[11],4);
+    a=find(s,32,s[10],3);
+    b=find(s,256,s[18],4);
+    p=(char *)s[7];
+      if(s[8]==4&&same(p,"exit",4))f=0-2;
+    if(s[8]==10&&same(p,"diskcommit",10))f=0-3;
+    if(s[8]==7&&same(p,"uartput",7)||!f&&s[8]==7&&same(p,"putchar",7))f=0-1;
+    if(s[8]==6&&same(p,"invoke",6))f=0-4;
+    z=lex(s);
+    if(s[6]-40){
+      if(a<1){
+        a=b;
+        if(a<1){
+          s[5]=1;
+          return 0;
+        }
+        a=256+(a-1)*4;
+        t=s[a+2];
+        z=emit(s,4096,(32768*16-s[3]+s[a+3])*32+2);
+        z=emit(s,47424,64);
+        s[16]=t+1;
+        s[17]=4;
+      }
+      else{
+        a=a-1;
+        t=s[34+a*3];
+        z=emit(s,37120,930+(a+4)*4096);
+        s[16]=t+1;
+        s[17]=4;
+        z=emit(s,47424,928+(a+4)*1024);
+      }
+    }
+    else{
+      if(f){
+      }
+      else{
+        s[5]=1;
+        return 0;
+      }
+        if(f>0){
+        f=512+(f-1)*4;
+      }
+      z=lex(s);
+      a=0;
+      if(s[6]-41){
+        r=1;
+      }
+      else{
+        r=0;
+      }
+      while(r){
+        t=expr(s,0-5);
+        z=emit(s,63519,4064);
+        a=a+1;
+        if(a>4){
+          s[5]=1;
+          return 0;
+        }
+        if(s[6]-44){
+          r=0;
+        }
+        else{
+          z=lex(s);
+        }
+      }
+      z=need(s,41);
+      if(f<0){
+        if(f==0-4){
+          if(a!=4)s[5]=1;
+        }
+        else if(f==0-3){
+          if(a)s[5]=1;
+        }
+        else if(a-1)s[5]=1;
+      }
+      else{
+        if(a-s[f+3]){
+          s[5]=1;
+        }
+      }
+      while(a>0){
+        z=emit(s,63553,2016+a);
+        a=a-1;
+      }
+      if(f==0-4){
+        z=emit(s,43521,1008);
+        z=emit(s,43522,993);
+        z=emit(s,43523,994);
+        z=emit(s,43524,995);
+        z=emit(s,21151,65412);
+        z=emit(s,43455,31741);
+        z=emit(s,43539,992);
+        z=emit(s,54847,512);
+        z=emit(s,43201,31741);
+      }
+      else if(f==0-3){
+        z=emit(s,21120,33);
+        z=emit(s,53928,1040);
+        z=emit(s,37161,16912);
+        z=emit(s,54847,512);
+        z=emit(s,10753,992);
+      }
+      else if(f==0-2){
+        z=emit(s,53928,4624);
+        z=emit(s,63808,529);
+        z=emit(s,37120,575);
+        z=emit(s,43201,31731);
+        z=emit(s,54879,960);
+      }
+      else if(f<0){
+        z=emit(s,63519,4065);
+        z=emit(s,10753,992);
+        z=emit(s,54847,608);
+        z=emit(s,63553,2016);
+      }
+      else{
+        z=emit(s,37888,s[f+2]-s[3]);
+      }
+      t=0;
+    }
+    k=1;
+  }
+  if(k<1){
+    s[5]=1;
+    return 0;
+  }
+  while(s[6]-91<1){
+    if(s[6]-91){
+      return t;
+    }
+    if(t<1){
+      s[5]=1;
+      return 0;
+    }
+    z=lex(s);
+    z=emit(s,63519,4064);
+    r=expr(s,0-6);
+    z=need(s,93);
+    if(t-2){
+    }
+    else{
+      z=emit(s,21248,3072);
+    }
+    if(t-3){
+    }
+    else{
+      z=emit(s,21277,28672);
+    }
+    z=emit(s,63553,2017);
+    z=emit(s,2816,32);
+    z=emit(s,43520,994);
+    s[16]=1;
+    s[17]=4;
+    if(t-1){
+    }
+    else{
+      s[17]=1;
+    }
+    if(t-3){
+    }
+    else{
+      s[16]=2;
+      s[17]=8;
+    }
+    if(t-3){
+      if(t-1){
+        z=emit(s,47424,0);
+      }
+      else{
+        z=emit(s,14656,0);
+      }
+      t=0;
+    }
+    else{
+      z=emit(s,63808,0);
+      t=1;
+    }
+  }
+  while(s[6]>270){
+    op=s[6];
+    if(op>272){
+      return t;
+    }
+    if(s[16]<1){
+      s[5]=1;
+      return 0;
+    }
+    z=lex(s);
+    a=1;
+    if(t-2){
+    }
+    else{
+      a=4;
+    }
+    if(t-3){
+    }
+    else{
+      a=8;
+    }
+    z=emit(s,63519,4064);
+    if(op-271){
+      z=emit(s,20736,a*1024);
+    }
+    else{
+      z=emit(s,4352,a*1024);
+    }
+    if(s[17]-8){
+      if(s[17]-1){
+        z=emit(s,47360,64);
+      }
+      else{
+        z=emit(s,14592,64);
+      }
+    }
+    else{
+      z=emit(s,63744,64);
+    }
+    z=emit(s,63553,2016);
+    s[16]=0;
+  }
+  return t;
+}
+int decl(int *s,int t){
+  int k=s[10];
+  int z=0;
+  if(k>31){
+    s[5]=1;
+    return 0;
+  }
+  if(s[6]-257){
+    s[5]=1;
+    return 0;
+  }
+  if(find(s,32,k,3)){
+    s[5]=1;
+    return 0;
+  }
+  s[32+k*3]=s[7];
+  s[33+k*3]=s[8];
+  s[34+k*3]=t;
+  s[10]=k+1;
+  z=lex(s);
+  if(s[6]-91){
+  }
+  else{
+    z=lex(s);
+    z=need(s,93);
+    if(t-1){
+      if(t){
+        s[5]=1;
+      }
+      t=2;
+    }
+    else{
+      t=3;
+    }
+    s[34+k*3]=t;
+  }
+  return k;
+}
+int retcode(int *s){
+  int z=emit(s,37120,1023);
+  z=emit(s,43217,31741);
+  z=emit(s,54879,960);
+  return 0;
+}
+int breaks(int *s,int head,int dest){
+  int *o=(int *)s[2];
+  int next=0;
+  while(head){
+    next=o[head];
+    o[head]=5120*256*256+dest-head;
+    head=next;
+  }
+  return 0;
+}
+int stmt(int *s){
+  int z=0;
+  int t=0;
+  int k=0;
+  int a=0;
+  int b=0;
+  int c=0;
+  int d=0;
+  int e=0;
+  int f=0;
+  int g=0;
+  int h=0;
+  int v=0;
+  if(s[5]){
+    return 0;
+  }
+  t=s[6];
+  if(t==278||t==279){
+    z=lex(s);
+    z=need(s,59);
+    if(t==278){
+      if(!s[24]){
+        s[5]=1;
+        return 0;
+      }
+      s[20]=emit(s,0,s[20]);
+    }
+    else{
+      if(!s[23]){
+        s[5]=1;
+        return 0;
+      }
+      z=emit(s,5120,s[23]-s[3]);
+    }
+    return 0;
+  }
+  if(t==276){
+    if(!s[19]||s[21]>55){
+      s[5]=1;
+      return 0;
+    }
+    z=lex(s);
+    v=1;
+    if(s[6]==45){
+      v=0-1;
+      z=lex(s);
+    }
+    if(s[6]!=256){
+      s[5]=1;
+      return 0;
+    }
+    s[320+s[21]*2]=v*s[9];
+    s[321+s[21]*2]=s[3];
+    s[21]++;
+    z=lex(s);
+    z=need(s,58);
+    return 0;
+  }
+  if(t==277){
+    if(!s[19]){
+      s[5]=1;
+      return 0;
+    }
+    s[22]=s[3];
+    z=lex(s);
+    z=need(s,58);
+    return 0;
+  }
+  if(t==275){
+    e=s[20];
+    f=s[21];
+    g=s[22];
+    s[20]=0;
+    s[22]=0;
+    s[19]++;
+    s[24]++;
+    z=lex(s);
+    z=need(s,40);
+    z=expr(s,0-6);
+    z=need(s,41);
+    z=emit(s,47360,928+(200+s[19])*1024);
+    a=emit(s,5120,0);
+    z=stmt(s);
+    b=emit(s,5120,0);
+    z=patch(s,a,s[3]);
+    h=f;
+    while(h<s[21]){
+      v=s[320+h*2];
+      z=emit(s,47424,928+(200+s[19])*1024);
+      if(v<0){
+        z=emit(s,21120,(0-v)*32+1);
+        z=emit(s,19201,993);
+      }
+      else z=emit(s,21120,v*32+1);
+      z=emit(s,27392,63);
+      z=emit(s,21504,65);
+      z=emit(s,5120,s[321+h*2]-s[3]);
+      h++;
+    }
+    if(s[22])z=emit(s,5120,s[22]-s[3]);
+    z=patch(s,b,s[3]);
+    z=breaks(s,s[20],s[3]);
+    s[20]=e;
+    s[21]=f;
+    s[22]=g;
+    s[19]--;
+    s[24]--;
+    return 0;
+  }
+  if(t-123){
+  }
+  else{
+    z=lex(s);
+    while(s[6]-125){
+      if(s[6]<1){
+        s[5]=1;
+      }
+      if(s[5]){
+        return 0;
+      }
+      z=stmt(s);
+    }
+    z=lex(s);
+    return 0;
+  }
+  if(t-274){
+  }
+  else{
+    e=s[20];
+    f=s[23];
+    s[20]=0;
+    s[24]++;
+    z=lex(s);
+    z=need(s,40);
+    if(s[6]-59){
+      z=expr(s,0-6);
+    }
+    z=need(s,59);
+    a=s[3];
+    if(s[6]-59){
+      z=expr(s,0-6);
+    }
+    else{
+      z=emit(s,21120,32);
+    }
+    z=need(s,59);
+    z=emit(s,13568,64);
+    b=emit(s,5120,0);
+    c=emit(s,5120,0);
+    d=s[3];
+    s[23]=d;
+    if(s[6]-41){
+      z=expr(s,0-6);
+    }
+    z=need(s,41);
+    z=emit(s,5120,a-s[3]);
+    z=patch(s,c,s[3]);
+    z=stmt(s);
+    z=emit(s,5120,d-s[3]);
+    z=patch(s,b,s[3]);
+    z=breaks(s,s[20],s[3]);
+    s[20]=e;
+    s[23]=f;
+    s[24]--;
+    return 0;
+  }
+  if(t-260){
+  }
+  else{
+    z=lex(s);
+    z=expr(s,0-6);
+    z=need(s,59);
+    z=retcode(s);
+    return 0;
+  }
+  if(t-261){
+    if(t-262){
+      k=0;
+    }
+    else{
+      k=1;
+    }
+  }
+  else{
+    k=1;
+  }
+  if(k){
+    e=s[20];
+    f=s[23];
+    if(t==262){
+      s[20]=0;
+      s[24]++;
+    }
+    a=s[3];
+    if(t==262)s[23]=a;
+    z=lex(s);
+    z=need(s,40);
+    z=expr(s,0-6);
+    z=need(s,41);
+    z=emit(s,13568,64);
+    b=emit(s,5120,0);
+    z=stmt(s);
+    if(t-262){
+      if(s[6]-263){
+        z=patch(s,b,s[3]);
+      }
+      else{
+        c=emit(s,5120,0);
+        z=patch(s,b,s[3]);
+        z=lex(s);
+        z=stmt(s);
+        z=patch(s,c,s[3]);
+      }
+    }
+    else{
+      c=emit(s,5120,a-s[3]);
+      z=patch(s,b,s[3]);
+    }
+    if(t==262){
+      z=breaks(s,s[20],s[3]);
+      s[20]=e;
+      s[23]=f;
+      s[24]--;
+    }
+    return 0;
+  }
+  if(t-258){
+    if(t-259){
+      k=0;
+    }
+    else{
+      k=1;
+    }
+  }
+  else{
+    k=1;
+  }
+  if(k){
+    t=typ(s);
+    g=1;
+    while(g){
+      a=decl(s,t);
+      if(s[6]-61){
+        z=emit(s,21120,0);
+      }
+      else{
+        z=lex(s);
+        z=expr(s,0-5);
+      }
+      z=emit(s,47360,928+(a+4)*1024);
+      if(s[6]==44)z=lex(s);
+      else g=0;
+    }
+    z=need(s,59);
+    return 0;
+  }
+  z=expr(s,0-6);
+  z=need(s,59);
+  return 0;
+}
+int compile(char *src,int n,int *out,int cap){
+  int address=(int)out;
+  int *s=(int *)CCSTATE;
+  int i=0;
+  int z=0;
+  int t=0;
+  int f=0;
+  int a=0;
+  int last=0;
+  int mainat=0;
+  char *p=0;
+  if(cap<2048){
+    return 0;
+  }
+  if(n<1){
+    return 0;
+  }
+  if(n>PPMAX){
+    return 0;
+  }
+  while(i<1024){
+    s[i]=0;
+    i=i+1;
+  }
+  s[0]=(int)src;
+  s[1]=(int)(src+n);
+  s[2]=(int)out;
+  s[3]=1;
+  s[4]=0;
+  i=cap;
+  while(i>3){
+    s[4]=s[4]+1;
+    i=i-4;
+  }
+  z=lex(s);
+  while(s[6]){
+    if(s[5]){
+      return 0;
+    }
+    if(s[11]>127){
+      return 0;
+    }
+    t=typ(s);
+    if(s[6]-257){
+      return 0;
+    }
+    if(find(s,512,s[11],4)){
+      return 0;
+    }
+    f=512+s[11]*4;
+    s[f]=s[7];
+    s[f+1]=s[8];
+    s[f+2]=s[3];
+    last=s[3];
+    p=(char *)s[7];
+    if(s[8]==7&&same(p,"__start",7))s[26]=last;
+    if(s[8]==4&&same(p,"main",4))mainat=last;
+    s[11]=s[11]+1;
+    s[10]=0;
+    z=lex(s);
+    if(s[6]-40){
+      s[11]=s[11]-1;
+      a=256+s[18]*4;
+      if(s[18]>15){
+        return 0;
+      }
+      s[a]=s[f];
+      s[a+1]=s[f+1];
+      s[a+2]=t;
+      z=emit(s,5120,2);
+      s[a+3]=s[3];
+      i=0;
+      if(s[6]-61){
+      }
+      else{
+        z=lex(s);
+        if(s[6]-256){
+          return 0;
+        }
+        i=s[9];
+        z=lex(s);
+      }
+      z=emit(s,0,i);
+      z=need(s,59);
+      s[18]=s[18]+1;
+    }
+    else{
+      z=need(s,40);
+      z=emit(s,43439,31741);
+      z=emit(s,37120,1021);
+      a=0;
+      if(s[6]==273){
+        i=s[0];
+        z=lex(s);
+        if(s[6]!=41){
+          s[0]=i;
+          s[6]=273;
+        }
+      }
+      if(s[6]-41){
+        i=1;
+      }
+      else{
+        i=0;
+      }
+      while(i){
+        t=typ(s);
+        z=decl(s,t);
+        z=emit(s,47360,928+(a+4)*1024+a+1);
+        a=a+1;
+        if(a>4){
+          return 0;
+        }
+        if(s[6]-44){
+          i=0;
+        }
+        else{
+          z=lex(s);
+        }
+      }
+      s[f+3]=a;
+      z=need(s,41);
+      if(s[6]-123){
+        return 0;
+      }
+      z=stmt(s);
+      z=emit(s,21120,0);
+      z=retcode(s);
+    }
+  }
+  if(s[5]){
+    return 0;
+  }
+  if(s[11]<1){
+    return 0;
+  }
+  if(mainat){
+    last=s[3];
+    z=emit(s,43455,31731);
+    z=emit(s,43520,1011);
+    z=emit(s,53928,4624);
+    z=emit(s,37120,1009);
+    z=emit(s,63744,529);
+    z=emit(s,63519,4065);
+    z=emit(s,63519,4066);
+    i=0;
+    while(i<s[18]){
+      a=256+i*4;
+      t=out[s[a+3]];
+      z=emit(s,21120,t*32);
+      z=emit(s,4096,(32768*16-s[3]+s[a+3])*32+1);
+      z=emit(s,47360,32);
+      i++;
+    }
+    z=emit(s,63553,2018);
+    z=emit(s,63553,2017);
+    if(s[26]){
+      z=emit(s,63519,4066);
+      z=emit(s,37888,s[26]-s[3]);
+      z=emit(s,10752,993);
+      z=emit(s,63553,2018);
+    }
+    z=emit(s,37888,mainat-s[3]);
+    z=emit(s,43201,31731);
+    z=emit(s,54879,960);
+  }
+  z=patch(s,0,last);
+  i=0;
+  while(i<s[3]){
+    if(out[i]-21248*256*256-3072){
+    }
+    else{
+      out[i]=21278*256*256+29696;
+    }
+    i=i+1;
+  }
+  if(s[5])return 0;
+  return s[3]*4;
+}
+int bootstrap(char *src,int n,int *out,int cap){
+  int size=compile(src,n,out,cap);
+  int i=0;
+  int v=0;
+  while(i*4<size){
+    v=out[i];
+    if(v>5118*256*256){
+      if(v<5120*256*256){
+        out[i]=v+1024*256*256;
+      }
+    }
+    if(v>37886*256*256){
+      if(v<37888*256*256){
+        out[i]=v+1024*256*256;
+      }
+    }
+    i=i+1;
+  }
+  return size;
+}
+        int header(char *name,int n){
+  int *d=(int *)DIRECTORY;
+  int i=0;
+  int j=0;
+  char *p=0;
+  while(i<FILES){
+    p=(char *)(d+4);
+    j=0;
+    if(d[0]==n){
+      while(j<n&&p[j]==name[j])j++;
+      if(j==n)return i+1;
+    }
+    d=d+16;
+    i++;
+  }
+  return 0;
+}
+int pp(char *src,int n,char *out,int *s){
+  int i=0;
+  int k=0;
+  int a=0;
+  int b=0;
+  int c=0;
+  int d=0;
+  int j=0;
+  int m=0;
+  int hit=0;
+  int depth=0;
+  int skip=0;
+  int bol=1;
+  int keep=0;
+  int *conds=s+544+s[1]*32;
+  char *p=0;
+  char *dir=0;
+  s[1]++;
+  if(s[1]>16)return 0-1;
+  while(i<n){
+    keep=k;
+    c=src[i];
+    if(c==92&&i+1<n&&src[i+1]==10){
+      i=i+2;
+    }
+    else if(c==35&&bol){
+      bol=0;
+      i++;
+      while(i<n&&(src[i]<33&&src[i]!=10))i++;
+      a=i;
+      while(i<n&&src[i]>32)i++;
+      b=i-a;
+      if(b==6&&same(src+a,"ifndef",6)||b==5&&same(src+a,"ifdef",5)){
+        hit=b;
+        i++;
+        while(i<n&&src[i]<33&&src[i]!=10)i++;
+        a=i;
+        while(i<n&&src[i]>32)i++;
+        b=i-a;
+        j=0;
+        m=0;
+        while(j<s[0]){
+          d=8+j*4;
+          if(b==s[d+1]&&same(src+a,(char *)s[d],b))m=1;
+          j++;
+        }
+        if(hit==6)m=!m;
+        if(depth>15)return 0-1;
+        conds[depth]=skip;
+        depth++;
+        skip=skip||!m;
+        while(i<n&&src[i]!=10)i++;
+      }
+      else if(b==5&&same(src+a,"endif",5)){
+        if(depth<1)return 0-1;
+        depth--;
+        skip=conds[depth];
+      }
+      else if(b==4&&same(src+a,"else",4)){
+        if(depth<1)return 0-1;
+        skip=conds[depth-1]||!skip;
+      }
+      else if(skip){
+        while(i<n&&src[i]!=10)i++;
+      }
+      else if(b==7&&same(src+a,"include",7)){
+        while(i<n&&src[i]<33)i++;
+        c=src[i];
+        if(c!=34&&c!=60)return 0-1;
+        i++;
+        a=i;
+        while(i<n&&src[i]!=34&&src[i]!=62)i++;
+        if(i==n)return 0-1;
+        d=header(src+a,i-a);
+        if(!d)return 0-1;
+        d--;
+        int *meta=(int *)(DIRECTORY+d*64);
+        p=(char *)(DATA+meta[2]);
+        j=pp(p,meta[1],out+k,s);
+        if(j<0)return 0-1;
+        k=k+j;
+        i++;
+        while(i<n&&src[i]!=10)i++;
+      }
+      else{
+        if(b==6&&same(src+a,"define",6)){
+          while(i<n&&(src[i]<33&&src[i]!=10))i++;
+          a=i;
+          while(i<n&&src[i]>32)i++;
+          b=i-a;
+          while(i<n&&(src[i]<33&&src[i]!=10))i++;
+          c=i;
+          while(i<n&&(src[i]!=10||i>c&&src[i-1]==92))i++;
+          d=8+s[0]*4;
+          if(s[0]>127)return 0-1;
+          s[d]=(int)(src+a);
+          s[d+1]=b;
+          s[d+2]=(int)(src+c);
+          s[d+3]=i-c;
+          s[0]++;
+        }
+        else return 0-1;
+      }
+      if((int)(out+k)>PPTEXT+PPMAX-1)return 0-1;
+      out[k]=10;
+      k++;
+    }
+    else{
+      if(c==10)bol=1;
+      if(c==34||c==39){
+        bol=0;
+        if((int)(out+k)>PPTEXT+PPMAX-1)return 0-1;
+        out[k]=c;
+        k++;
+        i++;
+        hit=1;
+        while(i<n&&hit){
+          j=src[i];
+          if((int)(out+k)>PPTEXT+PPMAX-1)return 0-1;
+          out[k]=j;
+          k++;
+          i++;
+          if(j==92){
+            if(i<n){
+              if((int)(out+k)>PPTEXT+PPMAX-1)return 0-1;
+              out[k]=src[i];
+              k++;
+              i++;
+            }
+          }
+          else if(j==c)hit=0;
+        }
+        if(hit)return 0-1;
+      }
+      else{
+        if(c==47&&i+1<n&&(src[i+1]==42||src[i+1]==47)){
+          d=src[i+1];
+          i=i+2;
+          if(d==47){
+            while(i<n&&(src[i]!=10||i>0&&src[i-1]==92))i++;
+          }
+          else{
+            hit=1;
+            while(i+1<n&&hit){
+              if(src[i]==10)bol=1;
+              if(src[i]==42&&src[i+1]==47){
+                i=i+2;
+                hit=0;
+              }
+              else i++;
+            }
+            if(hit)return 0-1;
+          }
+          if((int)(out+k)>PPTEXT+PPMAX-1)return 0-1;
+          out[k]=32;
+          k++;
+        }
+        else{
+          if(c>32)bol=0;
+          hit=0;
+          if(word(c))hit=1;
+          if(hit){
+            a=i;
+            i++;
+            while(i<n&&(word(src[i])||src[i]>47&&src[i]<58))i++;
+            b=i-a;
+            j=0;
+            hit=0;
+            while(j<s[0]){
+              d=8+j*4;
+              if(b==s[d+1]&&same(src+a,(char *)s[d],b))hit=d;
+              j++;
+            }
+            if(hit&&!skip){
+              j=pp((char *)s[hit+2],s[hit+3],out+k,s);
+              if(j<0)return 0-1;
+              k=k+j;
+            }
+            else{
+              j=a;
+              while(j<i){
+                if((int)(out+k)>PPTEXT+PPMAX-1)return 0-1;
+                out[k]=src[j];
+                k++;
+                j++;
+              }
+            }
+          }
+          else{
+            if((int)(out+k)>PPTEXT+PPMAX-1)return 0-1;
+            out[k]=c;
+            k++;
+            i++;
+          }
+        }
+      }
+    }
+    if(skip)k=keep;
+    if((int)(out+k)>PPTEXT+PPMAX)return 0-1;
+  }
+  if(depth)return 0-1;
+  s[1]--;
+  return k;
+}
+int driver(char *src,int n,int *out,int cap){
+  if((int)out!=OUTPUT||(int)src!=INPUT||n<1||n>SOURCEMAX)return 0;
+  int *s=(int *)PPSTATE;
+  char *text=(char *)(PPTEXT);
+  int i=0;
+  while(i<544){
+    s[i]=0;
+    i++;
+  }
+  n=pp(src,n,text,s);
+  if(n<0)return 0;
+  return bootstrap(text,n,out,CODEMAX);
+}
+                        

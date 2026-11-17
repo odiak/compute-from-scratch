@@ -1,0 +1,2 @@
+#include "libc"
+int main(int ac,char **av){char *b=(char *)(16864*256*256);int f=0;int n=0;int i=0;int k=0;if(ac!=6)return 2;f=open(av[1],0);if(f<0)return 1;n=read(f,b,32768);close(f);k=strlen(av[2]);while(i+k<n&&strncmp(b+i,av[2],k))i++;if(i+k>n)return 2;i=i-av[5][0]+48;if(i<0)return 2;f=open(av[3],577);if(f<0)return 1;if(write(f,b,i)!=i)return 1;close(f);f=open(av[4],577);if(f<0)return 1;if(write(f,b+i,n-i)!=n-i)return 1;return close(f);}

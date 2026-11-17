@@ -1,0 +1,38 @@
+int u32(char *p){
+
+    return p[0]+p[1]*256+p[2]*256*256+p[3]*256*256*256;
+
+}
+
+
+int set32(char *p,int n){
+
+    int i=0;
+
+    int q=0;
+
+    while(i<4){
+
+        q=0;
+
+        while(n>255){
+
+            n=n-256;
+
+            q++;
+
+        }
+
+        p[i]=n;
+
+        n=q;
+
+        i++;
+
+    }
+
+    return 0;
+
+}
+
+

@@ -1,0 +1,14 @@
+as new1
+install
+build extra1
+install
+build extra3
+install
+build raw
+install
+build precc
+install
+build bridge
+install
+build seed
+exec seed auto

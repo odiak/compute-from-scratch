@@ -1,0 +1,578 @@
+#include "runtime"
+
+int ccaddr=0;
+
+int have=0;
+
+int csize=0;
+
+
+int number(int n){
+
+    int q=0;
+
+    if(n<0){
+
+        fdch(1,45);
+
+        n=0-n;
+
+    }
+
+    while(n>9){
+
+        n=n-10;
+
+        q++;
+
+    }
+
+    if(q)number(q);
+
+    fdch(1,n+48);
+
+    return 0;
+
+}
+
+
+int getline(char *p,int cap){
+
+    int n=0;
+
+    int bad=0;
+
+    char c=0;
+
+    while(1){
+
+        if(read(0,(char *)(EDITBUF+FILEMAX+4096),1)<1)return -1;
+
+        c=((char *)(EDITBUF+FILEMAX+4096))[0];
+
+        if(c==13)c=10;
+
+        if(c==10){
+
+            fdch(1,10);
+
+            break;
+
+        }
+
+        if(c==8||c==127){
+
+            if(n){
+
+                n--;
+
+                out(1,"\b \b");
+
+            }
+
+        }
+
+        else{
+
+            fdch(1,c);
+
+            if(!c)bad=1;
+
+            if(n<cap-1){
+
+                p[n]=c;
+
+                n++;
+
+            }
+
+            else bad=1;
+
+        }
+
+    }
+
+    p[n]=0;
+
+    if(bad)return -1;
+
+    return n;
+
+}
+
+
+int words(char *s,char **v){
+
+    int i=0;
+
+    int j=0;
+
+    int n=0;
+
+    int q=0;
+
+    while(s[i]){
+
+        while(s[i]&&s[i]<33)i++;
+
+        if(!s[i])break;
+
+        if(n==64)return -1;
+
+        v[n]=s+j;
+
+        n++;
+
+        q=0;
+
+        while(s[i]){
+
+            if(!q&&s[i]<33)break;
+
+            if(s[i]==34||s[i]==39){
+
+                if(!q)q=s[i];
+
+                else if(q==s[i])q=0;
+
+                else{
+
+                    s[j]=s[i];
+
+                    j++;
+
+                }
+
+                i++;
+
+            }
+
+            else{
+
+                s[j]=s[i];
+
+                i++;
+
+                j++;
+
+            }
+
+        }
+
+        if(q)return -1;
+
+        if(s[i])i++;
+
+        s[j]=0;
+
+        j++;
+
+    }
+
+    v[n]=(char *)0;
+
+    return n;
+
+}
+
+
+int make(char *name,int dest){
+
+    int k=find(name);
+
+    int n=0;
+
+    int i=0;
+
+    char *src=(char *)INPUT;
+
+    char *p=(char *)OUTPUT;
+
+    char *d=(char *)dest;
+
+    char *s=0;
+
+    if(dest!=USER&&dest!=APP)return 0;
+
+    if(!k||length(k)>SOURCEMAX)return 0;
+
+    s=bytes(k);
+
+    while(i<length(k)){
+
+        src[i]=s[i];
+
+        i++;
+
+    }
+
+    n=invoke(ccaddr,(int)src,length(k),OUTPUT);
+
+    if(n<4||n>CODEMAX||align4(n)!=n)return 0;
+
+    i=0;
+
+    while(i<n){
+
+        d[i]=p[i];
+
+        i++;
+
+    }
+
+    return n;
+
+}
+
+
+int replacefile(char *name,char *from,char *to){
+
+    int k=find(name);
+
+    char *s=0;
+
+    char *d=(char *)INPUT;
+
+    int n=0;
+
+    int i=0;
+
+    int j=0;
+
+    int at=0;
+
+    int a=flen(from);
+
+    int b=flen(to);
+
+    if(!k||!a)return 1;
+
+    s=bytes(k);
+
+    n=length(k);
+
+    while(i<n){
+
+        if(i+a<n+1&&equal(s+i,from,a)){
+
+            if(at+b>FILEMAX)return 2;
+
+            j=0;
+
+            while(j<b){
+
+                d[at]=to[j];
+
+                at++;
+
+                j++;
+
+            }
+
+            i=i+a;
+
+        }
+
+        else{
+
+            if(at==FILEMAX)return 2;
+
+            d[at]=s[i];
+
+            at++;
+
+            i++;
+
+        }
+
+    }
+
+    return fsput(name,d,at);
+
+}
+
+
+int decimal(char *s){
+
+    int n=0;
+
+    while(*s>47&&*s<58){
+
+        if(n>FILEMAX)return -1;
+
+        n=n*10+*s-48;
+
+        s++;
+
+    }
+
+    return n;
+
+}
+
+
+int editfile(char *name){
+
+    char *b=(char *)EDITBUF;
+
+    char *l=b+FILEMAX+8192;
+
+    char *p=0;
+
+    int n=0;
+
+    int k=find(name);
+
+    int i=0;
+
+    int j=0;
+
+    int a=0;
+
+    int z=0;
+
+    int t=0;
+
+    int ln=0;
+
+    if(k){
+
+        n=length(k);
+
+        p=bytes(k);
+
+        while(i<n){
+
+            b[i]=p[i];
+
+            i++;
+
+        }
+
+    }
+
+    puts("edit: p; i/r/d N text; w save; q discard");
+
+    while(1){
+
+        out(1,"edit42> ");
+
+        if(getline(l,4096)<0)continue;
+
+        if(!strcmp(l,"q"))return 0;
+
+        if(!strcmp(l,"w")){
+
+            if(fsput(name,b,n))puts("save failed");
+
+            else if(fscommit())puts("commit failed");
+      else puts("saved");
+
+            continue;
+
+        }
+
+        if(l[0]==112){
+
+            write(1,b,n);
+
+            fdch(1,10);
+
+            continue;
+
+        }
+
+        i=1;
+
+        while(l[i]==32)i++;
+
+        ln=decimal(l+i);
+
+        while(l[i]>47&&l[i]<58)i++;
+
+        a=0;
+
+        j=1;
+
+        while(a<n&&j<ln){
+
+            if(b[a]==10)j++;
+
+            a++;
+
+        }
+
+        if(ln<1||j!=ln){
+
+            puts("line error");
+
+            continue;
+
+        }
+
+        z=a;
+
+        t=0;
+
+        if(l[0]==114||l[0]==100){
+
+            if(a==n){
+
+                puts("no line");
+
+                continue;
+
+            }
+
+            while(z<n&&b[z]!=10)z++;
+
+            if(z<n)z++;
+
+        }
+
+
+        if(l[0]!=105&&l[0]!=114&&l[0]!=100){
+
+            puts("edit error");
+
+            continue;
+
+        }
+
+        if(l[0]!=100){
+
+            if(l[i]!=32){
+
+                puts("missing text");
+
+                continue;
+
+            }
+
+            i++;
+
+            t=flen(l+i)+1;
+
+        }
+
+        if(n+t-(z-a)>FILEMAX){
+
+            puts("capacity");
+
+            continue;
+
+        }
+
+        if(t>z-a){
+
+            j=n;
+
+            while(j>z){
+
+                j--;
+
+                b[j+t-(z-a)]=b[j];
+
+            }
+
+        }
+
+        else{
+
+            j=z;
+
+            while(j<n){
+
+                b[j+t-(z-a)]=b[j];
+
+                j++;
+
+            }
+
+        }
+
+        n=n+t-(z-a);
+
+        if(t){
+
+            j=0;
+
+            while(j<t-1){
+
+                b[a+j]=l[i+j];
+
+                j++;
+
+            }
+
+            b[a+j]=10;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+
+int extractnew(char *file,char *member){
+
+    int k=find(file);
+
+    char *p=0;
+
+    int n=0;
+
+    int i=0;
+
+    int z=0;
+
+    int len=0;
+
+    int at=0;
+
+    int size=0;
+
+    int found=0;
+
+    if(!k)return 1;
+
+    p=bytes(k);
+
+    n=length(k);
+
+    while(i<n&&p[i]){
+
+        z=p[i];
+
+        if(z>NAMEMAX||i+3+z>n)return 2;
+
+        len=p[i+1]+p[i+2]*256;
+
+        if(i+3+z+len>n)return 2;
+
+        if(flen(member)==z&&equal(member,p+i+3,z)){
+
+            if(found)return 2;
+
+            found=1;
+
+            at=i+3+z;
+
+            size=len;
+
+        }
+
+        i=i+3+z+len;
+
+    }
+
+    if(i!=n-1||!found||p[i])return 2;
+
+    return fsput(member,p+at,size);
+
+}
+
+
+/*END*/

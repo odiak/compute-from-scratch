@@ -1,0 +1,539 @@
+#include "layout"
+#include "word32"
+#include "lz"
+int *node(int k){
+
+    return (int *)(DIRECTORY+(k-1)*64);
+
+}
+
+
+int flen(char *p){
+
+    int n=0;
+
+    while(p[n])n++;
+
+    return n;
+
+}
+
+
+int equal(char *a,char *b,int n){
+
+    int i=0;
+
+    while(i<n){
+
+        if(a[i]!=b[i])return 0;
+
+        i++;
+
+    }
+
+    return 1;
+
+}
+
+
+int find(char *s){
+
+    int k=1;
+
+    int n=flen(s);
+
+    int *d=0;
+
+    if(n<1||n>NAMEMAX)return 0;
+
+    while(k<FILES+1){
+
+        d=node(k);
+
+        if(d[0]==n&&equal((char *)(d+4),s,n))return k;
+
+        k++;
+
+    }
+
+    return 0;
+
+}
+
+
+char *bytes(int k){
+
+    int *d=node(k);
+
+    return (char *)(DATA+d[2]);
+
+}
+
+
+int length(int k){
+
+    int *d=node(k);
+
+    return d[1];
+
+}
+
+
+int align4(int n){
+
+    int i=0;
+
+    while(i<n)i=i+4;
+
+    return i;
+
+}
+
+
+int fscheck(void){
+
+    int *h=(int *)IMAGE;
+
+    int *d=0;
+
+    int *e=0;
+
+    int i=1;
+
+    int j=0;
+
+    if(h[0]!=MAGIC||h[1]!=2||h[2]!=FILES||h[3]!=FSSIZE||h[4]!=CODEMAX||h[5]!=FILEMAX)return 1;
+
+    while(i<FILES+1){
+
+        d=node(i);
+
+        if(d[0]){
+
+            if(d[0]<1||d[0]>NAMEMAX||d[1]<0||d[1]>FILEMAX||d[3]<d[1]||d[3]>FILEMAX||d[2]<0||d[2]>SPACE-d[3])return 2;
+
+            j=1;
+
+            while(j<i){
+
+                e=node(j);
+
+                if(e[0]){
+
+                    if(d[0]==e[0]&&equal((char *)(d+4),(char *)(e+4),d[0]))return 3;
+
+                    if(d[3]&&e[3]&&d[2]<e[2]+e[3]&&e[2]<d[2]+d[3])return 4;
+
+                }
+
+                j++;
+
+            }
+
+        }
+
+        i++;
+
+    }
+
+    return 0;
+
+}
+
+
+int fresh(char *name){
+
+    int n=flen(name);
+
+    int k=1;
+
+    int i=0;
+
+    int *d=0;
+
+    if(n<1||n>NAMEMAX)return 0;
+
+    while(k<FILES+1){
+
+        d=node(k);
+
+        if(!d[0]){
+
+            while(i<16){
+
+                d[i]=0;
+
+                i++;
+
+            }
+
+            d[0]=n;
+
+            i=0;
+
+            while(i<n){
+
+                ((char *)(d+4))[i]=name[i];
+
+                i++;
+
+            }
+
+            return k;
+
+        }
+
+        k++;
+
+    }
+
+    return 0;
+
+}
+
+
+/* Stage data and offsets before publishing either. Failure leaves every existing byte unchanged. */
+int reserve(int k,int cap){
+
+    int *d=node(k);
+
+    int *e=0;
+
+    int *map=(int *)(SCRATCH+FSSIZE);
+
+    char *t=(char *)SCRATCH;
+
+    char *s=0;
+
+    int total=cap;
+
+    int j=1;
+
+    int i=0;
+
+    int at=0;
+
+    int z=0;
+
+    if(cap<d[1]||cap>FILEMAX)return 1;
+
+    while(j<FILES+1){
+
+        e=node(j);
+
+        if(j!=k&&e[0])total=total+e[3];
+
+        j++;
+
+    }
+
+    if(total>SPACE)return 1;
+
+    i=0;
+
+    while(i<total){
+
+        t[i]=0;
+
+        i++;
+
+    }
+
+    j=1;
+
+    while(j<FILES+1){
+
+        e=node(j);
+
+        if(e[0]){
+
+            map[j-1]=at;
+
+            s=bytes(j);
+
+            i=0;
+
+            while(i<e[1]){
+
+                t[at+i]=s[i];
+
+                i++;
+
+            }
+
+            z=e[3];
+
+            if(j==k)z=cap;
+
+            at=at+z;
+
+        }
+
+        j++;
+
+    }
+
+    s=(char *)DATA;
+
+    i=0;
+
+    while(i<total){
+
+        s[i]=t[i];
+
+        i++;
+
+    }
+
+    j=1;
+
+    while(j<FILES+1){
+
+        e=node(j);
+
+        if(e[0])e[2]=map[j-1];
+
+        j++;
+
+    }
+
+    d[3]=cap;
+
+    return 0;
+
+}
+
+
+int fsput(char *name,char *src,int n){
+
+    int k=find(name);
+
+    int made=0;
+
+    int i=0;
+
+    int *d=0;
+
+    char *p=0;
+
+    char *stage=(char *)TRANSFER;
+
+    if(n<0||n>FILEMAX)return 1;
+
+    if((int)src>IMAGE-1&&(int)src<IMAGE+FSSIZE){
+
+        while(i<n){
+
+            stage[i]=src[i];
+
+            i++;
+
+        }
+
+        src=stage;
+
+    }
+
+    if(!k){
+
+        k=fresh(name);
+
+        made=1;
+
+    }
+
+    if(!k)return 1;
+
+    d=node(k);
+
+    if(n>d[3]&&reserve(k,align4(n))){
+
+        if(made)d[0]=0;
+
+        return 1;
+
+    }
+
+    p=bytes(k);
+
+    i=0;
+
+    while(i<n){
+
+        p[i]=src[i];
+
+        i++;
+
+    }
+
+    d[1]=n;
+
+    if(align4(n)<d[3])reserve(k,align4(n));
+
+    return 0;
+
+}
+
+
+int erasefile(char *s){
+
+    int k=find(s);
+
+    int *d=0;
+
+    int i=0;
+
+    if(!k)return 1;
+
+    d=node(k);
+
+    while(i<16){
+
+        d[i]=0;
+
+        i++;
+
+    }
+
+    return 0;
+
+}
+
+
+int checksumN(int size){
+
+    char *p=(char *)IMAGE;
+
+    int h=5381;
+
+    int i=0;
+
+    while(i<size){
+
+        if(i<24||i>27)h=h*33+p[i];
+
+        i++;
+
+    }
+
+    return h;
+
+}
+
+
+/* Serialize the RAM filesystem into bounded private transport bytes. Never publish a partial stream. */
+int checksum(void){
+  return checksumN(FSSIZE);
+}
+
+int fscommit(void){
+  int *h=(int *)IMAGE;
+  char *p=(char *)IMAGE;
+  char *q=(char *)SNAPSHOT;
+  char *d=(char *)(DISK+1024);
+  char *t=(char *)(DISK+5120+LEGACY_CAP);
+  char *v=(char *)SCRATCH;
+  int i=0;
+  int j=0;
+  int n=0;
+  int a=0;
+  int b=0;
+  int *format=(int *)(DISK+LEGACY_MARKER);
+  if(fscheck())return 1;
+  h[6]=checksum();
+  n=lzencode(p,FSSIZE,q+8,PERSISTMAX-8);
+  if(n<0)return 3;
+  if(lzdecode(q+8,n,v,FSSIZE)!=FSSIZE||!equal(p,v,FSSIZE))return 4;
+  set32(q,PACKMAGIC);
+  set32(q+4,n);
+  while(i<PERSISTMAX){
+    if(i<n+8)t[i]=q[i];
+    else t[i]=0;
+    i++;
+  }
+  i=1;
+  while(i<LEGACY_SLOTS){
+    t=d+i*128;
+    j=0;
+    while(j<128){
+      t[j]=0;
+      j++;
+    }
+    t[0]=3;
+    t[3]=128;
+    t[4]=98;
+    a=i-1;
+    b=0;
+    while(a>9){
+      a=a-10;
+      b++;
+    }
+    t[5]=48+b;
+    t[6]=48+a;
+    t[80]=165;
+    i++;
+  }
+  format[0]=LEGACY_CAP;
+  return diskcommit();
+}
+
+int fsmount(void){
+  char *p=(char *)IMAGE;
+  char *s=(char *)(DISK+5120+LEGACY_CAP);
+  int *h=(int *)IMAGE;
+  int i=0;
+  int n=0;
+  int sum=0;
+  if(u32(s)==PACKMAGIC){
+    n=u32(s+4);
+    if(n<4||n>PERSISTMAX-8)return 3;
+    if(lzdecode(s+8,n,p,FSSIZE)!=FSSIZE)return 4;
+  }
+  else{
+    if(u32(s)!=MAGIC)return 5;
+    n=u32(s+12);
+    if(n<9216||n>FSSIZE)return 6;
+    while(i<n){
+      p[i]=s[i];
+      i++;
+    }
+    if(checksumN(n)!=h[6])return 2;
+    while(i<FSSIZE){
+      p[i]=0;
+      i++;
+    }
+    h[3]=FSSIZE;
+    h[6]=checksum();
+  }
+  if(fscheck())return 1;
+  if(h[6]!=checksum())return 2;
+  return 0;
+}
+
+#include "native42"
+int fsnative(char *name,int src,int n){
+
+    char *p=(char *)LOADBUF;
+
+    char *s=(char *)src;
+
+    int i=0;
+
+    if(n<4||n>CODEMAX||align4(n)!=n)return 1;
+
+    set32(p,n);
+
+    while(i<n){
+
+        p[i+4]=s[i];
+
+        i++;
+
+    }
+
+    return fsput(name,p,n+4);
+
+}
+
+
+#include "codesize"

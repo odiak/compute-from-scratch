@@ -1,0 +1,22 @@
+int codesize(char *name){
+
+    int k=find(name);
+
+    char *p=0;
+
+    int n=0;
+
+    if(!k||length(k)<8)return 0;
+
+    p=bytes(k);
+
+    n=u32(p);
+
+    if(n==EXEZ)n=u32(p+4)-4;
+
+    if(n<4||n>CODEMAX||align4(n)!=n)return 0;
+
+    return n;
+
+}
+

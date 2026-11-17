@@ -1,0 +1,65 @@
+int native(char *name,int dest){
+
+    int k=find(name);
+
+    int n=0;
+
+    int stored=0;
+
+    int i=0;
+
+    char *p=0;
+
+    char *q=(char *)LOADBUF;
+
+    char *d=(char *)dest;
+
+    if(dest!=COMPILER&&dest!=USER&&dest!=APP&&dest!=SHELL)return 0;
+
+    if(!k||length(k)<8)return 0;
+
+    p=bytes(k);
+
+    stored=length(k);
+
+    if(u32(p)==EXEZ){
+
+        stored=lzdecode(p+4,stored-4,q,FILEMAX);
+
+        if(stored<8)return 0;
+
+    }
+
+    else{
+
+        if(stored>CODEMAX+4)return 0;
+
+        while(i<stored){
+
+            q[i]=p[i];
+
+            i++;
+
+        }
+
+    }
+
+    n=u32(q);
+
+    if(n<4||n>CODEMAX||stored!=n+4||align4(n)!=n)return 0;
+
+    i=0;
+
+    while(i<n){
+
+        d[i]=q[i+4];
+
+        i++;
+
+    }
+
+    return n;
+
+}
+
+

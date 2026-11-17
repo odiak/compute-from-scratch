@@ -1,0 +1,69 @@
+extract sources alpha
+extract sources beta
+extract sources extra5
+extract sources Abc123xyz789
+extract sources utilh
+extract sources stdioh
+extract sources stringh
+extract sources fcntlh
+extract sources libgenh
+extract sources unistdh
+extract sources catbuild
+extract sources basebuild
+extract sources Check
+extract sources progBad
+extract sources sys
+copy stdioh stdio.h
+copy utilh util.h
+copy stringh string.h
+copy fcntlh fcntl.h
+copy libgenh libgen.h
+copy unistdh unistd.h
+copy Abc123xyz789 arg.h
+build echo.src
+save echo
+build cat.src
+save cat
+build basename.src
+save basename
+build sha.c
+save sha
+build mend.c
+save mend
+build cc.c
+compare
+build cc.c
+compare
+save cc
+build dev.c
+save dev
+build start.c
+save start
+installboot.c
+packexe.c echo
+packexe.c cat
+packexe.c basename
+packexe.c sha
+packexe.c mend
+packexe.c cc
+packexe.c dev
+build red.c
+save red
+build blue.c
+save blue
+binary.c input.bin 40000
+@cat input.bin | binary.c | @cat > output.bin
+build cc.c
+compare
+@sha new1 extra1 extra3 raw precc bridge libc layout fs42 lz seed bootplan sources controls seedpack bundle work aux native42 codesize word32 initial > inventory.inputs
+@sha -a sources > inventory.sources
+@sha -a controls > inventory.controls
+@sha -a seedpack > inventory.seedpack
+@sha -z bundle > inventory.bundle
+@sha -z aux > inventory.aux
+@sha -z work > inventory.work
+@sha -m 1106247680 21012 > inventory.boot
+@sha cc dev start echo cat basename sha mend red blue input.bin output.bin > inventory.outputs
+check
+@red
+@echo source-only-rebuild-complete
